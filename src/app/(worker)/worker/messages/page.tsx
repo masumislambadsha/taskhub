@@ -132,9 +132,9 @@ export default function WorkerMessagesPage() {
   const myId = session?.user?.id;
 
   return (
-    <div className="fixed top-16 bottom-0 right-0 left-64 flex overflow-hidden border-t border-primary/5 bg-white">
+    <div className="flex relative border-t border-primary/5 bg-white">
       {/* Conversations sidebar */}
-      <aside className="w-80 shrink-0 border-r border-primary/5 flex flex-col">
+      <aside className="w-80 sticky top-0 shrink-0 border-r border-primary/5 flex flex-col">
         <div className="p-4 border-b border-primary/5">
           <h2 className="font-headline text-lg font-bold text-primary">
             Messages
@@ -202,7 +202,7 @@ export default function WorkerMessagesPage() {
 
       {/* Chat area */}
       {activeConv ? (
-        <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        <div className="flex-1 flex flex-col min-w-0 overflow-y-hidden max-h-[800px]">
           {/* Chat header */}
           <div className="h-16 px-6 border-b border-primary/5 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-3">
