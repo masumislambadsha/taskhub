@@ -23,3 +23,7 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+@plugin "daisyui" {
+  themes: false;
+  base: false;
+}

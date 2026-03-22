@@ -1,0 +1,57 @@
+src/app/(buyer)/buyer/tasks/[id]/page.tsx(84,25): error TS2339: Property 'remainingWorkers' does not exist on type 'ITaskDoc & Required<{ _id: ObjectId; }> & { __v: number; }'.
+src/app/(buyer)/buyer/tasks/new/page.tsx(25,5): error TS2322: Type 'Resolver<{ title: string; details: string; requiredWorkers: unknown; payableAmount: unknown; completionDate: string; submissionInfo: string; category?: string | undefined; imageUrl?: string | undefined; }, any, { ...; }>' is not assignable to type 'Resolver<{ title: string; details: string; requiredWorkers: number; payableAmount: number; completionDate: string; submissionInfo: string; category?: string | undefined; imageUrl?: string | undefined; }, any, { ...; }>'.
+  Types of parameters 'options' and 'options' are incompatible.
+    Type 'ResolverOptions<{ title: string; details: string; requiredWorkers: number; payableAmount: number; completionDate: string; submissionInfo: string; category?: string | undefined; imageUrl?: string | undefined; }>' is not assignable to type 'ResolverOptions<{ title: string; details: string; requiredWorkers: unknown; payableAmount: unknown; completionDate: string; submissionInfo: string; category?: string | undefined; imageUrl?: string | undefined; }>'.
+      Type 'unknown' is not assignable to type 'number'.
+src/app/(buyer)/buyer/tasks/new/page.tsx(78,38): error TS2345: Argument of type '(data: { title: string; details: string; requiredWorkers: number; payableAmount: number; completionDate: string; submissionInfo: string; category?: string | undefined; imageUrl?: string | undefined; }) => Promise<...>' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
+  Types of parameters 'data' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type '{ title: string; details: string; requiredWorkers: number; payableAmount: number; completionDate: string; submissionInfo: string; category?: string | undefined; imageUrl?: string | undefined; }'.
+      Type 'FieldValues' is missing the following properties from type '{ title: string; details: string; requiredWorkers: number; payableAmount: number; completionDate: string; submissionInfo: string; category?: string | undefined; imageUrl?: string | undefined; }': title, details, requiredWorkers, payableAmount, and 2 more.
+src/app/(public)/tasks/page.tsx(24,13): error TS2352: Conversion of type '(ITaskDoc & Required<{ _id: ObjectId; }> & { __v: number; })[]' to type '{ _id: unknown; title: string; buyerName: string; payableAmount: number; requiredWorkers: number; filledWorkers: number; completionDate: string; category?: string | undefined; status: string; }[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'ITaskDoc & Required<{ _id: ObjectId; }> & { __v: number; }' is not comparable to type '{ _id: unknown; title: string; buyerName: string; payableAmount: number; requiredWorkers: number; filledWorkers: number; completionDate: string; category?: string | undefined; status: string; }'.
+    Types of property 'completionDate' are incompatible.
+      Type 'Date' is not comparable to type 'string'.
+src/app/(worker)/worker/withdrawals/page.tsx(41,5): error TS2322: Type 'Resolver<{ coinRequested: unknown; paymentSystem: string; accountNumber: string; }, any, { coinRequested: number; paymentSystem: string; accountNumber: string; }>' is not assignable to type 'Resolver<{ coinRequested: number; paymentSystem: string; accountNumber: string; }, any, { coinRequested: number; paymentSystem: string; accountNumber: string; }>'.
+  Types of parameters 'options' and 'options' are incompatible.
+    Type 'ResolverOptions<{ coinRequested: number; paymentSystem: string; accountNumber: string; }>' is not assignable to type 'ResolverOptions<{ coinRequested: unknown; paymentSystem: string; accountNumber: string; }>'.
+      Type 'unknown' is not assignable to type 'number'.
+src/app/(worker)/worker/withdrawals/page.tsx(105,59): error TS2345: Argument of type 'TFieldValues' is not assignable to parameter of type '{ coinRequested: number; paymentSystem: string; accountNumber: string; }'.
+  Type 'FieldValues' is missing the following properties from type '{ coinRequested: number; paymentSystem: string; accountNumber: string; }': coinRequested, paymentSystem, accountNumber
+src/app/api/v1/payments/create-session/route.ts(9,3): error TS2322: Type '"2025-02-24.acacia"' is not assignable to type '"2026-02-25.clover"'.
+src/app/api/v1/payments/create-session/route.ts(28,7): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Type 'string | null | undefined' is not assignable to type 'StringQueryTypeCasting | undefined'.
+      Type 'null' is not assignable to type 'StringQueryTypeCasting | undefined'.
+src/app/api/v1/payments/create-session/route.ts(49,91): error TS2339: Property '_id' does not exist on type 'never'.
+src/app/api/v1/payments/create-session/route.ts(51,38): error TS2339: Property '_id' does not exist on type 'never'.
+src/app/api/v1/payments/create-session/route.ts(54,45): error TS2339: Property '_id' does not exist on type 'never'.
+src/app/api/v1/payments/create-session/route.ts(63,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Type 'string | null | undefined' is not assignable to type 'StringQueryTypeCasting | undefined'.
+      Type 'null' is not assignable to type 'StringQueryTypeCasting | undefined'.
+src/app/api/v1/payments/create-session/route.ts(72,81): error TS2339: Property '_id' does not exist on type 'never'.
+src/app/api/v1/payments/stripe/webhook/route.ts(8,3): error TS2322: Type '"2025-02-24.acacia"' is not assignable to type '"2026-02-25.clover"'.
+src/app/api/v1/submissions/route.ts(79,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Type 'string | null | undefined' is not assignable to type 'StringQueryTypeCasting | undefined'.
+      Type 'null' is not assignable to type 'StringQueryTypeCasting | undefined'.
+        Type 'string | null | undefined' is not assignable to type 'StringQueryTypeCasting | undefined'.
+          Type 'null' is not assignable to type 'StringQueryTypeCasting | undefined'.
+src/app/api/v1/submissions/route.ts(80,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Type 'string | null | undefined' is not assignable to type 'StringQueryTypeCasting | undefined'.
+      Type 'null' is not assignable to type 'StringQueryTypeCasting | undefined'.
+        Type 'string | null | undefined' is not assignable to type 'StringQueryTypeCasting | undefined'.
+          Type 'null' is not assignable to type 'StringQueryTypeCasting | undefined'.
+src/app/api/v1/withdrawals/route.ts(60,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Type 'string | null | undefined' is not assignable to type 'StringQueryTypeCasting | undefined'.
+      Type 'null' is not assignable to type 'StringQueryTypeCasting | undefined'.
+        Type 'string | null | undefined' is not assignable to type 'StringQueryTypeCasting | undefined'.
+          Type 'null' is not assignable to type 'StringQueryTypeCasting | undefined'.
+src/app/api/v1/withdrawals/route.ts(61,5): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Type 'string | null | undefined' is not assignable to type 'StringQueryTypeCasting | undefined'.
+      Type 'null' is not assignable to type 'StringQueryTypeCasting | undefined'.
+        Type 'string | null | undefined' is not assignable to type 'StringQueryTypeCasting | undefined'.
+          Type 'null' is not assignable to type 'StringQueryTypeCasting | undefined'.
