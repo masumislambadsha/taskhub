@@ -40,7 +40,7 @@ export default function DashboardShell({
               <span
                 className="material-symbols-outlined text-amber-500 text-sm"
                 style={{ fontVariationSettings: "'FILL' 1" }}
-            >
+              >
                 toll
               </span>
               <span className="text-sm font-bold text-primary">

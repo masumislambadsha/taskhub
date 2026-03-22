@@ -34,6 +34,7 @@ const buyerNav: NavItem[] = [
     label: "Review Submissions",
     icon: "rate_review",
   },
+  { href: "/buyer/messages", label: "Messages", icon: "mail" },
   { href: "/buyer/coins", label: "Buy Coins", icon: "toll" },
   { href: "/buyer/payments", label: "Payment History", icon: "receipt_long" },
   { href: "/buyer/profile", label: "My Profile", icon: "account_circle" },

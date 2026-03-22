@@ -105,3 +105,27 @@ export interface CoinPackage {
   label: string;
   popular?: boolean;
 }
+
+export interface IMessage {
+  _id: string;
+  conversationId: string;
+  taskId: string;
+  senderId: string;
+  receiverId: string;
+  senderName: string;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+export interface IConversation {
+  conversationId: string;
+  taskId: string;
+  taskTitle: string;
+  otherUserId: string;
+  otherUserName: string;
+  otherUserPhoto?: string;
+  lastMessage: string;
+  lastMessageAt: string;
+  unreadCount: number;
+}

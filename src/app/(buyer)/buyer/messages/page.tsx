@@ -5,74 +5,82 @@ import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-import { formatDistanceToNow, format } from "date-fns";
+import { format } from "date-fns";
 import { IConversation, IMessage } from "@/types";
 import { useSocket } from "@/hooks/useSocket";
 
-export default function WorkerMessagesPage() {
+export default function BuyerMessagesPage() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const qc = useQueryClient();
-  const [activeConv, setActiveConv] = useState<IConversation | null>(null);
+
+  const [selectedConv, setSelectedConv] = useState<IConversation | null>(null);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [typingUser, setTypingUser] = useState<string | null>(null);
+
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch conversation list
   const { data: conversations = [] } = useQuery<IConversation[]>({
     queryKey: ["conversations"],
     queryFn: () => axios.get("/api/v1/messages").then((r) => r.data),
     refetchInterval: 15000,
   });
 
-  // Auto-open conversation from URL params (e.g. coming from task page)
-  useEffect(() => {
-    const conv = searchParams.get("conv");
-    const taskId = searchParams.get("taskId");
-    const taskTitle = searchParams.get("taskTitle");
-    const otherId = searchParams.get("otherId");
-    const otherName = searchParams.get("otherName");
-    if (conv && taskId && otherId && otherName) {
-      setActiveConv({
-        conversationId: conv,
-        taskId,
-        taskTitle: taskTitle ?? "Task",
-        otherUserId: otherId,
-        otherUserName: decodeURIComponent(otherName),
-        lastMessage: "",
-        lastMessageAt: new Date().toISOString(),
-        unreadCount: 0,
-      });
-    }
-  }, [searchParams]);
+  // Derive activeConv: URL params take priority, else selectedConv
+  const urlConv = searchParams.get("conv");
+  const urlTaskId = searchParams.get("taskId");
+  const urlTaskTitle = searchParams.get("taskTitle");
+  const urlOtherId = searchParams.get("otherId");
+  const urlOtherName = searchParams.get("otherName");
 
-  // Fetch history when conversation changes
-  useEffect(() => {
-    if (!activeConv) return;
-    setMessages([]);
-    axios
-      .get(`/api/v1/messages/${activeConv.conversationId}`)
-      .then((r) => setMessages(r.data));
-  }, [activeConv?.conversationId]);
+  const activeConv: IConversation | null =
+    urlConv && urlTaskId && urlOtherId && urlOtherName
+      ? {
+          conversationId: urlConv,
+          taskId: urlTaskId,
+          taskTitle: urlTaskTitle ?? "Task",
+          otherUserId: urlOtherId,
+          otherUserName: decodeURIComponent(urlOtherName),
+          lastMessage: "",
+          lastMessageAt: new Date().toISOString(),
+          unreadCount: 0,
+        }
+      : selectedConv;
 
-  // Scroll to bottom on new messages
+  const { data: fetchedMessages = [] } = useQuery<IMessage[]>({
+    queryKey: ["messages", activeConv?.conversationId],
+    queryFn: () =>
+      axios
+        .get(`/api/v1/messages/${activeConv!.conversationId}`)
+        .then((r) => r.data),
+    enabled: !!activeConv?.conversationId,
+  });
+
+  // Merge fetched + live messages, deduplicated
+  const allMessages = [
+    ...fetchedMessages,
+    ...messages.filter(
+      (m) => !fetchedMessages.find((f: IMessage) => f._id === m._id),
+    ),
+  ];
+
+  // Always scroll to bottom on new messages
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [allMessages]);
 
   const handleMessage = useCallback(
     (msg: IMessage) => {
       if (msg.conversationId === activeConv?.conversationId) {
         setMessages((prev) => {
-          // avoid duplicates (sender already sees optimistic message)
           if (prev.find((m) => m._id === msg._id)) return prev;
           return [...prev, msg];
         });
       }
       qc.invalidateQueries({ queryKey: ["conversations"] });
+      qc.invalidateQueries({ queryKey: ["messages", msg.conversationId] });
     },
     [activeConv?.conversationId, qc],
   );
@@ -93,15 +101,19 @@ export default function WorkerMessagesPage() {
     onTypingStop: handleTypingStop,
   });
 
-  // Mark as read when opening conversation
+  // Mark active conversation as read
   useEffect(() => {
-    if (activeConv) markRead(activeConv.conversationId);
-  }, [activeConv?.conversationId]);
+    if (activeConv?.conversationId) {
+      markRead(activeConv.conversationId);
+    }
+  }, [activeConv?.conversationId, markRead]);
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     setInput(e.target.value);
     if (!activeConv) return;
+
     sendTypingStart(activeConv.conversationId);
+
     if (typingTimer.current) clearTimeout(typingTimer.current);
     typingTimer.current = setTimeout(
       () => sendTypingStop(activeConv.conversationId),
@@ -111,6 +123,7 @@ export default function WorkerMessagesPage() {
 
   function handleSend() {
     if (!input.trim() || !activeConv || !session?.user) return;
+
     sendMessage({
       conversationId: activeConv.conversationId,
       taskId: activeConv.taskId,
@@ -118,11 +131,12 @@ export default function WorkerMessagesPage() {
       receiverName: activeConv.otherUserName,
       content: input.trim(),
     });
+
     setInput("");
     sendTypingStop(activeConv.conversationId);
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -133,15 +147,12 @@ export default function WorkerMessagesPage() {
 
   return (
     <div className="fixed top-16 bottom-0 right-0 left-64 flex overflow-hidden border-t border-primary/5 bg-white">
-      {/* Conversations sidebar */}
       <aside className="w-80 shrink-0 border-r border-primary/5 flex flex-col">
         <div className="p-4 border-b border-primary/5">
           <h2 className="font-headline text-lg font-bold text-primary">
             Messages
           </h2>
-          <p className="text-xs text-primary/40 mt-0.5">
-            Task-related conversations
-          </p>
+          <p className="text-xs text-primary/40 mt-0.5">Worker conversations</p>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -152,14 +163,14 @@ export default function WorkerMessagesPage() {
               </span>
               <p className="text-sm text-primary/40">No conversations yet</p>
               <p className="text-xs text-primary/30 mt-1">
-                Start by messaging a buyer from a task page
+                Workers will message you about your tasks
               </p>
             </div>
           ) : (
             conversations.map((conv) => (
               <button
                 key={conv.conversationId}
-                onClick={() => setActiveConv(conv)}
+                onClick={() => setSelectedConv(conv)}
                 className={`w-full text-left px-4 py-4 border-b border-primary/5 hover:bg-background transition-colors ${
                   activeConv?.conversationId === conv.conversationId
                     ? "bg-secondary/5 border-l-2 border-l-secondary"
@@ -170,29 +181,29 @@ export default function WorkerMessagesPage() {
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-sm">
                     {conv.otherUserName[0]?.toUpperCase()}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-sm text-primary truncate">
+                  <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-primary truncate">
                         {conv.otherUserName}
-                      </span>
-                      <span className="text-[10px] text-primary/30 shrink-0 ml-2">
-                        {formatDistanceToNow(new Date(conv.lastMessageAt), {
-                          addSuffix: true,
-                        })}
-                      </span>
+                      </p>
+                      <p className="text-xs text-primary/40 truncate">
+                        {conv.taskTitle}
+                      </p>
+                      <p className="text-[10px] text-primary/30 mt-0.5">
+                        {conv.lastMessageAt
+                          ? format(
+                              new Date(conv.lastMessageAt),
+                              "MMM d, h:mm a",
+                            )
+                          : ""}
+                      </p>
                     </div>
-                    <p className="text-xs text-secondary font-medium truncate mt-0.5">
-                      {conv.taskTitle}
-                    </p>
-                    <p className="text-xs text-primary/50 truncate mt-0.5">
-                      {conv.lastMessage}
-                    </p>
+                    {conv.unreadCount > 0 && (
+                      <span className="w-5 h-5 rounded-full bg-secondary text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                        {conv.unreadCount}
+                      </span>
+                    )}
                   </div>
-                  {conv.unreadCount > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-secondary text-white text-[10px] font-bold flex items-center justify-center shrink-0">
-                      {conv.unreadCount}
-                    </span>
-                  )}
                 </div>
               </button>
             ))
@@ -200,11 +211,9 @@ export default function WorkerMessagesPage() {
         </div>
       </aside>
 
-      {/* Chat area */}
       {activeConv ? (
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
-          {/* Chat header */}
-          <div className="h-16 px-6 border-b border-primary/5 flex items-center justify-between shrink-0">
+          <div className="h-16 px-6 border-b border-primary/5 flex items-center shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
                 {activeConv.otherUserName[0]?.toUpperCase()}
@@ -220,14 +229,15 @@ export default function WorkerMessagesPage() {
             </div>
           </div>
 
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {messages.map((msg) => {
+            {allMessages.map((msg) => {
               const isMe = msg.senderId === myId;
               return (
                 <div
                   key={msg._id}
-                  className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : ""}`}
+                  className={`flex items-end gap-2 ${
+                    isMe ? "flex-row-reverse" : ""
+                  }`}
                 >
                   {!isMe && (
                     <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
@@ -235,7 +245,9 @@ export default function WorkerMessagesPage() {
                     </div>
                   )}
                   <div
-                    className={`max-w-[70%] space-y-1 ${isMe ? "items-end" : "items-start"} flex flex-col`}
+                    className={`max-w-[70%] space-y-1 flex flex-col ${
+                      isMe ? "items-end" : "items-start"
+                    }`}
                   >
                     <div
                       className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
@@ -247,7 +259,7 @@ export default function WorkerMessagesPage() {
                       {msg.content}
                     </div>
                     <span className="text-[10px] text-primary/30 px-1">
-                      {format(new Date(msg.createdAt), "h:mm a")}
+                      {format(new Date(msg.createdAt), "h:mm a")}{" "}
                       {isMe && (
                         <span className="ml-1">{msg.isRead ? "✓✓" : "✓"}</span>
                       )}
@@ -275,15 +287,13 @@ export default function WorkerMessagesPage() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
           <div className="p-4 border-t border-primary/5 shrink-0">
             <label className="flex items-center gap-3 bg-background rounded-xl px-4 py-2 border border-primary/10 focus-within:border-secondary/40 transition-colors cursor-text w-full">
               <input
-                ref={inputRef}
                 value={input}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder={`Message ${activeConv.otherUserName}…`}
+                placeholder={`Reply to ${activeConv.otherUserName}…`}
                 className="flex-1 bg-transparent border-none focus:outline-none text-sm text-primary placeholder:text-primary/30 min-w-0"
               />
               <button
@@ -312,7 +322,7 @@ export default function WorkerMessagesPage() {
             </span>
             <p className="text-primary/40 font-medium">Select a conversation</p>
             <p className="text-xs text-primary/30 mt-1">
-              Or start one from a task page
+              Workers will message you about your tasks
             </p>
           </div>
         </div>

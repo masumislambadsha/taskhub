@@ -14,12 +14,15 @@ import toast from "react-hot-toast";
 import { ITask } from "@/types";
 import { format, formatDistanceToNow } from "date-fns";
 import CountUp from "@/components/ui/CountUp";
+import { getConversationId } from "@/lib/conversation";
+import { useSession } from "next-auth/react";
 
 const IMGBB_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY!;
 
 export default function TaskDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { data: session } = useSession();
   const [submitting, setSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUploading, setImageUploading] = useState(false);
@@ -178,7 +181,27 @@ export default function TaskDetailPage() {
           </div>
         </div>
 
-        <p className="text-xs text-primary/40">Posted by {task.buyerName}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-primary/40">Posted by {task.buyerName}</p>
+          {session?.user && (
+            <button
+              onClick={() => {
+                const convId = getConversationId(
+                  id,
+                  session.user.id,
+                  task.buyerId,
+                );
+                router.push(
+                  `/worker/messages?conv=${convId}&taskId=${id}&taskTitle=${encodeURIComponent(task.title)}&otherId=${task.buyerId}&otherName=${encodeURIComponent(task.buyerName)}`,
+                );
+              }}
+              className="flex items-center gap-1.5 text-xs font-semibold text-secondary hover:text-primary border border-secondary/30 hover:border-primary/30 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <span className="material-symbols-outlined text-sm">chat</span>
+              Message Buyer
+            </button>
+          )}
+        </div>
       </div>
 
       {task.status !== "open" || remaining <= 0 ? (
@@ -240,7 +263,9 @@ export default function TaskDetailPage() {
                 onClick={() => append("")}
                 className="text-xs text-secondary hover:text-primary flex items-center gap-1"
               >
-                <span className="material-symbols-outlined text-sm text">add</span>{" "}
+                <span className="material-symbols-outlined text-sm text">
+                  add
+                </span>{" "}
                 Add another link
               </button>
             </div>
