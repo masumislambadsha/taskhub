@@ -117,7 +117,12 @@ export default function BuyerTasksPage() {
                     className="hover:bg-background/50 transition-colors"
                   >
                     <td className="px-6 py-4 font-medium text-primary max-w-xs truncate">
-                      {t.title}
+                      <Link
+                        href={`/buyer/tasks/${t._id}`}
+                        className="hover:text-secondary hover:underline transition-colors"
+                      >
+                        {t.title}
+                      </Link>
                     </td>
                     <td className="px-6 py-4">
                       <Badge status={t.status} />

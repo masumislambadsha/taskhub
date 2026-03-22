@@ -85,9 +85,12 @@ export default function NewTaskPage() {
     if (!result.isConfirmed) return;
     setLoading(true);
     try {
-      await axios.post("/api/v1/tasks", { ...data, imageUrl: uploadedUrl });
+      const res = await axios.post("/api/v1/tasks", {
+        ...data,
+        imageUrl: uploadedUrl,
+      });
       toast.success("Task created successfully!");
-      router.push("/buyer/tasks");
+      router.push(`/buyer/tasks/${res.data._id}/success`);
     } catch (err: unknown) {
       const msg = axios.isAxiosError(err)
         ? err.response?.data?.error
