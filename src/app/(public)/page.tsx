@@ -201,7 +201,7 @@ export default async function HomePage() {
           </div>
         </div>
         <div data-gsap="hero-visual-wrapper">
-          <div data-gsap="hero-visual" className="relative hidden lg:block">
+          <div data-gsap="hero-visual" className="relative hi w-[280px] md:w-auto lg:block">
             <div className="absolute -inset-4 bg-secondary/10 rounded-[2rem] blur-2xl" />
             <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden border border-primary/5 aspect-[4/3] flex">
               {/* Sidebar */}

@@ -4,7 +4,7 @@ import Logo from "@/components/ui/Logo";
 export default function Footer() {
   return (
     <footer className="bg-background border-t border-primary/10 py-16">
-      <div className="max-w-7xl mx-auto px-8">
+      <div className="max-w-7xl mx-auto px-3 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-16">
           <div className="space-y-4">
             <Logo size={32} />
@@ -88,9 +88,6 @@ export default function Footer() {
               Contact
             </h4>
             <p className="text-sm text-primary/60">hello@taskhub.dev</p>
-            <p className="text-xs text-primary/40 mt-2">
-              Portfolio project — not a real service
-            </p>
           </div>
         </div>
         <div className="border-t border-primary/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
