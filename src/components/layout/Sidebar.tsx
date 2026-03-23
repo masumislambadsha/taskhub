@@ -73,51 +73,101 @@ export default function Sidebar({ role }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile backdrop */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            key="sidebar-backdrop"
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { duration: 0.25 } }}
-            exit={{
-              opacity: 0,
-              transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] },
-            }}
-            onClick={close}
-          />
-        )}
-      </AnimatePresence>
-
       {/* Desktop sidebar — always visible, no animation needed */}
       <aside className="hidden lg:flex fixed top-0 left-0 h-full w-64 bg-primary z-40 flex-col">
         <SidebarContent navItems={navItems} pathname={pathname} close={close} />
       </aside>
 
-      {/* Mobile sidebar — animated */}
+      {/* Mobile sidebar — slides down from top like public navbar */}
       <AnimatePresence>
         {sidebarOpen && (
-          <motion.aside
+          <motion.div
             key="sidebar-mobile"
-            className="lg:hidden fixed top-0 left-0 h-full w-64 bg-primary z-40 flex flex-col"
-            initial={{ x: "-100%" }}
+            className="lg:hidden fixed inset-x-0 top-16 h-[calc(100dvh-4rem)] z-40 bg-primary flex flex-col"
+            initial={{ y: "-100%", opacity: 0 }}
             animate={{
-              x: 0,
-              transition: { type: "spring", stiffness: 320, damping: 32 },
+              y: 0,
+              opacity: 1,
+              transition: { type: "spring", stiffness: 280, damping: 28 },
             }}
             exit={{
-              x: "-100%",
-              transition: { duration: 0.45, ease: [0.4, 0, 0.2, 1] },
+              y: "-100%",
+              opacity: 0,
+              transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
             }}
           >
-            <SidebarContent
-              navItems={navItems}
-              pathname={pathname}
-              close={close}
-              animated
-            />
-          </motion.aside>
+            <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+              {navItems.map((item, i) => {
+                let active = pathname === item.href;
+                if (!active && item.href === "/buyer/tasks") {
+                  active =
+                    pathname.startsWith("/buyer/tasks/") &&
+                    !pathname.startsWith("/buyer/tasks/new");
+                } else if (!active) {
+                  active = pathname.startsWith(item.href + "/");
+                }
+
+                return (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 380,
+                      damping: 28,
+                      delay: 0.06 + i * 0.06,
+                    }}
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={close}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                        active
+                          ? "bg-white/15 text-white"
+                          : "text-white/60 hover:bg-white/10 hover:text-white"
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-xl">
+                        {item.icon}
+                      </span>
+                      {item.label}
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </nav>
+
+            <motion.div
+              className="px-4 py-4 border-t border-white/10 shrink-0 flex flex-col gap-1"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 28,
+                delay: 0.38,
+              }}
+            >
+              <Link
+                href="/"
+                onClick={close}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-white/60 hover:bg-white/10 hover:text-white transition-all"
+              >
+                <span className="material-symbols-outlined text-xl">home</span>
+                Home
+              </Link>
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-red-500/10 hover:text-red-500 transition-all w-full text-red-300"
+              >
+                <span className="material-symbols-outlined text-xl">
+                  logout
+                </span>
+                Sign Out
+              </button>
+            </motion.div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>
@@ -194,7 +244,15 @@ function SidebarContent({
       </nav>
 
       {/* Logout */}
-      <div className="px-4 py-4 border-t border-white/10 shrink-0">
+      <div className="px-4 py-4 border-t border-white/10 shrink-0 flex flex-col gap-1">
+        <Link
+          href="/"
+          onClick={close}
+          className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-white/60 hover:bg-white/10 hover:text-white transition-all"
+        >
+          <span className="material-symbols-outlined text-xl">home</span>
+          Home
+        </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
           className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-red-500/10 hover:text-red-500 transition-all w-full text-red-300"

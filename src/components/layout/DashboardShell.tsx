@@ -1,11 +1,12 @@
 "use client";
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store";
 import { toggleSidebar } from "@/store/uiSlice";
 import Sidebar from "./Sidebar";
-import Link from "next/link";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import HamburgerIcon from "@/components/ui/HamburgerIcon";
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -17,8 +18,8 @@ export default function DashboardShell({
   role,
 }: DashboardShellProps) {
   const dispatch = useDispatch();
+  const sidebarOpen = useSelector((s: RootState) => s.ui.sidebarOpen);
   const { data: session } = useSession();
-  console.log(session);
 
   return (
     <div className="min-h-screen flex bg-background">
@@ -28,12 +29,12 @@ export default function DashboardShell({
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header className="h-16 bg- border-b border-primary/5 flex items-center justify-between px-4 md:px-6 sticky top-0 z-20 backdrop-blur-sm">
-          <button
-            onClick={() => dispatch(toggleSidebar())}
-            className="lg:hidden p-2 pl-0 rounded-lg hover:bg-primary/5 text-primary"
-          >
-            <span className="material-symbols-outlined">menu</span>
-          </button>
+          <div className="lg:hidden">
+            <HamburgerIcon
+              checked={sidebarOpen}
+              onChange={() => dispatch(toggleSidebar())}
+            />
+          </div>
           <div className="hidden lg:block" />
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-2 bg-background  py-1.5 rounded-lg">
