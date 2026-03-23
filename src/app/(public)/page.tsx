@@ -166,26 +166,29 @@ export default async function HomePage() {
       <HomeAnimations />
 
       {/* Hero */}
-      <section className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8 py-5 md:py-24 grid lg:grid-cols-2 gap-16 items-center">
-        <div className="space-y-8">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-24 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center overflow-hidden">
+        <div className="space-y-6 min-w-0">
           <h1
             data-gsap="hero-title"
-            className="font-headline text-5xl md:text-6xl font-extrabold text-primary leading-[1.1] tracking-tight"
+            className="font-headline text-4xl sm:text-5xl md:text-6xl font-extrabold text-primary leading-[1.1] tracking-tight"
           >
             Earn from micro tasks or{" "}
             <span className="text-secondary">get work done faster</span>
           </h1>
           <p
             data-gsap="hero-sub"
-            className="text-xl text-primary/70 leading-relaxed max-w-lg font-light"
+            className="text-base sm:text-lg md:text-xl text-primary/70 leading-relaxed font-light"
           >
             The premium marketplace for precise execution. Join thousands of
             workers and buyers in a curated ecosystem built for efficiency.
           </p>
-          <div data-gsap="hero-cta" className="flex flex-wrap gap-4 pt-2">
+          <div
+            data-gsap="hero-cta"
+            className="flex flex-col sm:flex-row gap-3 pt-2"
+          >
             <Link
               href="/register?role=worker"
-              className="bg-primary text-white px-8 py-4 rounded-lg font-bold flex items-center gap-2 shadow-xl shadow-primary/10 hover:scale-95 transition-transform"
+              className="bg-primary text-white px-7 py-3.5 rounded-lg font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/10 hover:scale-95 transition-transform"
             >
               Start earning
               <span className="material-symbols-outlined text-lg">
@@ -194,41 +197,46 @@ export default async function HomePage() {
             </Link>
             <Link
               href="/register?role=buyer"
-              className="border-2 border-secondary text-primary px-8 py-4 rounded-lg font-bold hover:bg-secondary/10 transition-colors"
+              className="border-2 border-secondary text-primary px-7 py-3.5 rounded-lg font-bold hover:bg-secondary/10 transition-colors text-center"
             >
               Post a task
             </Link>
           </div>
         </div>
-        <div data-gsap="hero-visual-wrapper">
-          <div data-gsap="hero-visual" className="relative hi w-[280px] md:w-auto lg:block">
+        <div
+          data-gsap="hero-visual-wrapper"
+          className="flex justify-center lg:justify-end"
+        >
+          <div
+            data-gsap="hero-visual"
+            className="relative w-full max-w-sm sm:max-w-md lg:max-w-full"
+          >
             <div className="absolute -inset-4 bg-secondary/10 rounded-[2rem] blur-2xl" />
             <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden border border-primary/5 aspect-[4/3] flex">
-              {/* Sidebar */}
-              <div className="w-20 bg-primary h-full flex flex-col items-center py-6 gap-6">
-                <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+              <div className="w-16 sm:w-20 bg-primary h-full flex flex-col items-center py-6 gap-6">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white/20 flex items-center justify-center">
                   <span className="text-white text-xs font-bold">T</span>
                 </div>
                 <div className="space-y-4">
-                  <div className="w-8 h-8 rounded-lg bg-white/40 flex items-center justify-center">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/40 flex items-center justify-center">
                     <span className="material-symbols-outlined text-white text-sm">
                       dashboard
                     </span>
                   </div>
-                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/10 flex items-center justify-center">
                     <span className="material-symbols-outlined text-white/60 text-sm">
                       search
                     </span>
                   </div>
-                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/10 flex items-center justify-center">
                     <span className="material-symbols-outlined text-white/60 text-sm">
                       assignment
                     </span>
                   </div>
                 </div>
               </div>
-              {/* Main content */}
-              <div className="flex-1 p-6 bg-slate-50 flex flex-col gap-4">
+
+              <div className="flex-1 p-4 sm:p-6 bg-slate-50 flex flex-col gap-3 sm:gap-4">
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-xs text-slate-400">Good morning,</p>
@@ -236,7 +244,7 @@ export default async function HomePage() {
                       Alex Johnson
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full">
+                  <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-2 sm:px-3 py-1.5 rounded-full">
                     <span
                       className="material-symbols-outlined text-amber-500 text-sm"
                       style={{ fontVariationSettings: "'FILL' 1" }}
@@ -248,18 +256,20 @@ export default async function HomePage() {
                     </span>
                   </div>
                 </div>
-                {/* Stats */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-white rounded-lg p-3 shadow-sm border border-slate-100">
+
+                <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                  <div className="bg-white rounded-lg p-2 sm:p-3 shadow-sm border border-slate-100">
                     <p className="text-xs text-slate-400 mb-1">Tasks Done</p>
-                    <p className="text-xl font-bold text-primary">38</p>
+                    <p className="text-lg sm:text-xl font-bold text-primary">
+                      38
+                    </p>
                     <p className="text-xs text-green-500 mt-0.5">
                       ↑ 4 this week
                     </p>
                   </div>
-                  <div className="bg-white rounded-lg p-3 shadow-sm border border-slate-100">
+                  <div className="bg-white rounded-lg p-2 sm:p-3 shadow-sm border border-slate-100">
                     <p className="text-xs text-slate-400 mb-1">Earned</p>
-                    <p className="text-xl font-bold text-secondary">
+                    <p className="text-lg sm:text-xl font-bold text-secondary">
                       620{" "}
                       <span className="text-xs font-normal text-slate-400">
                         coins
@@ -268,13 +278,13 @@ export default async function HomePage() {
                     <p className="text-xs text-slate-400 mt-0.5">≈ $31.00</p>
                   </div>
                 </div>
-                {/* Active task */}
-                <div className="bg-white rounded-lg p-3 shadow-sm border-l-4 border-secondary flex-1">
+
+                <div className="bg-white rounded-lg p-2 sm:p-3 shadow-sm border-l-4 border-secondary flex-1">
                   <div className="flex items-start justify-between mb-2">
                     <p className="text-xs font-semibold text-primary">
                       Write a 5-star product review
                     </p>
-                    <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full">
+                    <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full whitespace-nowrap ml-2">
                       +20 coins
                     </span>
                   </div>
@@ -295,7 +305,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Trusted By */}
       <section className="md:py-12 py-5 max-w-7xl px-3 md:px-8 mx-auto  border-y border-primary/5 overflow-hidden">
         <div className=" mb-6">
@@ -308,22 +317,22 @@ export default async function HomePage() {
 
       {/* How it works */}
       <section
-        className="max-w-7xl mx-auto px-3 py-16 md:px-8 md:py-32"
+        className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-32 overflow-hidden"
         id="how-it-works"
       >
-        <div data-gsap="fade-up" className="text-center mb-15 md:mb-24">
-          <h2 className="font-headline text-4xl font-bold text-primary mb-6">
+        <div data-gsap="fade-up" className="text-center mb-10 md:mb-24">
+          <h2 className="font-headline text-3xl sm:text-4xl font-bold text-primary mb-4 sm:mb-6">
             Precision Engineering for Every Workflow
           </h2>
-          <p className="text-primary/60 max-w-2xl mx-auto text-lg font-light">
+          <p className="text-primary/60 max-w-2xl mx-auto text-base sm:text-lg font-light">
             Whether you&apos;re looking to complete micro-tasks or scale your
             operations, TaskHub provides the infrastructure.
           </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-16">
-          <div className="space-y-6">
+        <div className="grid md:grid-cols-2 gap-8 md:gap-16">
+          <div className="space-y-4 sm:space-y-6 min-w-0 w-full">
             <div className="flex items-center gap-4">
-              <div className="h-0.5 w-12 bg-secondary" />
+              <div className="h-0.5 w-12 bg-secondary shrink-0" />
               <span className="text-xs font-bold uppercase tracking-widest text-primary">
                 For Workers
               </span>
@@ -332,13 +341,15 @@ export default async function HomePage() {
               <div
                 key={s.title}
                 data-gsap="how-card"
-                className="bg-white p-8 rounded-xl shadow-sm border border-primary/5 flex gap-6 items-start"
+                className="bg-white p-5 sm:p-8 rounded-xl shadow-sm border border-primary/5 flex gap-4 sm:gap-6 items-start min-w-0"
               >
-                <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
-                  <span className="material-symbols-outlined">{s.icon}</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
+                  <span className="material-symbols-outlined text-base sm:text-xl">
+                    {s.icon}
+                  </span>
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg mb-2 text-primary">
+                <div className="min-w-0">
+                  <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2 text-primary">
                     {s.title}
                   </h3>
                   <p className="text-sm text-primary/60 leading-relaxed font-light">
@@ -348,9 +359,9 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6 min-w-0 w-full">
             <div className="flex items-center gap-4">
-              <div className="h-0.5 w-12 bg-primary" />
+              <div className="h-0.5 w-12 bg-primary shrink-0" />
               <span className="text-xs font-bold uppercase tracking-widest text-primary">
                 For Buyers
               </span>
@@ -359,13 +370,17 @@ export default async function HomePage() {
               <div
                 key={s.title}
                 data-gsap="how-card"
-                className="bg-primary p-8 rounded-xl shadow-xl shadow-primary/10 text-white flex gap-6 items-start"
+                className="bg-primary p-5 sm:p-8 rounded-xl shadow-xl shadow-primary/10 text-white flex gap-4 sm:gap-6 items-start min-w-0"
               >
-                <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center text-secondary shrink-0">
-                  <span className="material-symbols-outlined">{s.icon}</span>
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center text-secondary shrink-0">
+                  <span className="material-symbols-outlined text-base sm:text-xl">
+                    {s.icon}
+                  </span>
                 </div>
-                <div>
-                  <h3 className="font-bold text-lg mb-2">{s.title}</h3>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">
+                    {s.title}
+                  </h3>
                   <p className="text-sm text-white/70 leading-relaxed font-light">
                     {s.desc}
                   </p>
@@ -375,56 +390,56 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Stats */}
       <StatsSection />
 
       {/* Features for Workers */}
-      <section className="max-w-7xl mx-auto px-3 sm:px-8 py-15 md:py-32">
-        <div className="flex flex-col lg:flex-row gap-20 items-center">
-          <div data-gsap="feature-text" className="lg:w-1/2">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-32 overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
+          <div data-gsap="feature-text" className="lg:w-1/2 w-full min-w-0">
             <div className="inline-block px-3 py-1 bg-secondary/10 text-secondary text-xs font-bold uppercase tracking-widest rounded mb-6">
               Empowering Talent
             </div>
-            <h2 className="font-headline text-4xl font-bold text-primary mb-8">
+            <h2 className="font-headline text-3xl sm:text-4xl font-bold text-primary mb-6 sm:mb-8">
               Work on your terms, get paid for your precision
             </h2>
-            <div className="space-y-10">
+            <div className="space-y-7 sm:space-y-10">
               {WORKER_FEATURES.map((f) => (
                 <div
                   key={f.title}
                   data-gsap="feature-item"
-                  className="flex gap-6"
+                  className="flex gap-4 sm:gap-6"
                 >
-                  <span className="material-symbols-outlined text-secondary mt-1">
+                  <span className="material-symbols-outlined text-secondary mt-1 shrink-0">
                     {f.icon}
                   </span>
-                  <div>
-                    <h4 className="font-bold text-primary text-xl mb-2">
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-primary text-lg sm:text-xl mb-1 sm:mb-2">
                       {f.title}
                     </h4>
-                    <p className="text-primary/60 font-light">{f.desc}</p>
+                    <p className="text-primary/60 font-light text-sm sm:text-base">
+                      {f.desc}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-          <div data-gsap="feature-visual" className="lg:w-1/2 w-full">
-            <div className="bg-white p-5  md:p-10 rounded-2xl shadow-2xl border border-primary/5 relative overflow-hidden">
+          <div data-gsap="feature-visual" className="lg:w-1/2 w-full min-w-0">
+            <div className="bg-white p-5 md:p-10 rounded-2xl shadow-2xl border border-primary/5 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8">
                 <span className="material-symbols-outlined text-accent text-6xl opacity-10">
                   payments
                 </span>
               </div>
-              <div className="space-y-6">
-                {/* Profile */}
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center">
+              <div className="space-y-5 sm:space-y-6">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-secondary">
                       person
                     </span>
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="font-bold text-primary text-sm">
                       Maria S.
                     </div>
@@ -432,11 +447,10 @@ export default async function HomePage() {
                       Top Contributor · Level 4
                     </div>
                   </div>
-                  <span className="ml-auto text-xs font-bold px-2 py-1 bg-green-50 text-green-600 rounded-full">
+                  <span className="ml-auto text-xs font-bold px-2 py-1 bg-green-50 text-green-600 rounded-full shrink-0">
                     Active
                   </span>
                 </div>
-                {/* Recent tasks */}
                 <div className="space-y-3">
                   {[
                     {
@@ -457,9 +471,9 @@ export default async function HomePage() {
                   ].map((t) => (
                     <div
                       key={t.task}
-                      className="flex items-center justify-between text-sm"
+                      className="flex items-center justify-between text-sm gap-2"
                     >
-                      <span className="text-primary/70 truncate max-w-[200px]">
+                      <span className="text-primary/70 truncate min-w-0">
                         {t.task}
                       </span>
                       <div className="flex items-center gap-2 shrink-0">
@@ -475,18 +489,17 @@ export default async function HomePage() {
                     </div>
                   ))}
                 </div>
-                {/* Earnings */}
-                <div className="pt-4 border-t border-slate-100 flex justify-between items-center">
+                <div className="pt-4 border-t border-slate-100 flex justify-between items-center gap-2">
                   <span className="text-sm font-bold text-primary">
                     Earnings this week
                   </span>
-                  <span className="text-2xl font-bold text-secondary">
+                  <span className="text-xl sm:text-2xl font-bold text-secondary shrink-0">
                     $<CountUp value={342.5} decimals={2} />
                   </span>
                 </div>
                 <Link
                   href="/register?role=worker"
-                  className="block w-full py-4 bg-secondary text-white font-bold rounded-lg shadow-lg shadow-secondary/20 text-center hover:scale-95 transition-transform"
+                  className="block w-full py-3.5 sm:py-4 bg-secondary text-white font-bold rounded-lg shadow-lg shadow-secondary/20 text-center hover:scale-95 transition-transform"
                 >
                   Withdraw Funds
                 </Link>
@@ -495,50 +508,41 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Features for Buyers */}
-      <section className="bg-white py-15 md:py-32" id="buyers">
-        <div className="max-w-7xl mx-auto px-3 md:px-8">
-          <div className="flex flex-col lg:flex-row-reverse gap-20 items-center">
-            <div data-gsap="feature-text" className="lg:w-1/2">
+      <section className="bg-white py-12 md:py-32 overflow-hidden" id="buyers">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
+          <div className="flex flex-col lg:flex-row-reverse gap-12 lg:gap-20 items-center">
+            <div data-gsap="feature-text" className="lg:w-1/2 w-full min-w-0">
               <div className="inline-block px-3 py-1 bg-primary/5 text-primary text-xs font-bold uppercase tracking-widest rounded mb-6">
                 For Business Scale
               </div>
-              <h2 className="font-headline text-4xl font-bold text-primary mb-8">
+              <h2 className="font-headline text-3xl sm:text-4xl font-bold text-primary mb-6 sm:mb-8">
                 Deploy micro-tasks at global scale with zero friction
               </h2>
-              <div className="space-y-10">
+              <div className="space-y-7 sm:space-y-10">
                 {BUYER_FEATURES.map((f) => (
-                  <div
-                    key={f.title}
-                    data-gsap="feature-item"
-                    className="flex gap-6"
-                  >
-                    <span className="material-symbols-outlined text-primary mt-1">
-                      {f.icon}
-                    </span>
-                    <div>
-                      <h4 className="font-bold text-primary text-xl mb-2">
-                        {f.title}
-                      </h4>
-                      <p className="text-primary/60 font-light">{f.desc}</p>
+                  <div key={f.title} data-gsap="feature-item" className="flex gap-4 sm:gap-6">
+                    <span className="material-symbols-outlined text-primary mt-1 shrink-0">{f.icon}</span>
+                    <div className="min-w-0">
+                      <h4 className="font-bold text-primary text-lg sm:text-xl mb-1 sm:mb-2">{f.title}</h4>
+                      <p className="text-primary/60 font-light text-sm sm:text-base">{f.desc}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
-            <div data-gsap="feature-visual" className="lg:w-1/2 w-full">
+            <div data-gsap="feature-visual" className="lg:w-1/2 w-full min-w-0">
               <div className="bg-primary rounded-2xl p-5 sm:p-10 shadow-2xl overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
-                <div className="relative space-y-6">
-                  <div className="flex justify-between items-center text-white/50 text-xs font-bold uppercase tracking-widest">
+                <div className="relative space-y-4 sm:space-y-6">
+                  <div className="flex justify-between items-center text-white/50 text-xs font-bold uppercase tracking-widest gap-2">
                     <span>Real-time Operations</span>
-                    <span className="flex items-center gap-1">
+                    <span className="flex items-center gap-1 shrink-0">
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                       Live
                     </span>
                   </div>
-                  <div className="h-48 bg-white/5 rounded-xl border border-white/10 p-6 flex items-end gap-2">
+                  <div className="h-36 sm:h-48 bg-white/5 rounded-xl border border-white/10 p-4 sm:p-6 flex items-end gap-2">
                     {[20, 40, 80, 60, 90, 50].map((h, i) => (
                       <div
                         key={i}
@@ -547,22 +551,14 @@ export default async function HomePage() {
                       />
                     ))}
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                      <div className="text-[10px] uppercase text-white/40 mb-1">
-                        Active Workers
-                      </div>
-                      <div className="text-xl font-bold text-white">
-                        <CountUp value={8294} />
-                      </div>
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                    <div className="bg-white/5 p-3 sm:p-4 rounded-lg border border-white/10">
+                      <div className="text-[10px] uppercase text-white/40 mb-1">Active Workers</div>
+                      <div className="text-lg sm:text-xl font-bold text-white"><CountUp value={8294} /></div>
                     </div>
-                    <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                      <div className="text-[10px] uppercase text-white/40 mb-1">
-                        Cost Per Task
-                      </div>
-                      <div className="text-xl font-bold text-white">
-                        $<CountUp value={0.02} decimals={2} />
-                      </div>
+                    <div className="bg-white/5 p-3 sm:p-4 rounded-lg border border-white/10">
+                      <div className="text-[10px] uppercase text-white/40 mb-1">Cost Per Task</div>
+                      <div className="text-lg sm:text-xl font-bold text-white">$<CountUp value={0.02} decimals={2} /></div>
                     </div>
                   </div>
                 </div>
@@ -571,7 +567,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Coin Economy */}
       <section className="max-w-7xl mx-auto px-3 md:px-8 py-15 md:py-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
