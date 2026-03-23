@@ -67,7 +67,7 @@ export default function DashboardShell({
           </div>
         </header>
         <main className="flex-1 flex flex-col items-center p-6 md:p-8">
-          <div className="w-full max-w-[960px]">{children}</div>
+          <div className="w-full max-w-[960px] mx-auto">{children}</div>
         </main>
       </div>
     </div>

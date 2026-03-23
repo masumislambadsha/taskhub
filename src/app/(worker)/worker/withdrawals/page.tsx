@@ -84,7 +84,7 @@ export default function WorkerWithdrawalsPage() {
   });
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-3xl mx-auto">
       {/* Header */}
       <div>
         <h1 className="font-headline text-2xl font-bold text-primary">

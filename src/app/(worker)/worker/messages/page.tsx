@@ -132,8 +132,10 @@ export default function WorkerMessagesPage() {
   const myId = session?.user?.id;
 
   return (
-    <div className="fixed top-16 bottom-0 left-64 right-0 flex bg-white border-t border-primary/5 overflow-hidden">
-      {/* Conversations sidebar */}
+<div
+  className="flex border border-primary/5 rounded-xl bg-white overflow-hidden"
+  style={{ height: "calc(100vh - 64px - 48px)" }}
+>      {/* Conversations sidebar */}
       <aside className="w-80 sticky top-0 shrink-0 border-r border-primary/5 flex flex-col">
         <div className="p-4 border-b border-primary/5">
           <h2 className="font-headline text-lg font-bold text-primary">
@@ -221,7 +223,11 @@ export default function WorkerMessagesPage() {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="flex-1 overflow-y-auto p-6 space-y-4"
+          onWheel={(e) => {
+              e.stopPropagation();
+              e.currentTarget.scrollTop += e.deltaY;
+            }}>
             {messages.map((msg) => {
               const isMe = msg.senderId === myId;
               return (
