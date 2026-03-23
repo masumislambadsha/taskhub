@@ -166,7 +166,7 @@ export default async function HomePage() {
       <HomeAnimations />
 
       {/* Hero */}
-      <section className="max-w-7xl mx-auto px-6 md:px-8 py-24 grid lg:grid-cols-2 gap-16 items-center">
+      <section className="max-w-7xl mx-auto px-2 sm:px-6 md:px-8 py-5 md:py-24 grid lg:grid-cols-2 gap-16 items-center">
         <div className="space-y-8">
           <h1
             data-gsap="hero-title"
@@ -297,7 +297,7 @@ export default async function HomePage() {
       </section>
 
       {/* Trusted By */}
-      <section className="py-12 max-w-7xl px-8 mx-auto  border-y border-primary/5 overflow-hidden">
+      <section className="md:py-12 py-5 max-w-7xl px-8 mx-auto  border-y border-primary/5 overflow-hidden">
         <div className=" mb-6">
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary/40">
             Trusted by:
