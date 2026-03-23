@@ -47,27 +47,29 @@ function CountUp({
 
 export default function StatsSection() {
   return (
-    <section className="bg-primary py-24 text-white overflow-hidden relative">
+    <section className="bg-primary py-16 sm:py-20 lg:py-24 text-white overflow-hidden relative">
       <div className="absolute inset-0 opacity-10 pointer-events-none">
-        <div className="absolute -left-20 -top-20 w-96 h-96 bg-secondary rounded-full blur-[120px]" />
-        <div className="absolute -right-20 -bottom-20 w-96 h-96 bg-accent rounded-full blur-[120px]" />
+        <div className="absolute -left-20 -top-20 w-64 h-64 sm:w-96 sm:h-96 bg-secondary rounded-full blur-[120px]" />
+        <div className="absolute -right-20 -bottom-20 w-64 h-64 sm:w-96 sm:h-96 bg-accent rounded-full blur-[120px]" />
       </div>
-      <div className="max-w-7xl mx-auto px-8 relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-12 text-center">
-        {STATS.map((s) => (
-          <div key={s.label} data-gsap="stat" className="space-y-2">
-            <div className="text-5xl font-headline font-extrabold">
-              <CountUp
-                end={s.value}
-                suffix={s.suffix}
-                prefix={s.prefix ?? ""}
-                decimal={s.decimal}
-              />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12 text-center">
+          {STATS.map((s) => (
+            <div key={s.label} data-gsap="stat" className="space-y-2">
+              <div className="text-3xl sm:text-4xl lg:text-5xl font-headline font-extrabold leading-tight">
+                <CountUp
+                  end={s.value}
+                  suffix={s.suffix}
+                  prefix={s.prefix ?? ""}
+                  decimal={s.decimal}
+                />
+              </div>
+              <div className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-secondary">
+                {s.label}
+              </div>
             </div>
-            <div className="text-xs font-bold uppercase tracking-widest text-secondary">
-              {s.label}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   );

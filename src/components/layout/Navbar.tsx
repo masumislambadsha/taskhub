@@ -3,9 +3,18 @@
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import Logo from "@/components/ui/Logo";
 import HamburgerIcon from "@/components/ui/HamburgerIcon";
+
+const navLinks = [
+  { href: "/how-it-works", label: "How it Works" },
+  { href: "/tasks", label: "Browse Tasks" },
+  { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/support", label: "Support" },
+];
 
 export default function Navbar() {
   const { data: session } = useSession();
@@ -163,129 +172,149 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile menu dropdown */}
-      {mobileOpen && (
-        <div className="lg:hidden border-t border-primary/5 bg-white/95 backdrop-blur-xl px-6 py-4 flex flex-col gap-1">
-          <Link
-            href="/how-it-works"
-            className="py-2 text-sm font-medium text-primary/70 hover:text-primary transition-all"
-            onClick={() => setMobileOpen(false)}
+      {/* Mobile menu — full screen overlay */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            key="mobile-menu"
+            className="lg:hidden fixed inset-x-0 top-20 h-[calc(100dvh-5rem)] z-50 bg-white flex flex-col px-6 pt-6 pb-10 overflow-y-auto"
+            initial={{ y: "-100%", opacity: 0 }}
+            animate={{
+              y: 0,
+              opacity: 1,
+              transition: {
+                type: "spring" as const,
+                stiffness: 320,
+                damping: 32,
+              },
+            }}
+            exit={{
+              y: "-100%",
+              opacity: 0,
+              transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] },
+            }}
           >
-            How it Works
-          </Link>
-          <Link
-            href="/tasks"
-            className="py-2 text-sm font-medium text-primary/70 hover:text-primary transition-all"
-            onClick={() => setMobileOpen(false)}
-          >
-            Browse Tasks
-          </Link>
-          <Link
-            href="/leaderboard"
-            className="py-2 text-sm font-medium text-primary/70 hover:text-primary transition-all"
-            onClick={() => setMobileOpen(false)}
-          >
-            Leaderboard
-          </Link>
-          <Link
-            href="/faq"
-            className="py-2 text-sm font-medium text-primary/70 hover:text-primary transition-all"
-            onClick={() => setMobileOpen(false)}
-          >
-            FAQ
-          </Link>
-          <Link
-            href="/support"
-            className="py-2 text-sm font-medium text-primary/70 hover:text-primary transition-all"
-            onClick={() => setMobileOpen(false)}
-          >
-            Support
-          </Link>
-
-          <div className="border-t border-primary/5 mt-2 pt-3">
-            {session ? (
-              <>
-                <div className="flex items-center gap-3 mb-3">
-                  {session.user.image ? (
-                    <img
-                      src={session.user.image}
-                      alt=""
-                      className="w-9 h-9 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-white text-sm font-bold">
-                      {session.user.name?.[0]?.toUpperCase()}
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-sm font-semibold text-primary">
-                      {session.user.name}
-                    </p>
-                    <p className="text-xs text-primary/50">
-                      {session.user.email}
-                    </p>
-                  </div>
-                </div>
-                <Link
-                  href={dashboardHref}
-                  className="block py-2 text-sm text-primary hover:text-primary/70 transition-all"
-                  onClick={() => setMobileOpen(false)}
+            <nav className="flex flex-col gap-1">
+              {navLinks.map(({ href, label }, i) => (
+                <motion.div
+                  key={href}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    type: "spring" as const,
+                    stiffness: 400,
+                    damping: 30,
+                    delay: 0.05 + i * 0.06,
+                  }}
                 >
-                  Dashboard
-                </Link>
-                <Link
-                  href={
-                    session.user.role === "worker"
-                      ? "/worker/profile"
-                      : session.user.role === "buyer"
-                        ? "/buyer/profile"
-                        : "/admin/dashboard"
-                  }
-                  className="block py-2 text-sm text-primary hover:text-primary/70 transition-all"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  My Profile
-                </Link>
-                {session.user.role === "worker" && (
                   <Link
-                    href="/worker/settings"
-                    className="block py-2 text-sm text-primary hover:text-primary/70 transition-all"
+                    href={href}
+                    className="block py-3 text-2xl font-semibold text-primary/80 hover:text-primary transition-colors"
                     onClick={() => setMobileOpen(false)}
                   >
-                    Settings
+                    {label}
                   </Link>
-                )}
-                <button
-                  onClick={() => {
-                    setMobileOpen(false);
-                    signOut({ callbackUrl: "/" });
-                  }}
-                  className="mt-1 w-full text-left py-2 text-sm text-red-600"
-                >
-                  Sign out
-                </button>
-              </>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <Link
-                  href="/login"
-                  className="py-2 text-center text-sm font-semibold text-primary border border-primary/20 rounded-lg hover:bg-primary/5 transition-all"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/register"
-                  className="py-2 text-center text-sm font-semibold bg-primary text-white rounded-lg shadow-lg shadow-primary/20 transition-all"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Sign up
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+                </motion.div>
+              ))}
+            </nav>
+
+            <motion.div
+              className="mt-auto pt-8 border-t border-primary/10"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                type: "spring" as const,
+                stiffness: 300,
+                damping: 28,
+                delay: 0.38,
+              }}
+            >
+              {session ? (
+                <>
+                  <div className="flex items-center gap-3 mb-5">
+                    {session.user.image ? (
+                      <img
+                        src={session.user.image}
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-white font-bold">
+                        {session.user.name?.[0]?.toUpperCase()}
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-semibold text-primary">
+                        {session.user.name}
+                      </p>
+                      <p className="text-xs text-primary/50">
+                        {session.user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Link
+                      href={dashboardHref}
+                      className="py-2 text-sm font-medium text-primary hover:text-primary/70 transition-colors"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <Link
+                      href={
+                        session.user.role === "worker"
+                          ? "/worker/profile"
+                          : session.user.role === "buyer"
+                            ? "/buyer/profile"
+                            : "/admin/dashboard"
+                      }
+                      className="py-2 text-sm font-medium text-primary hover:text-primary/70 transition-colors"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      My Profile
+                    </Link>
+                    {session.user.role === "worker" && (
+                      <Link
+                        href="/worker/settings"
+                        className="py-2 text-sm font-medium text-primary hover:text-primary/70 transition-colors"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        Settings
+                      </Link>
+                    )}
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        signOut({ callbackUrl: "/" });
+                      }}
+                      className="mt-2 py-2 text-sm font-medium text-red-500 text-left"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  <Link
+                    href="/login"
+                    className="py-3 text-center text-sm font-semibold text-primary border border-primary/20 rounded-xl hover:bg-primary/5 transition-all"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="py-3 text-center text-sm font-semibold bg-primary text-white rounded-xl shadow-lg shadow-primary/20 transition-all"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    Sign up
+                  </Link>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
