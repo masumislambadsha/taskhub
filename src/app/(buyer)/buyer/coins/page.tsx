@@ -90,11 +90,6 @@ export default function BuyCoinsPage() {
             </button>
           ))}
         </div>
-        {selectedGateway !== "stripe" && (
-          <p className="text-xs text-amber-600 mt-2">
-            ⚠️ {selectedGateway} is in sandbox mode for this portfolio project.
-          </p>
-        )}
       </div>
 
       {/* Packages */}
