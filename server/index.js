@@ -6,14 +6,21 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 
 const httpServer = http.createServer(app);
 
+const ALLOWED_ORIGINS = [
+  "http://localhost:3000",
+  "https://task-hub-io.vercel.app",
+  process.env.NEXT_PUBLIC_APP_URL,
+].filter(Boolean);
+
+app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
+
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    origin: ALLOWED_ORIGINS,
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -148,7 +155,7 @@ io.on("connection", (socket) => {
 // ── Health check ─────────────────────────────────────────────────────────────
 app.get("/health", (_, res) => res.json({ status: "ok" }));
 
-const PORT = process.env.SOCKET_PORT || 3001;
+const PORT = process.env.PORT || process.env.SOCKET_PORT || 3001;
 httpServer.listen(PORT, () => {
   console.log(`🚀 Socket.io server running on port ${PORT}`);
 });
