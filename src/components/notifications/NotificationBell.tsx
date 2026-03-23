@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
 import {
@@ -11,13 +11,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { INotification } from "@/types";
 import { formatDistanceToNow } from "date-fns";
-import Link from "next/link";
 
 export default function NotificationBell() {
   const dispatch = useDispatch();
   const open = useSelector((s: RootState) => s.ui.notificationPanelOpen);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const dropRef = useRef<HTMLDivElement>(null);
   const qc = useQueryClient();
+  const [pos, setPos] = useState({ top: 0, right: 0 });
 
   const { data } = useQuery<INotification[]>({
     queryKey: ["notifications"],
@@ -32,9 +33,26 @@ export default function NotificationBell() {
 
   const unread = data?.filter((n) => !n.isRead).length ?? 0;
 
+  // Calculate fixed position when opening
+  function handleToggle() {
+    if (!open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
+    dispatch(toggleNotificationPanel());
+  }
+
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+      if (
+        dropRef.current &&
+        !dropRef.current.contains(e.target as Node) &&
+        btnRef.current &&
+        !btnRef.current.contains(e.target as Node)
+      ) {
         dispatch(closeNotificationPanel());
       }
     }
@@ -43,9 +61,10 @@ export default function NotificationBell() {
   }, [open, dispatch]);
 
   return (
-    <div className="relative" ref={panelRef}>
+    <div className="relative">
       <button
-        onClick={() => dispatch(toggleNotificationPanel())}
+        ref={btnRef}
+        onClick={handleToggle}
         className="relative p-2 pl-0 rounded-lg hover:bg-primary/5 text-primary transition-colors"
       >
         <span className="material-symbols-outlined text-xl">notifications</span>
@@ -57,7 +76,15 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-80 bg-white rounded-xl shadow-2xl border border-primary/5 z-50 overflow-hidden">
+        <div
+          ref={dropRef}
+          className="fixed w-80 left-0 bg-white rounded-xl shadow-2xl border border-primary/5 z-[200] overflow-hidden"
+          style={{
+            top: pos.top,
+            right: Math.max(pos.right, 8), // never closer than 8px from right edge
+            maxWidth: "calc(100vw - 1rem)",
+          }}
+        >
           <div className="flex items-center justify-between px-4 py-3 border-b border-primary/5">
             <span className="font-bold text-primary text-sm">
               Notifications
@@ -73,9 +100,7 @@ export default function NotificationBell() {
           </div>
           <div
             className="max-h-80 overflow-y-auto"
-            onWheel={(e) => {
-              e.stopPropagation();
-            }}
+            onWheel={(e) => e.stopPropagation()}
           >
             {!data?.length ? (
               <p className="text-center text-primary/40 text-sm py-8">
