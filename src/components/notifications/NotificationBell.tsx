@@ -18,7 +18,11 @@ export default function NotificationBell() {
   const btnRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
   const qc = useQueryClient();
-  const [pos, setPos] = useState({ top: 0, right: 0 });
+  const [pos, setPos] = useState<{
+    top: number;
+    left?: number;
+    right?: number;
+  }>({ top: 0, right: 0 });
 
   const { data } = useQuery<INotification[]>({
     queryKey: ["notifications"],
@@ -33,14 +37,18 @@ export default function NotificationBell() {
 
   const unread = data?.filter((n) => !n.isRead).length ?? 0;
 
-  // Calculate fixed position when opening
   function handleToggle() {
     if (!open && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
-      setPos({
-        top: rect.bottom + 8,
-        right: window.innerWidth - rect.right,
-      });
+      const dropdownWidth = Math.min(320, window.innerWidth - 16);
+      const rightFromEdge = window.innerWidth - rect.right;
+      // If dropdown would overflow left, anchor to left edge instead
+      const wouldOverflowLeft = rect.right - dropdownWidth < 8;
+      setPos(
+        wouldOverflowLeft
+          ? { top: rect.bottom + 8, left: 8 }
+          : { top: rect.bottom + 8, right: rightFromEdge },
+      );
     }
     dispatch(toggleNotificationPanel());
   }
@@ -78,11 +86,16 @@ export default function NotificationBell() {
       {open && (
         <div
           ref={dropRef}
-          className="fixed w-80 left-0 bg-white rounded-xl shadow-2xl border border-primary/5 z-[200] overflow-hidden"
+          className="fixed bg-white rounded-xl shadow-2xl border border-primary/5 z-200 overflow-hidden"
           style={{
             top: pos.top,
-            right: Math.max(pos.right, 8), // never closer than 8px from right edge
-            maxWidth: "calc(100vw - 1rem)",
+            ...(pos.left !== undefined
+              ? { left: pos.left }
+              : { right: pos.right }),
+            width: Math.min(
+              320,
+              (typeof window !== "undefined" ? window.innerWidth : 400) - 16,
+            ),
           }}
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-primary/5">
