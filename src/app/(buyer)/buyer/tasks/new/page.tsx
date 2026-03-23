@@ -216,7 +216,7 @@ export default function NewTaskPage() {
                 Required Workers
               </label>
               <input
-                {...register("requiredWorkers")}
+                {...register("requiredWorkers", { valueAsNumber: true })}
                 type="number"
                 min={1}
                 className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary"
@@ -232,7 +232,7 @@ export default function NewTaskPage() {
                 Payout per Worker (coins)
               </label>
               <input
-                {...register("payableAmount")}
+                {...register("payableAmount", { valueAsNumber: true })}
                 type="number"
                 min={1}
                 className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary"

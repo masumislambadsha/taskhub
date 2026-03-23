@@ -20,7 +20,7 @@ export default function BuyerMessagesPage() {
   const [typingUser, setTypingUser] = useState<string | null>(null);
 
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const { data: conversations = [] } = useQuery<IConversation[]>({
     queryKey: ["conversations"],
@@ -28,7 +28,6 @@ export default function BuyerMessagesPage() {
     refetchInterval: 15000,
   });
 
-  // Derive activeConv: URL params take priority, else selectedConv
   const urlConv = searchParams.get("conv");
   const urlTaskId = searchParams.get("taskId");
   const urlTaskTitle = searchParams.get("taskTitle");
@@ -58,7 +57,6 @@ export default function BuyerMessagesPage() {
     enabled: !!activeConv?.conversationId,
   });
 
-  // Merge fetched + live messages, deduplicated
   const allMessages = [
     ...fetchedMessages,
     ...messages.filter(
@@ -66,9 +64,11 @@ export default function BuyerMessagesPage() {
     ),
   ];
 
-  // Always scroll to bottom on new messages
+  // Scroll to bottom by setting scrollTop directly — avoids scrollIntoView
+  // affecting the parent page scroll
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = messagesContainerRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
   }, [allMessages]);
 
   const handleMessage = useCallback(
@@ -101,7 +101,6 @@ export default function BuyerMessagesPage() {
     onTypingStop: handleTypingStop,
   });
 
-  // Mark active conversation as read
   useEffect(() => {
     if (activeConv?.conversationId) {
       markRead(activeConv.conversationId);
@@ -111,9 +110,7 @@ export default function BuyerMessagesPage() {
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     setInput(e.target.value);
     if (!activeConv) return;
-
     sendTypingStart(activeConv.conversationId);
-
     if (typingTimer.current) clearTimeout(typingTimer.current);
     typingTimer.current = setTimeout(
       () => sendTypingStop(activeConv.conversationId),
@@ -123,7 +120,6 @@ export default function BuyerMessagesPage() {
 
   function handleSend() {
     if (!input.trim() || !activeConv || !session?.user) return;
-
     sendMessage({
       conversationId: activeConv.conversationId,
       taskId: activeConv.taskId,
@@ -131,7 +127,6 @@ export default function BuyerMessagesPage() {
       receiverName: activeConv.otherUserName,
       content: input.trim(),
     });
-
     setInput("");
     sendTypingStop(activeConv.conversationId);
   }
@@ -146,7 +141,10 @@ export default function BuyerMessagesPage() {
   const myId = session?.user?.id;
 
   return (
-    <div className="fixed top-16 bottom-0 right-0 left-64 flex overflow-hidden border-t border-primary/5 bg-white">
+    <div
+      className="flex border border-primary/5 rounded-xl bg-white overflow-hidden"
+      style={{ height: "calc(100vh - 64px - 48px)" }}
+    >
       <aside className="w-80 shrink-0 border-r border-primary/5 flex flex-col">
         <div className="p-4 border-b border-primary/5">
           <h2 className="font-headline text-lg font-bold text-primary">
@@ -212,7 +210,7 @@ export default function BuyerMessagesPage() {
       </aside>
 
       {activeConv ? (
-        <div className="flex-1 flex flex-col min-w-0 min-h-0">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <div className="h-16 px-6 border-b border-primary/5 flex items-center shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
@@ -229,15 +227,20 @@ export default function BuyerMessagesPage() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div
+            ref={messagesContainerRef}
+            className="flex-1 overflow-y-auto p-6 space-y-4"
+            onWheel={(e) => {
+              e.stopPropagation();
+              e.currentTarget.scrollTop += e.deltaY;
+            }}
+          >
             {allMessages.map((msg) => {
               const isMe = msg.senderId === myId;
               return (
                 <div
                   key={msg._id}
-                  className={`flex items-end gap-2 ${
-                    isMe ? "flex-row-reverse" : ""
-                  }`}
+                  className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : ""}`}
                 >
                   {!isMe && (
                     <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
@@ -283,8 +286,6 @@ export default function BuyerMessagesPage() {
                 </div>
               </div>
             )}
-
-            <div ref={bottomRef} />
           </div>
 
           <div className="p-4 border-t border-primary/5 shrink-0">
