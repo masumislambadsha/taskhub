@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #004030;
+  --color-secondary: #4a9782;
+  --color-accent: #dcd0a8;
+  --color-background: #fff9e5;
+  --color-on-background: #00281d;
+  --font-headline: "Manrope", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
+
+body {
+  background-color: #fff9e5;
+  color: #00281d;
+  font-family: "Inter", sans-serif;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+@plugin "daisyui" {
+  themes: false;
+  base: false;
+}
