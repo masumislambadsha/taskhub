@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import Payment from "@/models/Payment";
+import Payment, { IPaymentDoc } from "@/models/Payment";
 import Stripe from "stripe";
 import { COIN_PACKAGES } from "@/lib/constants";
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   await connectDB();
 
   if (gateway === "stripe") {
-    const payment = await Payment.create<IPaymentDoc>({
+    const payment = (await Payment.create({
       userId: session.user.id,
       userEmail: session.user.email ?? "",
       gateway: "stripe",
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       amount: pkg.price,
       currency: "usd",
       status: "pending",
-    });
+    })) as IPaymentDoc;
 
     const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],

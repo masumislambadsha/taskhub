@@ -6,7 +6,7 @@ export default function Loading() {
       className="min-h-screen flex items-center justify-center"
       style={{ background: "#FFF9E5" }}
     >
-      <Spinner variant="hub" size="lg" label="Loading TaskHub..." />
+      <Spinner variant="hub" size="xl" label="Loading TaskHub..." />
     </div>
   );
 }
