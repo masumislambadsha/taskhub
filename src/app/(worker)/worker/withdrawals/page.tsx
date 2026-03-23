@@ -120,7 +120,7 @@ export default function WorkerWithdrawalsPage() {
 
       {/* Request form */}
       {canWithdraw ? (
-        <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-6">
+        <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6">
           <h2 className="font-bold text-primary mb-5">Request Withdrawal</h2>
           {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
           <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
@@ -212,57 +212,81 @@ export default function WorkerWithdrawalsPage() {
 
       {/* History */}
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-primary/5">
+        <div className="px-6 py-4 border-b border-primary/5 flex items-center justify-between">
           <h2 className="font-bold text-primary">Withdrawal History</h2>
+          {withdrawals.length > 0 && (
+            <span className="text-xs text-primary/40 font-medium">
+              {withdrawals.length} request{withdrawals.length !== 1 ? "s" : ""}
+            </span>
+          )}
         </div>
+
         {withdrawals.length === 0 ? (
-          <p className="text-center text-primary/40 text-sm py-10">
-            No withdrawal requests yet
-          </p>
+          <div className="flex flex-col items-center justify-center py-14 gap-3">
+            <span className="material-symbols-outlined text-primary/15 text-5xl">
+              account_balance_wallet
+            </span>
+            <p className="text-primary/40 text-sm">
+              No withdrawal requests yet
+            </p>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-background border-b border-primary/5">
-                <tr>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Coins
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Amount
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Method
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Status
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-primary/5">
-                {withdrawals.map((w) => (
-                  <tr key={w._id} className="hover:bg-background/50">
-                    <td className="px-6 py-4 font-semibold text-primary">
+          <div className="divide-y divide-primary/5">
+            {withdrawals.map((w) => (
+              <div
+                key={w._id}
+                className="flex items-center gap-4 px-5 py-4 hover:bg-background/60 transition-colors"
+              >
+                {/* Icon */}
+                <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+                  <span
+                    className="material-symbols-outlined text-secondary text-lg"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    payments
+                  </span>
+                </div>
+
+                {/* Method + date */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-primary capitalize">
+                    {w.paymentSystem}
+                  </p>
+                  <p className="text-xs text-primary/40 mt-0.5">
+                    {format(new Date(w.createdAt), "MMM d, yyyy")}
+                  </p>
+                </div>
+
+                {/* Coins */}
+                <div className="text-right shrink-0 hidden sm:block">
+                  <p className="text-xs text-primary/40 mb-0.5">Coins</p>
+                  <div className="flex items-center gap-1 justify-end">
+                    <span
+                      className="material-symbols-outlined text-amber-500 text-sm"
+                      style={{ fontVariationSettings: "'FILL' 1" }}
+                    >
+                      toll
+                    </span>
+                    <span className="text-sm font-bold text-primary">
                       <CountUp value={w.coinRequested} />
-                    </td>
-                    <td className="px-6 py-4 text-secondary font-semibold">
-                      $<CountUp value={w.amount} decimals={2} />
-                    </td>
-                    <td className="px-6 py-4 text-primary/60 capitalize">
-                      {w.paymentSystem}
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge status={w.status} />
-                    </td>
-                    <td className="px-6 py-4 text-primary/50">
-                      {format(new Date(w.createdAt), "MMM d, yyyy")}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </span>
+                  </div>
+                </div>
+
+                {/* USD */}
+                <div className="text-right shrink-0">
+                  <p className="text-xs text-primary/40 mb-0.5">Amount</p>
+                  <p className="text-sm font-extrabold text-secondary">
+                    $<CountUp value={w.amount} decimals={2} />
+                  </p>
+                </div>
+
+                {/* Status */}
+                <div className="shrink-0">
+                  <Badge status={w.status} />
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

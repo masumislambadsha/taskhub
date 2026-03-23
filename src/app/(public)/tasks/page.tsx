@@ -28,9 +28,9 @@ export default async function PublicTasksPage() {
   } catch {}
 
   return (
-    <div className="max-w-7xl mx-auto px-8 py-16">
+    <div className="max-w-7xl mx-auto px-4 md:px-8 py-15 md:py-16">
       <div className="mb-10">
-        <h1 className="font-headline text-4xl font-bold text-primary mb-3">
+        <h1 className="font-headline text-3xl sm:text-4xl font-bold text-primary mb-3">
           Available Tasks
         </h1>
         <p className="text-primary/60">

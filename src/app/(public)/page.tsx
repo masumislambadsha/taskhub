@@ -244,7 +244,7 @@ export default async function HomePage() {
                       Alex Johnson
                     </p>
                   </div>
-                  <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-2 sm:px-3 py-1.5 rounded-full">
+                  <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-2 sm:px-4 py-1.5 rounded-full">
                     <span
                       className="material-symbols-outlined text-amber-500 text-sm"
                       style={{ fontVariationSettings: "'FILL' 1" }}
@@ -295,7 +295,7 @@ export default async function HomePage() {
                     <span className="text-xs text-slate-400">
                       2 of 50 slots left
                     </span>
-                    <button className="text-xs bg-secondary text-white px-3 py-1 rounded-full">
+                    <button className="text-xs bg-secondary text-white px-4 py-1 rounded-full">
                       Start Task
                     </button>
                   </div>
@@ -306,7 +306,7 @@ export default async function HomePage() {
         </div>
       </section>
       {/* Trusted By */}
-      <section className="md:py-12 py-5 max-w-7xl px-3 md:px-8 mx-auto  border-y border-primary/5 overflow-hidden">
+      <section className="md:py-12 py-5 max-w-7xl px-4 md:px-8 mx-auto  border-y border-primary/5 overflow-hidden">
         <div className=" mb-6">
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary/40">
             Trusted by:
@@ -397,7 +397,7 @@ export default async function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-32 overflow-hidden">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
           <div data-gsap="feature-text" className="lg:w-1/2 w-full min-w-0">
-            <div className="inline-block px-3 py-1 bg-secondary/10 text-secondary text-xs font-bold uppercase tracking-widest rounded mb-6">
+            <div className="inline-block px-4 py-1 bg-secondary/10 text-secondary text-xs font-bold uppercase tracking-widest rounded mb-6">
               Empowering Talent
             </div>
             <h2 className="font-headline text-3xl sm:text-4xl font-bold text-primary mb-6 sm:mb-8">
@@ -513,7 +513,7 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
           <div className="flex flex-col lg:flex-row-reverse gap-12 lg:gap-20 items-center">
             <div data-gsap="feature-text" className="lg:w-1/2 w-full min-w-0">
-              <div className="inline-block px-3 py-1 bg-primary/5 text-primary text-xs font-bold uppercase tracking-widest rounded mb-6">
+              <div className="inline-block px-4 py-1 bg-primary/5 text-primary text-xs font-bold uppercase tracking-widest rounded mb-6">
                 For Business Scale
               </div>
               <h2 className="font-headline text-3xl sm:text-4xl font-bold text-primary mb-6 sm:mb-8">
@@ -568,10 +568,10 @@ export default async function HomePage() {
         </div>
       </section>
       {/* Coin Economy */}
-      <section className="max-w-7xl mx-auto px-3 md:px-8 py-15 md:py-20">
+      <section className="max-w-7xl mx-auto px-4 md:px-8 py-15 md:py-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div data-gsap="feature-text">
-            <div className="inline-block px-3 py-1 bg-secondary/10 text-secondary text-xs font-bold uppercase tracking-widest rounded mb-5">
+            <div className="inline-block px-4 py-1 bg-secondary/10 text-secondary text-xs font-bold uppercase tracking-widest rounded mb-5">
               Coin Economy
             </div>
             <h2 className="font-headline text-4xl font-bold text-primary mb-6">
@@ -612,7 +612,7 @@ export default async function HomePage() {
       </section>
 
       {/* Top Workers */}
-      <section className="max-w-7xl mx-auto px-3 md:px-8 py-15 md:py-20 border-t border-primary/5">
+      <section className="max-w-7xl mx-auto px-4 md:px-8 py-15 md:py-20 border-t border-primary/5">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16">
           <div>
             <h2 className="font-headline text-4xl font-bold text-primary mb-3">
@@ -693,7 +693,7 @@ export default async function HomePage() {
       </section>
 
       {/* Testimonials */}
-      <section className="max-w-7xl mx-auto px-3 md:px-8 py-15 md:py-32 overflow-hidden border-t border-primary/5">
+      <section className="max-w-7xl mx-auto px-4 md:px-8 py-15 md:py-32 overflow-hidden border-t border-primary/5">
         <div className="grid md:grid-cols-2 gap-24 items-center">
           <div data-gsap="testimonial-quote" className="relative">
             <div className="absolute -top-12 -left-12 text-[120px] font-black text-primary/5 leading-none select-none">
@@ -772,7 +772,7 @@ export default async function HomePage() {
       </section>
 
       {/* Global Impact */}
-      <section className="bg-accent/10 px-3 py-15 md:py-32">
+      <section className="bg-accent/10 px-4 py-15 md:py-32">
         <div className="max-w-5xl mx-auto px3 md:px-8 text-center space-y-6 md:space-y-12">
           <h2
             data-gsap="impact-heading"
@@ -812,13 +812,13 @@ export default async function HomePage() {
 
       {/* FAQ */}
       <section
-        className="max-w-7xl mx-auto px-3 md:px-8 py-15 md:py-32"
+        className="max-w-7xl mx-auto px-4 md:px-8 py-15 md:py-32"
         id="faq"
       >
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           {/* Left: header + CTA */}
           <div className="lg:sticky lg:top-32 space-y-6">
-            <span className="inline-block bg-secondary/10 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] rounded">
+            <span className="inline-block bg-secondary/10 text-secondary px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] rounded">
               Got Questions?
             </span>
             <h2 className="font-headline text-5xl font-extrabold text-primary leading-tight tracking-tighter">
@@ -871,7 +871,7 @@ export default async function HomePage() {
                 className="group bg-white border border-primary/5 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                 {...(item.open ? { open: true } : {})}
               >
-                <summary className="flex justify-between items-center cursor-pointer list-none px-3 md:px-7 py-6 gap-4">
+                <summary className="flex justify-between items-center cursor-pointer list-none px-4 md:px-7 py-6 gap-4">
                   <div className="flex items-center gap-4">
                     <span className="shrink-0 w-7 h-7 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold font-headline group-open:bg-primary group-open:text-white transition-colors duration-200">
                       {String(i + 1).padStart(2, "0")}
@@ -894,10 +894,10 @@ export default async function HomePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="max-w-7xl mx-auto px-3 md:px-8 pb-15 md:pb-32">
+      <section className="max-w-7xl mx-auto px-4 md:px-8 pb-15 md:pb-32">
         <div
           data-gsap="cta-box"
-          className="bg-primary rounded-3xl p-8 md:p-16 text-center relative overflow-hidden shadow-2xl"
+          className="bg-primary rounded-3xl px-6 py-8 md:p-16 text-center relative overflow-hidden shadow-2xl"
         >
           <div className="absolute inset-0 opacity-10 pointer-events-none">
             <div className="absolute top-0 left-0 w-64 h-64 bg-secondary rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl" />

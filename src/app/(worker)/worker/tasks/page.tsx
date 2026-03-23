@@ -49,7 +49,7 @@ export default function WorkerTasksPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 flex flex-wrap gap-3">
+      <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 flex flex-col sm:flex-row  gap-3">
         <input
           value={search}
           onChange={(e) => {
@@ -82,7 +82,7 @@ export default function WorkerTasksPage() {
             setPage(1);
           }}
           placeholder="Min payout"
-          className="w-32 px-4 py-2.5 rounded-lg border border-primary/20 bg-background text-sm text-primary focus:outline-none focus:ring-2 focus:ring-secondary"
+          className="w-full sm:w-32 px-4 py-2.5 rounded-lg border border-primary/20 bg-background text-sm text-primary focus:outline-none focus:ring-2 focus:ring-secondary"
         />
         <select
           value={sort}
@@ -104,7 +104,7 @@ export default function WorkerTasksPage() {
           {tasks.map((task) => (
             <div
               key={task._id}
-              className="bg-white rounded-xl border border-primary/5 shadow-sm p-6 flex flex-col gap-3 hover:border-secondary/30 transition-colors"
+              className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6 flex flex-col gap-3 hover:border-secondary/30 transition-colors"
             >
               {task.imageUrl && (
                 <img
@@ -114,7 +114,7 @@ export default function WorkerTasksPage() {
                 />
               )}
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-bold text-primary text-sm leading-snug line-clamp-2">
+                <h3 className="font-bold text-primary text-lg leading-snug line-clamp-2">
                   {task.title}
                 </h3>
                 {task.category && (
@@ -144,7 +144,7 @@ export default function WorkerTasksPage() {
               </p>
               <Link
                 href={`/worker/tasks/${task._id}`}
-                className="mt-auto block text-center bg-primary text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
+                className="mt-auto block text-center bg-primary text-white py-2.5 rounded-lg sm:text-sm font-semibold hover:bg-primary/90 transition-colors text-xs "
               >
                 View Details
               </Link>

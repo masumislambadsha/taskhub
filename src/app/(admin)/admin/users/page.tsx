@@ -65,8 +65,64 @@ export default function AdminUsersPage() {
     onError: () => toast.error("Delete failed"),
   });
 
+  async function handleRoleChange(
+    u: IUser,
+    newRole: string,
+    el: HTMLSelectElement,
+  ) {
+    const result = await Swal.fire({
+      title: "Change Role?",
+      text: `Change ${u.name}'s role to "${newRole}"?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Yes, change it",
+      cancelButtonText: "Cancel",
+      ...swalTheme,
+    });
+    if (result.isConfirmed) {
+      updateMutation.mutate({ id: u._id, update: { role: newRole } });
+    } else {
+      el.value = u.role;
+    }
+  }
+
+  async function handleToggleStatus(u: IUser) {
+    const isSuspending = u.status === "active";
+    const result = await Swal.fire({
+      title: isSuspending ? "Suspend User?" : "Activate User?",
+      text: isSuspending
+        ? `${u.name} will lose access to the platform.`
+        : `${u.name} will regain access to the platform.`,
+      icon: isSuspending ? "warning" : "question",
+      showCancelButton: true,
+      confirmButtonText: isSuspending ? "Yes, suspend" : "Yes, activate",
+      cancelButtonText: "Cancel",
+      ...(isSuspending ? dangerTheme : swalTheme),
+    });
+    if (result.isConfirmed) {
+      updateMutation.mutate({
+        id: u._id,
+        update: { status: isSuspending ? "suspended" : "active" },
+      });
+    }
+  }
+
+  async function handleDelete(u: IUser) {
+    const result = await Swal.fire({
+      title: "Delete User?",
+      text: `This will permanently delete ${u.name}. This cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete",
+      cancelButtonText: "Cancel",
+      ...dangerTheme,
+    });
+    if (result.isConfirmed) deleteMutation.mutate(u._id);
+  }
+
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div>
         <h1 className="font-headline text-2xl font-bold text-primary">
           Manage Users
@@ -76,6 +132,7 @@ export default function AdminUsersPage() {
         </p>
       </div>
 
+      {/* Filters */}
       <div className="flex gap-3 flex-wrap">
         <select
           value={role}
@@ -102,8 +159,22 @@ export default function AdminUsersPage() {
           <option value="active">Active</option>
           <option value="suspended">Suspended</option>
         </select>
+        {(role || status) && (
+          <button
+            onClick={() => {
+              setRole("");
+              setStatus("");
+              setPage(1);
+            }}
+            className="px-4 py-2.5 rounded-lg border border-primary/10 bg-white text-sm text-primary/50 hover:text-primary transition-colors flex items-center gap-1.5"
+          >
+            <span className="material-symbols-outlined text-sm">close</span>
+            Clear
+          </button>
+        )}
       </div>
 
+      {/* List */}
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         {isLoading ? (
           <SkeletonTable
@@ -111,154 +182,129 @@ export default function AdminUsersPage() {
             cols={6}
             headers={["User", "Role", "Coins", "Status", "Joined", "Actions"]}
           />
+        ) : users.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <span className="material-symbols-outlined text-primary/15 text-5xl">
+              group
+            </span>
+            <p className="text-primary/40 text-sm">No users found</p>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-background border-b border-primary/5">
-                <tr>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    User
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Role
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Coins
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Status
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Joined
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-primary/5">
-                {users.map((u) => (
-                  <tr
-                    key={u._id}
-                    className="hover:bg-background/50 transition-colors"
+          <div className="divide-y divide-primary/5">
+            {users.map((u) => (
+              <div
+                key={u._id}
+                className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 sm:px-6 py-4 hover:bg-background/60 transition-colors"
+              >
+                {/* Avatar + identity */}
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 text-secondary font-bold text-sm">
+                    {u.name?.[0]?.toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-primary text-sm truncate">
+                      {u.name}
+                    </p>
+                    <p className="text-xs text-primary/40 truncate">
+                      {u.email}
+                    </p>
+                    <p className="text-[10px] text-primary/30 mt-0.5 sm:hidden">
+                      Joined {format(new Date(u.createdAt), "MMM d, yyyy")}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Meta row */}
+                <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+                  {/* Role selector */}
+                  <select
+                    defaultValue={u.role}
+                    onChange={(e) =>
+                      handleRoleChange(u, e.target.value, e.target)
+                    }
+                    className="text-xs border border-primary/15 rounded-lg px-2.5 py-1.5 bg-background text-primary focus:outline-none focus:ring-2 focus:ring-secondary/30"
                   >
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-primary">{u.name}</div>
-                      <div className="text-xs text-primary/50">{u.email}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <select
-                        defaultValue={u.role}
-                        onChange={async (e) => {
-                          const newRole = e.target.value;
-                          const result = await Swal.fire({
-                            title: "Change Role?",
-                            text: `Change ${u.name}'s role to "${newRole}"?`,
-                            icon: "question",
-                            showCancelButton: true,
-                            confirmButtonText: "Yes, change it",
-                            cancelButtonText: "Cancel",
-                            ...swalTheme,
-                          });
-                          if (result.isConfirmed) {
-                            updateMutation.mutate({
-                              id: u._id,
-                              update: { role: newRole },
-                            });
-                          } else {
-                            // reset select visually
-                            e.target.value = u.role;
-                          }
-                        }}
-                        className="text-xs border border-primary/20 rounded px-2 py-1 bg-background text-primary"
-                      >
-                        <option value="worker">Worker</option>
-                        <option value="buyer">Buyer</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-primary">
+                    <option value="worker">Worker</option>
+                    <option value="buyer">Buyer</option>
+                    <option value="admin">Admin</option>
+                  </select>
+
+                  {/* Coins */}
+                  <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1.5 rounded-lg">
+                    <span
+                      className="material-symbols-outlined text-amber-500 text-sm"
+                      style={{ fontVariationSettings: "'FILL' 1" }}
+                    >
+                      toll
+                    </span>
+                    <span className="text-xs font-bold text-primary">
                       {u.coins}
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge status={u.status} />
-                    </td>
-                    <td className="px-6 py-4 text-primary/50">
-                      {format(new Date(u.createdAt), "MMM d, yyyy")}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={async () => {
-                            const isSuspending = u.status === "active";
-                            const result = await Swal.fire({
-                              title: isSuspending
-                                ? "Suspend User?"
-                                : "Activate User?",
-                              text: isSuspending
-                                ? `${u.name} will lose access to the platform.`
-                                : `${u.name} will regain access to the platform.`,
-                              icon: isSuspending ? "warning" : "question",
-                              showCancelButton: true,
-                              confirmButtonText: isSuspending
-                                ? "Yes, suspend"
-                                : "Yes, activate",
-                              cancelButtonText: "Cancel",
-                              ...(isSuspending ? dangerTheme : swalTheme),
-                            });
-                            if (result.isConfirmed) {
-                              updateMutation.mutate({
-                                id: u._id,
-                                update: {
-                                  status: isSuspending ? "suspended" : "active",
-                                },
-                              });
-                            }
-                          }}
-                          className={`text-xs px-2 py-1 rounded ${u.status === "active" ? "bg-yellow-100 font-medium text-yellow-700 hover:bg-yellow-200" : "bg-green-100 text-green-700 hover:bg-green-200"}`}
-                        >
-                          {u.status === "active" ? "Suspend" : "Activate"}
-                        </button>
-                        <button
-                          onClick={async () => {
-                            const result = await Swal.fire({
-                              title: "Delete User?",
-                              text: `This will permanently delete ${u.name}. This cannot be undone.`,
-                              icon: "warning",
-                              showCancelButton: true,
-                              confirmButtonText: "Yes, delete",
-                              cancelButtonText: "Cancel",
-                              ...dangerTheme,
-                            });
-                            if (result.isConfirmed) {
-                              deleteMutation.mutate(u._id);
-                            }
-                          }}
-                          className="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </span>
+                  </div>
+
+                  {/* Status badge */}
+                  <Badge status={u.status} />
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 w-full sm:w-44 shrink-0">
+                    <button
+                      onClick={() => handleToggleStatus(u)}
+                      className={`flex-1 text-xs py-1.5 rounded-lg font-medium transition-colors ${
+                        u.status === "active"
+                          ? "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200"
+                          : "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
+                      }`}
+                    >
+                      {u.status === "active" ? "Suspend" : "Activate"}
+                    </button>
+                    <button
+                      onClick={() => handleDelete(u)}
+                      className="flex-1 text-xs py-1.5 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
+      {/* Pagination */}
       {pages > 1 && (
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-center gap-2 flex-wrap">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="w-9 h-9 rounded-lg text-sm font-semibold border border-primary/10 bg-white text-primary hover:border-secondary disabled:opacity-30 transition-colors flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined text-sm">
+              chevron_left
+            </span>
+          </button>
           {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
             <button
               key={p}
               onClick={() => setPage(p)}
-              className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${page === p ? "bg-primary text-white" : "bg-white border border-primary/10 text-primary hover:border-secondary"}`}
+              className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${
+                page === p
+                  ? "bg-primary text-white"
+                  : "bg-white border border-primary/10 text-primary hover:border-secondary"
+              }`}
             >
               {p}
             </button>
           ))}
+          <button
+            onClick={() => setPage((p) => Math.min(pages, p + 1))}
+            disabled={page === pages}
+            className="w-9 h-9 rounded-lg text-sm font-semibold border border-primary/10 bg-white text-primary hover:border-secondary disabled:opacity-30 transition-colors flex items-center justify-center"
+          >
+            <span className="material-symbols-outlined text-sm">
+              chevron_right
+            </span>
+          </button>
         </div>
       )}
     </div>

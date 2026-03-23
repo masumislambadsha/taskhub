@@ -38,7 +38,6 @@ export default function WorkerProfileClient({
     setSaving(true);
     try {
       let uploadedUrl: string | null = null;
-
       if (selectedFile) {
         const fd = new FormData();
         fd.append("image", selectedFile);
@@ -47,10 +46,8 @@ export default function WorkerProfileClient({
           body: fd,
         });
         if (!uploadRes.ok) throw new Error("Image upload failed");
-        const uploadData = await uploadRes.json();
-        uploadedUrl = uploadData.url;
+        uploadedUrl = (await uploadRes.json()).url;
       }
-
       const res = await fetch("/api/v1/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -59,9 +56,7 @@ export default function WorkerProfileClient({
           ...(uploadedUrl && { image: uploadedUrl }),
         }),
       });
-
       if (!res.ok) throw new Error("Failed to save profile");
-
       setSaved(true);
       setEditing(false);
       setTimeout(() => setSaved(false), 2000);
@@ -73,32 +68,37 @@ export default function WorkerProfileClient({
   };
 
   return (
-    <>
-      {/* Left col — always visible */}
-      <div className="lg:col-span-4 flex flex-col items-center lg:items-start">
-        <div className="relative mb-6">
+    <div className="lg:col-span-4 flex flex-col gap-4">
+      {/* Profile card */}
+      <div className="bg-primary rounded-xl p-6 flex flex-col items-center text-center relative overflow-hidden">
+        {/* subtle bg decoration */}
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-secondary/10 pointer-events-none" />
+        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none" />
+
+        {/* Avatar */}
+        <div className="relative mb-4 z-10">
           {previewUrl ? (
             <Image
               src={previewUrl}
               alt="Profile"
-              width={192}
-              height={192}
-              className="w-48 h-48 rounded-2xl object-cover shadow-[0_24px_40px_-15px_rgba(11,30,38,0.12)] border-4 border-white"
+              width={96}
+              height={96}
+              className="w-24 h-24 rounded-full object-cover ring-4 ring-white/20"
               unoptimized={previewUrl.startsWith("blob:")}
             />
           ) : (
-            <div className="w-48 h-48 rounded-2xl bg-surface-container flex items-center justify-center shadow-[0_24px_40px_-15px_rgba(11,30,38,0.12)] border-4 border-white">
+            <div className="w-24 h-24 rounded-full bg-white/10 ring-4 ring-white/20 flex items-center justify-center">
               <span
-                className="material-symbols-outlined text-secondary"
-                style={{ fontSize: 80 }}
+                className="material-symbols-outlined text-white/50"
+                style={{ fontSize: 48 }}
               >
                 account_circle
               </span>
             </div>
           )}
-          <div className="absolute -bottom-3 -right-3 bg-secondary p-3 rounded-full text-white shadow-lg">
+          <div className="absolute -bottom-1 -right-1 bg-secondary w-7 h-7 rounded-full flex items-center justify-center shadow-lg">
             <span
-              className="material-symbols-outlined"
+              className="material-symbols-outlined text-white text-sm"
               style={{ fontVariationSettings: "'FILL' 1" }}
             >
               verified
@@ -106,28 +106,29 @@ export default function WorkerProfileClient({
           </div>
         </div>
 
-        <h1 className="font-headline text-4xl font-extrabold text-primary tracking-tight mb-2 text-center lg:text-left">
+        {/* Name & email */}
+        <h1 className="font-headline text-xl font-extrabold text-white tracking-tight z-10">
           {name}
         </h1>
-        <p className="font-body text-on-surface-variant text-sm mb-6 text-center lg:text-left">
-          {email}
-        </p>
+        <p className="text-white/50 text-xs mt-1 z-10">{email}</p>
 
-        <div className="flex gap-2 flex-wrap mb-6 justify-center lg:justify-start">
-          <span className="bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full text-[10px] font-label uppercase tracking-widest">
+        {/* Badges */}
+        <div className="flex gap-2 flex-wrap justify-center mt-3 z-10">
+          <span className="bg-secondary/20 text-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
             {level}
           </span>
           {isTop && (
-            <span className="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-[10px] font-label uppercase tracking-widest">
+            <span className="bg-amber-400/20 text-amber-300 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
               Top 1%
             </span>
           )}
         </div>
 
+        {/* Edit button */}
         {!editing && (
           <button
             onClick={() => setEditing(true)}
-            className="flex items-center gap-2 text-sm font-semibold text-secondary hover:underline"
+            className="mt-5 z-10 flex items-center gap-1.5 text-xs font-semibold text-white/60 hover:text-white transition-colors"
           >
             <span className="material-symbols-outlined text-sm">edit</span>
             Edit Profile
@@ -135,42 +136,43 @@ export default function WorkerProfileClient({
         )}
       </div>
 
-      {/* Edit form — full-width row, stats stay above */}
+      {/* Edit form */}
       {editing && (
-        <div className="lg:col-span-12 bg-surface-container-lowest rounded-2xl p-6 shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)]">
-          {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
-          <div className="flex flex-wrap items-end gap-4">
+        <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-5">
+          {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
+          <h3 className="font-bold text-primary text-sm mb-4">Edit Profile</h3>
+          <div className="space-y-3">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">
+              <label className="block text-xs font-semibold text-primary/60 mb-1">
                 Full Name
               </label>
               <input
                 ref={nameRef}
                 type="text"
                 defaultValue={name}
-                className="border border-primary/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30 bg-background w-44"
+                className="w-full border border-primary/15 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30 bg-background text-primary"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">
+              <label className="block text-xs font-semibold text-primary/60 mb-1">
                 Email
               </label>
               <input
                 type="email"
                 defaultValue={email}
                 disabled
-                className="border border-primary/10 rounded-xl px-4 py-2.5 text-sm bg-surface-container text-on-surface-variant cursor-not-allowed w-52"
+                className="w-full border border-primary/10 rounded-lg px-3 py-2.5 text-sm bg-background/60 text-primary/40 cursor-not-allowed"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-1">
+              <label className="block text-xs font-semibold text-primary/60 mb-1">
                 Photo
               </label>
-              <label className="flex items-center gap-2 border border-primary/10 rounded-xl px-4 py-2.5 text-sm bg-background cursor-pointer hover:bg-surface-container transition-colors w-40">
+              <label className="flex items-center gap-2 border border-primary/15 rounded-lg px-3 py-2.5 text-sm bg-background cursor-pointer hover:bg-primary/5 transition-colors">
                 <span className="material-symbols-outlined text-sm text-secondary">
                   upload
                 </span>
-                <span className="text-on-surface-variant text-xs truncate">
+                <span className="text-primary/50 text-xs truncate">
                   {selectedFile ? selectedFile.name : "Upload image"}
                 </span>
                 <input
@@ -181,43 +183,45 @@ export default function WorkerProfileClient({
                 />
               </label>
             </div>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60"
-            >
-              {saving ? (
-                <>
-                  <span className="material-symbols-outlined text-sm animate-spin">
-                    refresh
-                  </span>{" "}
-                  Saving...
-                </>
-              ) : saved ? (
-                <>
-                  <span className="material-symbols-outlined text-sm">
-                    check
-                  </span>{" "}
-                  Saved
-                </>
-              ) : (
-                "Save"
-              )}
-            </button>
-            <button
-              onClick={() => {
-                setEditing(false);
-                setSelectedFile(null);
-                setPreviewUrl(image);
-                setError(null);
-              }}
-              className="px-3 py-2.5 rounded-xl font-semibold text-sm text-on-surface-variant hover:bg-surface-container transition-colors"
-            >
-              Cancel
-            </button>
+            <div className="flex gap-2 pt-1">
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="flex-1 flex items-center justify-center gap-2 bg-primary text-white py-2.5 rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60"
+              >
+                {saving ? (
+                  <>
+                    <span className="material-symbols-outlined text-sm animate-spin">
+                      refresh
+                    </span>
+                    Saving…
+                  </>
+                ) : saved ? (
+                  <>
+                    <span className="material-symbols-outlined text-sm">
+                      check
+                    </span>
+                    Saved
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  setEditing(false);
+                  setSelectedFile(null);
+                  setPreviewUrl(image);
+                  setError(null);
+                }}
+                className="px-4 py-2.5 rounded-lg font-semibold text-sm text-primary/60 hover:bg-primary/5 transition-colors border border-primary/10"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

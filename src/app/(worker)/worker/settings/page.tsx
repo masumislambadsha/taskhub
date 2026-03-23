@@ -18,14 +18,14 @@ function Section({
 }) {
   return (
     <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
-      <div className="px-6 py-5 border-b border-primary/5 flex items-center gap-3">
+      <div className="px-4 sm:px-6 py-5 border-b border-primary/5 flex items-center gap-3">
         <span className="material-symbols-outlined text-secondary">{icon}</span>
         <div>
           <h2 className="font-bold text-primary text-sm">{title}</h2>
           <p className="text-primary/50 text-xs mt-0.5">{subtitle}</p>
         </div>
       </div>
-      <div className="p-6">{children}</div>
+      <div className="p-4">{children}</div>
     </div>
   );
 }

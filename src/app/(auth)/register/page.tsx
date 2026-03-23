@@ -130,7 +130,7 @@ export default function RegisterPage() {
           <p className="text-primary/60 text-sm mb-8">
             How would you like to use TaskHub?
           </p>
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             {(["worker", "buyer"] as const).map((r) => (
               <button
                 key={r}
@@ -179,7 +179,7 @@ export default function RegisterPage() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="bg-white rounded-2xl shadow-xl border border-primary/5 p-8">
+      <div className="bg-white rounded-2xl shadow-xl border border-primary/5 p-4 sm:p-8">
         <button
           onClick={() => setStep(1)}
           className="flex items-center gap-1 text-sm text-primary/50 hover:text-primary mb-6"

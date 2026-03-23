@@ -73,56 +73,92 @@ export default function WorkerSubmissionsPage() {
           }
         />
       ) : (
-        <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-background border-b border-primary/5">
-                <tr>
-                  {["Task", "Buyer", "Payout", "Status", "Date"].map((h) => (
-                    <th
-                      key={h}
-                      className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-primary/5">
-                {submissions.map((s) => (
-                  <tr
-                    key={s._id}
-                    className="hover:bg-background/50 transition-colors"
+        <>
+          {/* Mobile cards */}
+          <div className="sm:hidden space-y-3">
+            {submissions.map((s) => (
+              <div
+                key={s._id}
+                className="bg-white rounded-xl border border-primary/5 shadow-sm p-4"
+              >
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <p className="font-semibold text-primary text-sm leading-snug">
+                    {s.taskTitle}
+                  </p>
+                  <Badge status={s.status} />
+                </div>
+                <div className="flex items-center justify-between text-xs text-primary/50">
+                  <span>{s.taskBuyerName}</span>
+                  <span>{format(new Date(s.createdAt), "MMM d, yyyy")}</span>
+                </div>
+                <div className="mt-2 flex items-center gap-1 font-semibold text-secondary text-sm">
+                  <span
+                    className="material-symbols-outlined text-xs text-amber-500"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
                   >
-                    <td className="px-6 py-4 font-medium text-primary max-w-xs truncate">
-                      {s.taskTitle}
-                    </td>
-                    <td className="px-6 py-4 text-primary/60">
-                      {s.taskBuyerName}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="flex items-center gap-1 font-semibold text-secondary">
-                        <span
-                          className="material-symbols-outlined text-xs text-amber-500"
-                          style={{ fontVariationSettings: "'FILL' 1" }}
-                        >
-                          toll
-                        </span>
-                        <CountUp value={s.payableAmount} />
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge status={s.status} />
-                    </td>
-                    <td className="px-6 py-4 text-primary/50">
-                      {format(new Date(s.createdAt), "MMM d, yyyy")}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    toll
+                  </span>
+                  <CountUp value={s.payableAmount} />
+                  <span className="text-xs font-normal text-primary/40 ml-0.5">
+                    coins
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+
+          {/* Desktop table */}
+          <div className="hidden sm:block bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-background border-b border-primary/5">
+                  <tr>
+                    {["Task", "Buyer", "Payout", "Status", "Date"].map((h) => (
+                      <th
+                        key={h}
+                        className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-primary/5">
+                  {submissions.map((s) => (
+                    <tr
+                      key={s._id}
+                      className="hover:bg-background/50 transition-colors"
+                    >
+                      <td className="px-6 py-4 font-medium text-primary max-w-xs truncate">
+                        {s.taskTitle}
+                      </td>
+                      <td className="px-6 py-4 text-primary/60">
+                        {s.taskBuyerName}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="flex items-center gap-1 font-semibold text-secondary">
+                          <span
+                            className="material-symbols-outlined text-xs text-amber-500"
+                            style={{ fontVariationSettings: "'FILL' 1" }}
+                          >
+                            toll
+                          </span>
+                          <CountUp value={s.payableAmount} />
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge status={s.status} />
+                      </td>
+                      <td className="px-6 py-4 text-primary/50">
+                        {format(new Date(s.createdAt), "MMM d, yyyy")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
 
       {pages > 1 && (

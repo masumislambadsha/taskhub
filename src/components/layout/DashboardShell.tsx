@@ -27,10 +27,10 @@ export default function DashboardShell({
       <div className="hidden lg:block w-64 shrink-0" />
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-16 bg- border-b border-primary/5 flex items-center justify-between px-20 sticky top-0 z-20">
+        <header className="h-16 bg- border-b border-primary/5 flex items-center justify-between px-4 md:px-6 sticky top-0 z-20 backdrop-blur-sm">
           <button
             onClick={() => dispatch(toggleSidebar())}
-            className="lg:hidden p-2 rounded-lg hover:bg-primary/5 text-primary"
+            className="lg:hidden p-2 pl-0 rounded-lg hover:bg-primary/5 text-primary"
           >
             <span className="material-symbols-outlined">menu</span>
           </button>
@@ -66,7 +66,7 @@ export default function DashboardShell({
             </div>
           </div>
         </header>
-        <main className="flex-1 flex flex-col items-center p-6 md:p-8">
+        <main className="flex-1 flex flex-col items-center p-4 md:p-8">
           <div className="w-full max-w-[960px] mx-auto">{children}</div>
         </main>
       </div>

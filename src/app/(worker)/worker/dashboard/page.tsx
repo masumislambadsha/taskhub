@@ -103,9 +103,9 @@ export default async function WorkerDashboard() {
         </div>
         <Link
           href="/worker/tasks"
-          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
+          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors w-full"
         >
-          <span className="material-symbols-outlined text-sm">search</span>
+          <span className="material-symbols-outlined text-sm ">search</span>
           Browse Tasks
         </Link>
       </div>
@@ -127,7 +127,7 @@ export default async function WorkerDashboard() {
       {/* Middle row */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Earnings chart */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-primary/5 shadow-sm p-6">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6 overflow-hidden">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="font-bold text-primary">Earnings This Week</h2>
@@ -169,7 +169,7 @@ export default async function WorkerDashboard() {
         </div>
 
         {/* Performance summary */}
-        <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-6 flex flex-col gap-5">
+        <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6 flex flex-col gap-5">
           <h2 className="font-bold text-primary">Performance</h2>
 
           <div>
@@ -225,8 +225,8 @@ export default async function WorkerDashboard() {
       {/* Bottom row */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent submissions */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-primary/5 shadow-sm">
-          <div className="px-6 py-4 border-b border-primary/5 flex items-center justify-between">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-primary/5 shadow-sm max-w-[280px]">
+          <div className="px-4 sm:px-6 py-4 border-b border-primary/5 flex items-center justify-between">
             <h2 className="font-bold text-primary">Recent Submissions</h2>
             <Link
               href="/worker/submissions"
@@ -253,7 +253,7 @@ export default async function WorkerDashboard() {
               {recentSubmissions.map((s) => (
                 <div
                   key={String(s._id)}
-                  className="px-6 py-3.5 flex items-center justify-between gap-4"
+                  className=" flex items-center justify-between px-4 sm:px-6 py-3.5 "
                 >
                   <div className="min-w-0">
                     <p className="font-medium text-primary text-sm truncate">
@@ -263,7 +263,7 @@ export default async function WorkerDashboard() {
                       {format(new Date(s.createdAt), "MMM d, yyyy")}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     <span className="flex items-center gap-1 text-sm font-bold text-secondary">
                       <span
                         className="material-symbols-outlined text-xs text-amber-500"
@@ -328,7 +328,7 @@ export default async function WorkerDashboard() {
           )}
 
           {/* Quick links */}
-          <div className="bg-white rounded-xl border border-primary/5 shadow-sm divide-y divide-primary/5">
+          <div className="bg-white rounded-xl border border-primary/5 shadow-sm divide-y divide-primary/5 sm:divide-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-1 lg:divide-y lg:divide-primary/5">
             {[
               {
                 href: "/worker/tasks",

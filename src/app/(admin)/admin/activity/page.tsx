@@ -102,7 +102,8 @@ export default async function AdminActivityPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="font-headline text-2xl font-bold text-primary">
             Activity Log
@@ -111,7 +112,7 @@ export default async function AdminActivityPage() {
             Platform-wide event history
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-white border border-primary/10 rounded-lg text-sm text-primary/60 shadow-sm">
+        <div className="flex items-center gap-2 px-4 py-2 bg-white border border-primary/10 rounded-lg text-sm text-primary/60 shadow-sm self-start sm:self-auto w-full">
           <span className="material-symbols-outlined text-lg">filter_list</span>
           All Events
         </div>
@@ -135,7 +136,7 @@ export default async function AdminActivityPage() {
         ].map((s) => (
           <div
             key={s.label}
-            className="bg-white rounded-xl p-5 border border-primary/5 shadow-sm"
+            className="bg-white rounded-xl p-4 sm:p-5 border border-primary/5 shadow-sm"
           >
             <span className="material-symbols-outlined text-secondary text-2xl mb-2 block">
               {s.icon}
@@ -152,17 +153,17 @@ export default async function AdminActivityPage() {
 
       {/* Log */}
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-primary/5">
+        <div className="px-4 sm:px-6 py-4 border-b border-primary/5">
           <h2 className="font-bold text-primary">Recent Activity</h2>
         </div>
         <div className="divide-y divide-primary/5">
           {logs.map((log) => (
             <div
               key={log.id + log.title}
-              className="px-6 py-4 flex items-start gap-4 hover:bg-slate-50 transition-colors"
+              className="px-4 sm:px-6 py-3 sm:py-4 flex items-start gap-3 sm:gap-4 hover:bg-slate-50 transition-colors"
             >
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${log.iconBg}`}
+                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 ${log.iconBg}`}
               >
                 <span
                   className={`material-symbols-outlined text-sm ${log.iconColor}`}
@@ -184,8 +185,12 @@ export default async function AdminActivityPage() {
                 <p className="text-xs text-primary/50 mt-0.5 truncate">
                   {log.detail}
                 </p>
+                {/* Time shown below detail on mobile, hidden on sm+ */}
+                <p className="text-xs text-primary/30 mt-1 sm:hidden">
+                  {format(log.time, "MMM d, h:mm a")}
+                </p>
               </div>
-              <span className="text-xs text-primary/30 shrink-0 whitespace-nowrap">
+              <span className="text-xs text-primary/30 shrink-0 whitespace-nowrap hidden sm:block">
                 {format(log.time, "MMM d, h:mm a")}
               </span>
             </div>
