@@ -35,8 +35,8 @@ export default function DashboardShell({
             <span className="material-symbols-outlined">menu</span>
           </button>
           <div className="hidden lg:block" />
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-background px-3 py-1.5 rounded-lg">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 bg-background  py-1.5 rounded-lg">
               <span
                 className="material-symbols-outlined text-amber-500 text-sm"
                 style={{ fontVariationSettings: "'FILL' 1" }}
