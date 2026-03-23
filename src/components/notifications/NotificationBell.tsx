@@ -73,7 +73,7 @@ export default function NotificationBell() {
       <button
         ref={btnRef}
         onClick={handleToggle}
-        className="relative p-2 pl-0 rounded-lg hover:bg-primary/5 text-primary transition-colors"
+        className="relative p-2  rounded-lg hover:bg-primary/5 text-primary transition-colors"
       >
         <span className="material-symbols-outlined text-xl">notifications</span>
         {unread > 0 && (
