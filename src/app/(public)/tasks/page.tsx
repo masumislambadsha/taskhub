@@ -15,7 +15,7 @@ export default async function PublicTasksPage() {
     payableAmount: number;
     requiredWorkers: number;
     filledWorkers: number;
-    completionDate: string;
+    completionDate: Date | string;
     category?: string;
     status: string;
   }[] = [];

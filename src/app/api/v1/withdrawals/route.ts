@@ -57,8 +57,8 @@ export async function POST(req: NextRequest) {
 
   const withdrawal = await Withdrawal.create({
     workerId: session.user.id,
-    workerName: session.user.name,
-    workerEmail: session.user.email,
+    workerName: session.user.name ?? "",
+    workerEmail: session.user.email ?? "",
     coinRequested: parsed.data.coinRequested,
     amount: coinsToUsdWithdraw(parsed.data.coinRequested),
     paymentSystem: parsed.data.paymentSystem,

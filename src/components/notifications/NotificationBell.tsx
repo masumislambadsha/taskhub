@@ -71,7 +71,12 @@ export default function NotificationBell() {
               </button>
             )}
           </div>
-          <div className="max-h-80 overflow-y-auto">
+          <div
+            className="max-h-80 overflow-y-auto"
+            onWheel={(e) => {
+              e.stopPropagation();
+            }}
+          >
             {!data?.length ? (
               <p className="text-center text-primary/40 text-sm py-8">
                 No notifications

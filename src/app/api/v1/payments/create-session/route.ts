@@ -6,7 +6,7 @@ import Stripe from "stripe";
 import { COIN_PACKAGES } from "@/lib/constants";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-02-24.acacia",
+  apiVersion: "2026-02-25.clover",
 });
 
 export async function POST(req: NextRequest) {
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   if (gateway === "stripe") {
     const payment = await Payment.create({
       userId: session.user.id,
-      userEmail: session.user.email,
+      userEmail: session.user.email ?? "",
       gateway: "stripe",
       coinsPurchased: pkg.coins,
       amount: pkg.price,
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   // bKash / SSLCommerz — sandbox stub
   const payment = await Payment.create({
     userId: session.user.id,
-    userEmail: session.user.email,
+    userEmail: session.user.email ?? "",
     gateway,
     coinsPurchased: pkg.coins,
     amount: pkg.price,
