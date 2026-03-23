@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   await connectDB();
 
   if (gateway === "stripe") {
-    const payment = await Payment.create({
+    const payment = await Payment.create<IPaymentDoc>({
       userId: session.user.id,
       userEmail: session.user.email ?? "",
       gateway: "stripe",

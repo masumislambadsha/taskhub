@@ -11,6 +11,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import CountUp from "@/components/ui/CountUp";
 import Swal from "sweetalert2";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 const dangerTheme = {
   confirmButtonColor: "#dc2626",
@@ -63,14 +64,18 @@ export default function BuyerTasksPage() {
 
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="p-8 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-12 bg-slate-100 rounded animate-pulse"
-              />
-            ))}
-          </div>
+          <SkeletonTable
+            rows={5}
+            cols={6}
+            headers={[
+              "Title",
+              "Status",
+              "Workers",
+              "Payout",
+              "Deadline",
+              "Actions",
+            ]}
+          />
         ) : tasks.length === 0 ? (
           <EmptyState
             icon="task"

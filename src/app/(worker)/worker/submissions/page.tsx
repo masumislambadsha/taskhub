@@ -9,6 +9,7 @@ import EmptyState from "@/components/shared/EmptyState";
 import { format } from "date-fns";
 import Link from "next/link";
 import CountUp from "@/components/ui/CountUp";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 export default function WorkerSubmissionsPage() {
   const [status, setStatus] = useState("all");
@@ -51,50 +52,40 @@ export default function WorkerSubmissionsPage() {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
-        {isLoading ? (
-          <div className="p-8 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-12 bg-slate-100 rounded animate-pulse"
-              />
-            ))}
-          </div>
-        ) : submissions.length === 0 ? (
-          <EmptyState
-            icon="assignment"
-            title="No submissions yet"
-            description="Browse tasks and submit your work to start earning coins."
-            action={
-              <Link
-                href="/worker/tasks"
-                className="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-semibold"
-              >
-                Browse Tasks
-              </Link>
-            }
-          />
-        ) : (
+      {isLoading ? (
+        <SkeletonTable
+          rows={6}
+          cols={5}
+          headers={["Task", "Buyer", "Payout", "Status", "Date"]}
+        />
+      ) : submissions.length === 0 ? (
+        <EmptyState
+          icon="assignment"
+          title="No submissions yet"
+          description="Browse tasks and submit your work to start earning coins."
+          action={
+            <Link
+              href="/worker/tasks"
+              className="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-semibold"
+            >
+              Browse Tasks
+            </Link>
+          }
+        />
+      ) : (
+        <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-background border-b border-primary/5">
                 <tr>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Task
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Buyer
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Payout
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Status
-                  </th>
-                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
-                    Date
-                  </th>
+                  {["Task", "Buyer", "Payout", "Status", "Date"].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50"
+                    >
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-primary/5">
@@ -131,8 +122,8 @@ export default function WorkerSubmissionsPage() {
               </tbody>
             </table>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {pages > 1 && (
         <div className="flex justify-center gap-2">

@@ -618,7 +618,7 @@ export default async function HomePage() {
 
       {/* Top Workers */}
       <section className="max-w-7xl mx-auto px-8 py-20 border-t border-primary/5">
-        <div className="flex justify-between items-end mb-16">
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16">
           <div>
             <h2 className="font-headline text-4xl font-bold text-primary mb-3">
               Elite Contributors

@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import toast from "react-hot-toast";
 import CountUp from "@/components/ui/CountUp";
 import Swal from "sweetalert2";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 export default function BuyerSubmissionsPage() {
   const [page, setPage] = useState(1);
@@ -62,14 +63,11 @@ export default function BuyerSubmissionsPage() {
 
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="p-8 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-12 bg-slate-100 rounded animate-pulse"
-              />
-            ))}
-          </div>
+          <SkeletonTable
+            rows={6}
+            cols={5}
+            headers={["Worker", "Task", "Payout", "Submitted", "Actions"]}
+          />
         ) : submissions.length === 0 ? (
           <EmptyState
             icon="rate_review"

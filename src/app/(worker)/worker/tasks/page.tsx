@@ -7,6 +7,7 @@ import { ITask } from "@/types";
 import { format } from "date-fns";
 import Link from "next/link";
 import CountUp from "@/components/ui/CountUp";
+import { SkeletonTaskGrid } from "@/components/ui/Skeleton";
 
 export default function WorkerTasksPage() {
   const [search, setSearch] = useState("");
@@ -95,14 +96,7 @@ export default function WorkerTasksPage() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="bg-white rounded-xl border border-primary/5 h-52 animate-pulse"
-            />
-          ))}
-        </div>
+        <SkeletonTaskGrid count={6} />
       ) : tasks.length === 0 ? (
         <div className="text-center py-20 text-primary/40">No tasks found</div>
       ) : (

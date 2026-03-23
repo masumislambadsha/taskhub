@@ -8,6 +8,7 @@ import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/shared/EmptyState";
 import { format } from "date-fns";
 import CountUp from "@/components/ui/CountUp";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 export default function BuyerPaymentsPage() {
   const [page, setPage] = useState(1);
@@ -36,14 +37,11 @@ export default function BuyerPaymentsPage() {
 
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="p-8 space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-12 bg-slate-100 rounded animate-pulse"
-              />
-            ))}
-          </div>
+          <SkeletonTable
+            rows={5}
+            cols={5}
+            headers={["Date", "Coins", "Amount", "Gateway", "Status"]}
+          />
         ) : payments.length === 0 ? (
           <EmptyState
             icon="receipt_long"

@@ -8,6 +8,7 @@ import Badge from "@/components/ui/Badge";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
+import { SkeletonTable } from "@/components/ui/Skeleton";
 
 const swalTheme = {
   confirmButtonColor: "#4a9782",
@@ -105,14 +106,11 @@ export default function AdminUsersPage() {
 
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         {isLoading ? (
-          <div className="p-8 space-y-3">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-12 bg-slate-100 rounded animate-pulse"
-              />
-            ))}
-          </div>
+          <SkeletonTable
+            rows={8}
+            cols={6}
+            headers={["User", "Role", "Coins", "Status", "Joined", "Actions"]}
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

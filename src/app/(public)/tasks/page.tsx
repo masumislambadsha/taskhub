@@ -24,7 +24,7 @@ export default async function PublicTasksPage() {
     tasks = (await Task.find({ status: "open" })
       .sort("-createdAt")
       .limit(12)
-      .lean()) as typeof tasks;
+      .lean()) as unknown as typeof tasks;
   } catch {}
 
   return (
