@@ -84,14 +84,14 @@ export default function TermsPage() {
   return (
     <main className="pb-24">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary py-20 px-8">
+      <section className="relative overflow-hidden bg-primary py-16 sm:py-20 px-4 sm:px-8">
         <div className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/5" />
         <div className="relative max-w-4xl mx-auto">
           <span className="inline-block bg-secondary/20 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-5">
             Legal
           </span>
-          <h1 className="font-headline text-5xl md:text-6xl font-extrabold text-white tracking-tighter leading-none mb-4">
+          <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tighter leading-none mb-4">
             Terms of
             <br />
             <span className="text-secondary">Service</span>
@@ -108,8 +108,8 @@ export default function TermsPage() {
       </section>
 
       {/* Key facts bar */}
-      <section className="max-w-5xl mx-auto px-8 -mt-6 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-6 sm:-mt-6 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {HIGHLIGHTS.map((h) => (
             <div
               key={h.label}
@@ -130,8 +130,8 @@ export default function TermsPage() {
       </section>
 
       {/* Intro callout */}
-      <section className="max-w-5xl mx-auto px-8 mt-12">
-        <div className="bg-secondary/5 border border-secondary/20 rounded-2xl p-7 flex gap-5 items-start">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-12">
+        <div className="bg-secondary/5 border border-secondary/20 rounded-2xl p-4 py-5 sm:p-7 flex gap-5 items-start">
           <span className="material-symbols-outlined text-secondary text-3xl shrink-0 mt-0.5">
             info
           </span>
@@ -150,14 +150,14 @@ export default function TermsPage() {
       </section>
 
       {/* Sections */}
-      <section className="max-w-5xl mx-auto px-8 mt-14">
-        <div className="space-y-5">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-10 sm:mt-14">
+        <div className="space-y-4 sm:space-y-5">
           {SECTIONS.map((s) => (
             <div
               key={s.number}
-              className="group bg-white rounded-2xl border border-primary/5 shadow-sm hover:shadow-md hover:border-secondary/20 transition-all p-7"
+              className="group bg-white rounded-2xl border border-primary/5 shadow-sm hover:shadow-md hover:border-secondary/20 transition-all p-5 sm:p-7"
             >
-              <div className="flex gap-5 items-start">
+              <div className="flex gap-4 sm:gap-5 items-start">
                 <div className="shrink-0 w-12 h-12 rounded-xl bg-primary flex items-center justify-center group-hover:bg-secondary transition-colors">
                   <span className="material-symbols-outlined text-secondary group-hover:text-white text-xl transition-colors">
                     {s.icon}
@@ -172,7 +172,7 @@ export default function TermsPage() {
                       {s.title}
                     </h2>
                   </div>
-                  <p className="text-sm text-primary/60 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-primary/60 leading-relaxed">
                     {s.content}
                   </p>
                 </div>
@@ -183,8 +183,8 @@ export default function TermsPage() {
       </section>
 
       {/* CTA */}
-      <section className="max-w-5xl mx-auto px-8 mt-16">
-        <div className="bg-primary rounded-3xl p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-12 sm:mt-16">
+        <div className="bg-primary rounded-3xl p-7 sm:p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
           <div>
             <h3 className="font-headline text-2xl font-extrabold text-white mb-2">
               Questions about these terms?
@@ -197,16 +197,16 @@ export default function TermsPage() {
           <div className="flex flex-wrap gap-3 shrink-0">
             <Link
               href="/support"
-              className="inline-flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-secondary/90 transition-colors"
+              className="inline-flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-lg font-bold text-xs sm:text-sm hover:bg-secondary/90 transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">
+              <span className="material-symbols-outlined text-xs sm:text-sm">
                 support_agent
               </span>
               Contact Support
             </Link>
             <Link
               href="/privacy"
-              className="inline-flex items-center gap-2 bg-white/10 text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-white/20 transition-colors"
+              className="inline-flex items-center gap-2 bg-white/10 text-white px-6 py-3 rounded-lg font-bold text-xs sm:text-sm hover:bg-white/20 transition-colors"
             >
               <span className="material-symbols-outlined text-sm">
                 privacy_tip

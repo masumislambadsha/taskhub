@@ -108,7 +108,7 @@ export default function NewTaskPage() {
       <div className="flex items-center gap-3">
         <Link
           href="/buyer/tasks"
-          className="p-2 rounded-lg hover:bg-primary/5 text-primary"
+          className="p-2 pl-0 rounded-lg hover:bg-primary/5 text-primary"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </Link>
@@ -125,7 +125,7 @@ export default function NewTaskPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-6">
+      <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6">
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-5">
           <div>
@@ -178,7 +178,7 @@ export default function NewTaskPage() {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-primary mb-1.5">
                 Category

@@ -69,29 +69,41 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-primary/5 shadow-sm">
-          <div className="px-6 py-4 border-b border-primary/5 flex items-center justify-between">
+        {/* Recent Users */}
+        <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
+          <div className="px-4 sm:px-6 py-4 border-b border-primary/5 flex items-center justify-between">
             <h2 className="font-bold text-primary">Recent Users</h2>
             <a
               href="/admin/users"
-              className="text-xs text-secondary hover:underline"
+              className="text-xs text-secondary hover:underline flex items-center gap-1"
             >
               View all
+              <span className="material-symbols-outlined text-sm">
+                arrow_forward
+              </span>
             </a>
           </div>
           <div className="divide-y divide-primary/5">
             {recentUsers.map((u) => (
               <div
                 key={String(u._id)}
-                className="px-6 py-3 flex items-center justify-between"
+                className="px-4 sm:px-6 py-3 flex items-center gap-3"
               >
-                <div>
-                  <p className="font-medium text-primary text-sm">{u.name}</p>
-                  <p className="text-xs text-primary/50">{u.email}</p>
+                {/* Avatar */}
+                <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 text-secondary font-bold text-sm">
+                  {u.name?.[0]?.toUpperCase()}
                 </div>
-                <div className="flex items-center gap-2">
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-primary text-sm truncate">
+                    {u.name}
+                  </p>
+                  <p className="text-xs text-primary/40 truncate">{u.email}</p>
+                </div>
+                {/* Meta */}
+                <div className="flex flex-col items-end gap-1 shrink-0">
                   <Badge status={u.role} />
-                  <span className="text-xs text-primary/40">
+                  <span className="text-[10px] text-primary/30">
                     {format(new Date(u.createdAt), "MMM d")}
                   </span>
                 </div>
@@ -100,36 +112,56 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-primary/5 shadow-sm">
-          <div className="px-6 py-4 border-b border-primary/5 flex items-center justify-between">
+        {/* Pending Withdrawals */}
+        <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
+          <div className="px-4 sm:px-6 py-4 border-b border-primary/5 flex items-center justify-between">
             <h2 className="font-bold text-primary">Pending Withdrawals</h2>
             <a
               href="/admin/withdrawals"
-              className="text-xs text-secondary hover:underline"
+              className="text-xs text-secondary hover:underline flex items-center gap-1"
             >
               View all
+              <span className="material-symbols-outlined text-sm">
+                arrow_forward
+              </span>
             </a>
           </div>
           {recentWithdrawals.length === 0 ? (
-            <p className="text-center text-primary/40 text-sm py-8">
-              No pending withdrawals
-            </p>
+            <div className="flex flex-col items-center justify-center py-12 gap-2">
+              <span className="material-symbols-outlined text-primary/15 text-4xl">
+                account_balance_wallet
+              </span>
+              <p className="text-primary/40 text-sm">No pending withdrawals</p>
+            </div>
           ) : (
             <div className="divide-y divide-primary/5">
               {recentWithdrawals.map((w) => (
                 <div
                   key={String(w._id)}
-                  className="px-6 py-3 flex items-center justify-between"
+                  className="px-4 sm:px-6 py-3 flex items-center gap-3"
                 >
-                  <div>
-                    <p className="font-medium text-primary text-sm">
+                  {/* Icon */}
+                  <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+                    <span
+                      className="material-symbols-outlined text-secondary text-sm"
+                      style={{ fontVariationSettings: "'FILL' 1" }}
+                    >
+                      payments
+                    </span>
+                  </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-primary text-sm truncate">
                       {w.workerName}
                     </p>
-                    <p className="text-xs text-primary/50">
+                    <p className="text-xs text-primary/40">
                       {w.coinRequested} coins · ${w.amount}
                     </p>
                   </div>
-                  <Badge status={w.status} />
+                  {/* Status */}
+                  <div className="shrink-0">
+                    <Badge status={w.status} />
+                  </div>
                 </div>
               ))}
             </div>

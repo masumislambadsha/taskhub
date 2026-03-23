@@ -120,7 +120,7 @@ export default function AdminCategoriesPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="font-headline text-2xl font-bold text-primary">
             Category Management
@@ -131,7 +131,7 @@ export default function AdminCategoriesPage() {
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm"
+          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm self-start sm:self-auto w-full"
         >
           <span className="material-symbols-outlined text-sm">add</span>
           Add Category
@@ -140,39 +140,39 @@ export default function AdminCategoriesPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-6 border border-primary/5 shadow-sm">
-          <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-primary/5 shadow-sm">
+          <span className="material-symbols-outlined text-secondary text-2xl sm:text-3xl mb-2 sm:mb-3 block">
             category
           </span>
-          <div className="text-3xl font-bold font-headline text-primary">
+          <div className="text-2xl sm:text-3xl font-bold font-headline text-primary">
             {categories.length}
           </div>
           <div className="text-sm text-primary/60 mt-1">Total Categories</div>
         </div>
-        <div className="bg-white rounded-xl p-6 border border-primary/5 shadow-sm">
-          <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-primary/5 shadow-sm">
+          <span className="material-symbols-outlined text-secondary text-2xl sm:text-3xl mb-2 sm:mb-3 block">
             task_alt
           </span>
-          <div className="text-3xl font-bold font-headline text-primary">
+          <div className="text-2xl sm:text-3xl font-bold font-headline text-primary">
             {totalTasks}
           </div>
           <div className="text-sm text-primary/60 mt-1">Total Tasks</div>
         </div>
-        <div className="bg-white rounded-xl p-6 border border-primary/5 shadow-sm">
-          <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
+        <div className="bg-white rounded-xl p-4 sm:p-6 border border-primary/5 shadow-sm">
+          <span className="material-symbols-outlined text-secondary text-2xl sm:text-3xl mb-2 sm:mb-3 block">
             trending_up
           </span>
-          <div className="text-3xl font-bold font-headline text-primary">
+          <div className="text-lg sm:text-2xl font-bold font-headline text-primary truncate">
             {Object.values(stats).sort((a, b) => b.count - a.count)[0]?._id ??
               "—"}
           </div>
           <div className="text-sm text-primary/60 mt-1">Top Category</div>
         </div>
-        <div className="bg-primary rounded-xl p-6 border border-primary shadow-sm">
-          <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
+        <div className="bg-primary rounded-xl p-4 sm:p-6 border border-primary shadow-sm">
+          <span className="material-symbols-outlined text-secondary text-2xl sm:text-3xl mb-2 sm:mb-3 block">
             open_in_new
           </span>
-          <div className="text-3xl font-bold font-headline text-white">
+          <div className="text-2xl sm:text-3xl font-bold font-headline text-white">
             {Object.values(stats).reduce((s, c) => s + c.open, 0)}
           </div>
           <div className="text-sm text-white/70 mt-1">Open Tasks</div>
@@ -181,14 +181,14 @@ export default function AdminCategoriesPage() {
 
       {/* Category List */}
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-primary/5 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 border-b border-primary/5 flex items-center justify-between">
           <h2 className="font-bold text-primary">All Categories</h2>
           <span className="text-xs text-primary/40">
             {categories.length} categories
           </span>
         </div>
         {loading ? (
-          <div className="px-6 py-12 text-center text-primary/40">
+          <div className="px-4 sm:px-6 py-12 text-center text-primary/40">
             Loading...
           </div>
         ) : (
@@ -202,17 +202,19 @@ export default function AdminCategoriesPage() {
               return (
                 <div
                   key={cat._id}
-                  className="px-6 py-5 flex items-center gap-5 hover:bg-slate-50 transition-colors"
+                  className="px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3 sm:gap-5 hover:bg-slate-50 transition-colors"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-secondary">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
+                    <span className="material-symbols-outlined text-secondary text-base sm:text-xl">
                       {cat.icon}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-bold text-primary">{cat.name}</p>
-                      <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center justify-between mb-1.5 gap-2">
+                      <p className="font-bold text-primary truncate">
+                        {cat.name}
+                      </p>
+                      <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm shrink-0">
                         <span className="text-primary/60">{count} tasks</span>
                         <span className="text-secondary font-semibold">
                           {open} open
@@ -229,7 +231,7 @@ export default function AdminCategoriesPage() {
                       {pct}% of all tasks
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => openEdit(cat)}
                       className="p-2 rounded-lg hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors"

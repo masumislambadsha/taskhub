@@ -71,13 +71,13 @@ export default function StatsDateFilter() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 px-4 py-2 bg-white border border-primary/10 rounded-lg text-sm text-primary/70 shadow-sm hover:border-primary/30 transition-colors"
+        className="flex items-center gap-2 px-4 py-2 bg-white border border-primary/10 rounded-lg text-xs sm:text-sm text-primary/70 shadow-sm hover:border-primary/30 transition-colors"
       >
-        <span className="material-symbols-outlined text-lg text-primary/40">
+        <span className="material-symbols-outlined text-xs text-primary/40" style={{fontSize:"16px"}}>
           calendar_today
         </span>
         <span className="font-medium">{displayLabel}</span>
-        <span className="material-symbols-outlined text-base text-primary/40">
+        <span className="material-symbols-outlined text-base text-primary/40" style={{fontSize:"16px"}}>
           {open ? "expand_less" : "expand_more"}
         </span>
       </button>

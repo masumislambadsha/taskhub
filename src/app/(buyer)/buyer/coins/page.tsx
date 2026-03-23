@@ -97,9 +97,9 @@ export default function BuyCoinsPage() {
         {COIN_PACKAGES.map((pkg: CoinPackage) => (
           <div
             key={pkg.id}
-            className="bg-white rounded-xl border-2 border-primary/5 shadow-sm p-5 text-center flex flex-col gap-3 transition-all"
+            className="bg-white rounded-xl border-2 border-primary/5 shadow-sm p-2 sm:p-5 text-center flex flex-col gap-3 transition-all"
           >
-            <div className="text-xs font-bold uppercase tracking-wider text-primary/40">
+            <div className="text-[10.5px] font-bold uppercase tracking-wider text-primary/40">
               {pkg.label}
             </div>
             <div className="flex items-center justify-center gap-1">
@@ -109,7 +109,7 @@ export default function BuyCoinsPage() {
               >
                 toll
               </span>
-              <span className="text-3xl font-bold font-headline text-primary">
+              <span className="text-2xl sm:text-3xl font-bold font-headline text-primary">
                 {pkg.coins}
               </span>
             </div>
@@ -123,7 +123,7 @@ export default function BuyCoinsPage() {
                 })
               }
               disabled={buyMutation.isPending}
-              className="w-full py-2.5 rounded-lg text-sm font-bold transition-colors disabled:opacity-60 bg-primary text-white hover:bg-primary/90"
+              className="w-full py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors disabled:opacity-60 bg-primary text-white hover:bg-primary/90"
             >
               {buyMutation.isPending ? "…" : "Buy Now"}
             </button>

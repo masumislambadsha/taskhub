@@ -118,7 +118,7 @@ export default function TaskDetailPage() {
         />
       )}
 
-      <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-6 space-y-4">
+      <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6 space-y-4">
         <div className="flex items-start justify-between gap-4">
           <h1 className="font-headline text-2xl font-bold text-primary">
             {task.title}
@@ -211,7 +211,7 @@ export default function TaskDetailPage() {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-6">
+        <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6">
           <h2 className="font-bold text-primary text-lg mb-5">
             Submit Your Work
           </h2>

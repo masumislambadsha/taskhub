@@ -66,33 +66,33 @@ export default function AboutPage() {
   return (
     <main className="pb-24">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary py-24 px-8">
+      <section className="relative overflow-hidden bg-primary py-16 sm:py-24 px-4 sm:px-8">
         <div className="pointer-events-none absolute -top-24 -right-24 w-96 h-96 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full bg-white/5" />
         <div className="relative max-w-4xl mx-auto text-center">
           <span className="inline-block bg-secondary/20 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-5">
             Our Story
           </span>
-          <h1 className="font-headline text-5xl md:text-7xl font-extrabold text-white tracking-tighter leading-none mb-6">
+          <h1 className="font-headline text-4xl sm:text-5xl md:text-7xl font-extrabold text-white tracking-tighter leading-none mb-6">
             Work smarter.
             <br />
             <span className="text-secondary">Earn faster.</span>
           </h1>
-          <p className="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className="text-white/60 text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed">
             TaskHub is a micro-task marketplace that connects people who need
             small jobs done with skilled workers ready to earn real money — no
             long contracts, no hidden fees, no friction.
           </p>
-          <div className="flex flex-wrap justify-center gap-4 mt-10">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
             <Link
               href="/register"
-              className="bg-secondary text-white px-7 py-3 rounded-lg font-bold text-sm hover:bg-secondary/90 transition-colors"
+              className="bg-secondary text-white sm:px-7 px-4 py-3  rounded-lg font-bold text-sm hover:bg-secondary/90 transition-colors"
             >
               Start Earning
             </Link>
             <Link
               href="/how-it-works"
-              className="bg-white/10 text-white px-7 py-3 rounded-lg font-bold text-sm hover:bg-white/20 transition-colors"
+              className="bg-white/10 text-white sm:px-7 px-4 py-3 rounded-lg font-bold text-sm hover:bg-white/20 transition-colors"
             >
               How It Works
             </Link>
@@ -101,8 +101,8 @@ export default function AboutPage() {
       </section>
 
       {/* Stats bar */}
-      <section className="max-w-5xl mx-auto px-8 -mt-8 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-6 sm:-mt-8 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {STATS.map((s) => (
             <div
               key={s.label}
@@ -111,10 +111,10 @@ export default function AboutPage() {
               <span className="material-symbols-outlined text-secondary text-2xl mb-2 block">
                 {s.icon}
               </span>
-              <p className="font-headline text-3xl font-extrabold text-primary">
+              <p className="font-headline text-[26px] sm:text-3xl font-extrabold text-primary">
                 {s.value}
               </p>
-              <p className="text-xs text-primary/50 mt-1 font-medium">
+              <p className="text-[10px] sm:text-xs text-primary/50 mt-1 font-medium">
                 {s.label}
               </p>
             </div>
@@ -123,12 +123,12 @@ export default function AboutPage() {
       </section>
 
       {/* Mission */}
-      <section className="max-w-5xl mx-auto px-8 mt-20 grid md:grid-cols-2 gap-12 items-center">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-15 sm:mt-20 grid md:grid-cols-2 gap-12 items-center">
         <div>
           <span className="inline-block bg-secondary/10 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-4">
             Mission
           </span>
-          <h2 className="font-headline text-4xl font-extrabold text-primary tracking-tighter mb-5">
+          <h2 className="font-headline text-3xl sm:text-4xl font-extrabold text-primary tracking-tighter mb-5">
             Democratising online work, one task at a time.
           </h2>
           <p className="text-primary/60 leading-relaxed mb-4">
@@ -162,12 +162,12 @@ export default function AboutPage() {
       </section>
 
       {/* Values */}
-      <section className="max-w-5xl mx-auto px-8 mt-20">
-        <div className="text-center mb-12">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-16 sm:mt-20">
+        <div className="text-center mb-10 sm:mb-12">
           <span className="inline-block bg-amber-100 text-amber-900 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-4">
             What We Stand For
           </span>
-          <h2 className="font-headline text-4xl font-extrabold text-primary tracking-tighter">
+          <h2 className="font-headline text-[26.5px] sm:text-4xl font-extrabold text-primary tracking-tighter">
             Built on four principles
           </h2>
         </div>
@@ -175,7 +175,7 @@ export default function AboutPage() {
           {VALUES.map((v, i) => (
             <div
               key={v.title}
-              className="group bg-white rounded-2xl border border-primary/5 shadow-sm p-7 hover:shadow-md hover:border-secondary/20 transition-all"
+              className="group bg-white rounded-2xl border border-primary/5 shadow-sm p-4 sm:p-7 hover:shadow-md hover:border-secondary/20 transition-all"
             >
               <div className="flex items-start gap-5">
                 <div className="shrink-0 w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors">
@@ -190,7 +190,7 @@ export default function AboutPage() {
                     </span>
                     <h3 className="font-bold text-primary">{v.title}</h3>
                   </div>
-                  <p className="text-sm text-primary/60 leading-relaxed">
+                  <p className="text-[12px] sm:text-sm text-primary/60 leading-relaxed">
                     {v.desc}
                   </p>
                 </div>
@@ -201,28 +201,28 @@ export default function AboutPage() {
       </section>
 
       {/* Timeline */}
-      <section className="max-w-5xl mx-auto px-8 mt-24">
-        <div className="text-center mb-12">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-16 sm:mt-24">
+        <div className="text-center mb-10 sm:mb-12">
           <span className="inline-block bg-primary/10 text-primary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-4">
             The Journey
           </span>
-          <h2 className="font-headline text-4xl font-extrabold text-primary tracking-tighter">
+          <h2 className="font-headline text-3xl sm:text-4xl font-extrabold text-primary tracking-tighter">
             From idea to platform
           </h2>
         </div>
         <div className="relative">
           <div className="absolute left-6 top-0 bottom-0 w-px bg-primary/10 hidden md:block" />
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {TIMELINE.map((t) => (
-              <div key={t.year} className="flex gap-8 items-start">
-                <div className="shrink-0 w-12 h-12 rounded-full bg-primary flex items-center justify-center z-10 shadow-md">
-                  <span className="text-[10px] font-extrabold text-secondary font-headline uppercase">
+              <div key={t.year} className="flex gap-4 sm:gap-8 items-start">
+                <div className="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary flex items-center justify-center z-10 shadow-md">
+                  <span className="text-[8px] font-extrabold text-white/90 font-headline uppercase">
                     {t.year}
                   </span>
                 </div>
-                <div className="bg-white rounded-2xl border border-primary/5 shadow-sm p-6 flex-1">
+                <div className="bg-white rounded-2xl border border-primary/5 shadow-sm p-5 sm:p-6 flex-1">
                   <h3 className="font-bold text-primary mb-1">{t.title}</h3>
-                  <p className="text-sm text-primary/60 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-primary/60 leading-relaxed">
                     {t.desc}
                   </p>
                 </div>
@@ -233,8 +233,8 @@ export default function AboutPage() {
       </section>
 
       {/* Tech Stack */}
-      <section className="max-w-5xl mx-auto px-8 mt-24">
-        <div className="bg-primary rounded-3xl p-10 md:p-14">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-16 sm:mt-24">
+        <div className="bg-primary rounded-3xl p-5 sm:p-10 md:p-14">
           <div className="text-center mb-10">
             <span className="inline-block bg-secondary/20 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-4">
               Under the Hood
@@ -246,7 +246,7 @@ export default function AboutPage() {
               Production-grade stack, portfolio-quality code.
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="flex flex-col sm:grid sm:grid-cols-3 gap-4">
             {TECH.map((t) => (
               <div
                 key={t.name}
@@ -265,7 +265,7 @@ export default function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="max-w-5xl mx-auto px-8 mt-16">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-10 sm:mt-16">
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-secondary/10 rounded-2xl p-8 flex flex-col justify-between">
             <div>

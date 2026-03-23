@@ -89,21 +89,21 @@ const PAYMENT_METHODS = [
 
 export default function HowItWorksPage() {
   return (
-    <main className="pb-24">
+    <main className="pb-24 overflow-hidden">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary py-24 px-8">
+      <section className="relative overflow-hidden bg-primary py-15 md:py-24 px-4 md:px-8">
         <div className="pointer-events-none absolute -top-24 -right-24 w-96 h-96 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full bg-white/5" />
         <div className="relative max-w-4xl mx-auto text-center">
           <span className="inline-block bg-secondary/20 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-5">
             How It Works
           </span>
-          <h1 className="font-headline text-5xl md:text-7xl font-extrabold text-white tracking-tighter leading-none mb-6">
+          <h1 className="font-headline text-4xl sm:text-5xl md:text-7xl font-extrabold text-white tracking-tighter leading-none mb-6">
             Simple by design.
             <br />
             <span className="text-secondary">Powerful in practice.</span>
           </h1>
-          <p className="text-white/60 text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className="text-white/60 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
             TaskHub runs on a coin economy that keeps things transparent for
             everyone. Buyers fund tasks, workers complete them, and coins only
             move when work is approved.
@@ -126,17 +126,17 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Coin facts */}
-      <section className="max-w-5xl mx-auto px-8 -mt-8 relative z-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <section className="max-w-5xl mx-auto px-4 md:px-8 -mt-8 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {COIN_FACTS.map((f) => (
             <div
               key={f.label}
-              className="bg-white rounded-2xl border border-primary/5 shadow-md p-5 text-center"
+              className="bg-white rounded-2xl border border-primary/5 shadow-md p-4 sm:p-5 text-center"
             >
               <span className="material-symbols-outlined text-secondary text-2xl mb-2 block">
                 {f.icon}
               </span>
-              <p className="font-headline text-base font-extrabold text-primary">
+              <p className="font-headline text-sm sm:text-base font-extrabold text-primary">
                 {f.label}
               </p>
               <p className="text-[11px] text-primary/40 mt-1">{f.sub}</p>
@@ -146,10 +146,10 @@ export default function HowItWorksPage() {
       </section>
 
       {/* For Buyers */}
-      <section className="max-w-5xl mx-auto px-8 mt-20">
-        <div className="flex items-center gap-4 mb-10">
-          <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-secondary text-xl">
+      <section className="max-w-5xl mx-auto px-4 md:px-8 mt-10 sm:mt-20">
+        <div className="flex items-center gap-4 mb-8 sm:mb-10">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-primary flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-secondary text-lg sm:text-xl">
               business_center
             </span>
           </div>
@@ -157,16 +157,16 @@ export default function HowItWorksPage() {
             <span className="text-[10px] font-bold uppercase tracking-widest text-secondary">
               For Buyers
             </span>
-            <h2 className="font-headline text-3xl font-extrabold text-primary tracking-tighter">
+            <h2 className="font-headline text-2xl sm:text-3xl font-extrabold text-primary tracking-tighter">
               Get tasks done in 4 steps
             </h2>
           </div>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {BUYER_STEPS.map((s) => (
             <div
               key={s.step}
-              className="group bg-white rounded-2xl border border-primary/5 shadow-sm hover:shadow-md hover:border-secondary/20 transition-all p-6"
+              className="group bg-white rounded-2xl border border-primary/5 shadow-sm hover:shadow-md hover:border-secondary/20 transition-all p-5 sm:p-6"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-primary group-hover:bg-secondary transition-colors flex items-center justify-center shrink-0">
@@ -188,15 +188,15 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Divider */}
-      <div className="max-w-5xl mx-auto px-8 mt-16 mb-16">
+      <div className="max-w-5xl mx-auto px-4 md:px-8 mt-12 mb-12 sm:mt-16 sm:mb-16">
         <div className="h-px bg-primary/5" />
       </div>
 
       {/* For Workers */}
-      <section className="max-w-5xl mx-auto px-8">
-        <div className="flex items-center gap-4 mb-10">
-          <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-white text-xl">
+      <section className="max-w-5xl mx-auto px-4 md:px-8">
+        <div className="flex items-center gap-4 mb-8 sm:mb-10">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-white text-lg sm:text-xl">
               engineering
             </span>
           </div>
@@ -204,16 +204,16 @@ export default function HowItWorksPage() {
             <span className="text-[10px] font-bold uppercase tracking-widest text-secondary">
               For Workers
             </span>
-            <h2 className="font-headline text-3xl font-extrabold text-primary tracking-tighter">
+            <h2 className="font-headline text-2xl sm:text-3xl font-extrabold text-primary tracking-tighter">
               Start earning in 4 steps
             </h2>
           </div>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {WORKER_STEPS.map((s) => (
             <div
               key={s.step}
-              className="group bg-white rounded-2xl border border-primary/5 shadow-sm hover:shadow-md hover:border-secondary/20 transition-all p-6"
+              className="group bg-white rounded-2xl border border-primary/5 shadow-sm hover:shadow-md hover:border-secondary/20 transition-all p-5 sm:p-6"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-secondary/10 group-hover:bg-secondary transition-colors flex items-center justify-center shrink-0">
@@ -235,13 +235,13 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Coin economy explainer */}
-      <section className="max-w-5xl mx-auto px-8 mt-20">
-        <div className="bg-primary rounded-3xl p-10 md:p-14">
-          <div className="text-center mb-10">
+      <section className="max-w-5xl mx-auto px-4 md:px-8 py-15 md:py-32">
+        <div className="bg-primary rounded-3xl p-6 sm:p-10 md:p-14">
+          <div className="text-center mb-8 sm:mb-10">
             <span className="inline-block bg-secondary/20 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-4">
               The Coin Economy
             </span>
-            <h2 className="font-headline text-3xl font-extrabold text-white tracking-tighter">
+            <h2 className="font-headline text-2xl sm:text-3xl font-extrabold text-white tracking-tighter">
               Transparent pricing, no surprises
             </h2>
             <p className="text-white/50 text-sm mt-2 max-w-lg mx-auto">
@@ -249,17 +249,17 @@ export default function HowItWorksPage() {
               hidden fees, no commissions taken from your earnings.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 mb-10">
-            <div className="bg-white/5 rounded-2xl p-6 text-center">
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-10">
+            <div className="bg-white/5 rounded-2xl p-5 sm:p-6 text-center">
               <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
                 shopping_cart
               </span>
-              <p className="font-headline text-2xl font-extrabold text-white">
+              <p className="font-headline text-xl sm:text-2xl font-extrabold text-white">
                 $1 = 10 coins
               </p>
               <p className="text-white/40 text-xs mt-1">Buyer purchase rate</p>
             </div>
-            <div className="bg-secondary/20 rounded-2xl p-6 text-center flex flex-col items-center justify-center">
+            <div className="bg-secondary/20 rounded-2xl p-5 sm:p-6 text-center flex flex-col items-center justify-center">
               <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
                 swap_horiz
               </span>
@@ -270,11 +270,11 @@ export default function HowItWorksPage() {
                 Built into the spread
               </p>
             </div>
-            <div className="bg-white/5 rounded-2xl p-6 text-center">
+            <div className="bg-white/5 rounded-2xl p-5 sm:p-6 text-center">
               <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
                 savings
               </span>
-              <p className="font-headline text-2xl font-extrabold text-white">
+              <p className="font-headline text-xl sm:text-2xl font-extrabold text-white">
                 20 coins = $1
               </p>
               <p className="text-white/40 text-xs mt-1">
@@ -282,7 +282,7 @@ export default function HowItWorksPage() {
               </p>
             </div>
           </div>
-          <div className="bg-white/5 rounded-2xl p-6">
+          <div className="bg-white/5 rounded-2xl p-5 sm:p-6">
             <p className="text-white/60 text-sm text-center leading-relaxed">
               Example: A buyer funds a task with 100 coins ($10). A worker
               completes it and earns 100 coins — worth $5 on withdrawal. TaskHub
@@ -293,20 +293,20 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Payment methods */}
-      <section className="max-w-5xl mx-auto px-8 mt-16">
+      <section className="max-w-5xl mx-auto px-4 md:px-8 pb-15 md:pb-32">
         <div className="text-center mb-8">
           <span className="inline-block bg-secondary/10 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-4">
             Payment Methods
           </span>
-          <h2 className="font-headline text-3xl font-extrabold text-primary tracking-tighter">
+          <h2 className="font-headline text-2xl sm:text-3xl font-extrabold text-primary tracking-tighter">
             Pay and get paid your way
           </h2>
         </div>
-        <div className="grid sm:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
           {PAYMENT_METHODS.map((m) => (
             <div
               key={m.name}
-              className="bg-white rounded-2xl border border-primary/5 shadow-sm p-7 text-center hover:shadow-md hover:border-secondary/20 transition-all"
+              className="bg-white rounded-2xl border border-primary/5 shadow-sm p-6 sm:p-7 text-center hover:shadow-md hover:border-secondary/20 transition-all"
             >
               <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
                 {m.icon}
@@ -319,9 +319,9 @@ export default function HowItWorksPage() {
       </section>
 
       {/* CTA */}
-      <section className="max-w-5xl mx-auto px-8 mt-16">
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-secondary/10 rounded-2xl p-8 flex flex-col justify-between">
+      <section className="max-w-5xl mx-auto px-4 md:px-8 pb-15 md:pb-32">
+        <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
+          <div className="bg-secondary/10 rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
             <div>
               <span className="material-symbols-outlined text-secondary text-3xl mb-4 block">
                 engineering
@@ -344,7 +344,7 @@ export default function HowItWorksPage() {
               Join as Worker
             </Link>
           </div>
-          <div className="bg-primary rounded-2xl p-8 flex flex-col justify-between">
+          <div className="bg-primary rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
             <div>
               <span className="material-symbols-outlined text-secondary text-3xl mb-4 block">
                 business_center

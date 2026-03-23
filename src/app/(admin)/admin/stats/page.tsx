@@ -242,12 +242,12 @@ export default async function AdminStatsPage({ searchParams }: Props) {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-end justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
           <span className="text-[10px] uppercase tracking-widest text-primary/50 font-bold block mb-1">
             Performance Overview
           </span>
-          <h1 className="font-headline text-3xl font-extrabold text-primary tracking-tight">
+          <h1 className="font-headline text-2xl sm:text-3xl font-extrabold text-primary tracking-tight">
             Advanced Analytics
           </h1>
         </div>
@@ -303,19 +303,19 @@ export default async function AdminStatsPage({ searchParams }: Props) {
         ].map((m) => (
           <div
             key={m.label}
-            className="bg-white p-6 rounded-xl shadow-sm border border-primary/5 relative overflow-hidden group hover:shadow-md transition-shadow"
+            className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-primary/5 relative overflow-hidden group hover:shadow-md transition-shadow"
           >
-            <div className="flex items-start justify-between mb-4">
+            <div className="flex items-start justify-between mb-3 sm:mb-4">
               <p className="text-[10px] uppercase tracking-widest text-primary/40 font-bold">
                 {m.label}
               </p>
-              <div className="w-8 h-8 rounded-lg bg-primary/5 flex items-center justify-center">
-                <span className="material-symbols-outlined text-base text-primary/50">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/5 flex items-center justify-center">
+                <span className="material-symbols-outlined text-sm sm:text-base text-primary/50" style={{fontSize:"17px"}}>
                   {m.icon}
                 </span>
               </div>
             </div>
-            <h3 className="font-headline text-3xl font-extrabold text-primary mb-1">
+            <h3 className="font-headline text-2xl sm:text-3xl font-extrabold text-primary mb-1">
               <CountUp
                 value={m.value}
                 prefix={m.prefix}
@@ -339,7 +339,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
 
       {/* Revenue Line Chart + Platform Health */}
       <div className="grid lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 bg-white p-8 rounded-xl shadow-sm border border-primary/5">
+        <div className="lg:col-span-8 bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-primary/5">
           <div className="flex justify-between items-start mb-6">
             <div>
               <h4 className="font-headline text-xl font-bold text-primary">
@@ -361,7 +361,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
           <RevenueLineChart data={revenueLineData} />
         </div>
 
-        <div className="lg:col-span-4 bg-white p-8 rounded-xl shadow-sm border border-primary/5 flex flex-col gap-4">
+        <div className="lg:col-span-4 bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-primary/5 flex flex-col gap-4">
           <h4 className="font-headline text-xl font-bold text-primary">
             Platform Health
           </h4>
@@ -440,7 +440,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
 
       {/* Task Volume Bar + Category Split */}
       <div className="grid lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8 bg-white p-8 rounded-xl shadow-sm border border-primary/5 flex flex-col justify-between">
+        <div className="lg:col-span-8 bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-primary/5 flex flex-col justify-between">
           <div className="flex justify-between items-start mb-10">
             <div>
               <h4 className="font-headline text-xl font-bold text-primary">
@@ -484,7 +484,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
           </div>
         </div>
 
-        <div className="lg:col-span-4 bg-white p-8 rounded-xl shadow-sm border border-primary/5">
+        <div className="lg:col-span-4 bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-primary/5">
           <h4 className="font-headline text-xl font-bold text-primary mb-1">
             Category Split
           </h4>
@@ -573,7 +573,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
       {/* Submission Funnel + Gateway Breakdown */}
       <div className="grid lg:grid-cols-12 gap-6">
         {/* Submission Funnel */}
-        <div className="lg:col-span-5 bg-white p-8 rounded-xl shadow-sm border border-primary/5">
+        <div className="lg:col-span-5 bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-primary/5">
           <h4 className="font-headline text-xl font-bold text-primary mb-1">
             Submission Funnel
           </h4>
@@ -640,7 +640,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
         </div>
 
         {/* Gateway Breakdown */}
-        <div className="lg:col-span-7 bg-white p-8 rounded-xl shadow-sm border border-primary/5">
+        <div className="lg:col-span-7 bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-primary/5">
           <h4 className="font-headline text-xl font-bold text-primary mb-1">
             Payment Gateways
           </h4>
@@ -701,7 +701,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
       <div className="grid lg:grid-cols-12 gap-6">
         {/* Top Workers */}
         <div className="lg:col-span-6 bg-white rounded-xl shadow-sm border border-primary/5 overflow-hidden">
-          <div className="p-8 border-b border-primary/5">
+          <div className="p-4 sm:p-8 border-b border-primary/5">
             <h4 className="font-headline text-xl font-bold text-primary">
               Top Workers
             </h4>
@@ -711,14 +711,14 @@ export default async function AdminStatsPage({ searchParams }: Props) {
           </div>
           <div className="divide-y divide-primary/5">
             {topWorkers.length === 0 && (
-              <p className="px-8 py-10 text-center text-primary/40 text-sm">
+              <p className="px-4 sm:px-8 py-10 text-center text-primary/40 text-sm">
                 No data yet
               </p>
             )}
             {topWorkers.map((w, i) => (
               <div
                 key={String(w._id)}
-                className="flex items-center gap-4 px-8 py-4 hover:bg-slate-50 transition-colors"
+                className="flex items-center gap-3 sm:gap-4 px-4 sm:px-8 py-4 hover:bg-slate-50 transition-colors"
               >
                 <span
                   className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-extrabold shrink-0 ${i === 0 ? "bg-amber-100 text-amber-700" : i === 1 ? "bg-slate-100 text-slate-600" : i === 2 ? "bg-orange-100 text-orange-600" : "bg-primary/5 text-primary/40"}`}
@@ -756,7 +756,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
 
         {/* Recent Payments */}
         <div className="lg:col-span-6 bg-white rounded-xl shadow-sm border border-primary/5 overflow-hidden">
-          <div className="p-8 border-b border-primary/5">
+          <div className="p-4 sm:p-8 border-b border-primary/5">
             <h4 className="font-headline text-xl font-bold text-primary">
               Recent Payments
             </h4>
@@ -766,7 +766,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
           </div>
           <div className="divide-y divide-primary/5">
             {recentPayments.length === 0 && (
-              <p className="px-8 py-10 text-center text-primary/40 text-sm">
+              <p className="px-4 sm:px-8 py-10 text-center text-primary/40 text-sm">
                 No payments yet
               </p>
             )}
@@ -780,7 +780,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
               return (
                 <div
                   key={String(p._id)}
-                  className="flex items-center gap-4 px-8 py-4 hover:bg-slate-50 transition-colors"
+                  className="flex items-center gap-3 sm:gap-4 px-4 sm:px-8 py-4 hover:bg-slate-50 transition-colors"
                 >
                   <div className="w-9 h-9 rounded-lg bg-secondary/10 flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-base text-secondary">
@@ -820,19 +820,14 @@ export default async function AdminStatsPage({ searchParams }: Props) {
             Most completed tasks by approval count
           </p>
         </div>
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50">
-            <tr>
-              <th className="px-8 py-4 text-left text-[10px] font-bold uppercase tracking-widest text-primary/40">
+        <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-slate-50"><tr><th className="px-4 sm:px-8 py-3 sm:py-4 text-left text-[10px] font-bold uppercase tracking-widest text-primary/40">
                 Task
               </th>
-              <th className="px-8 py-4 text-left text-[10px] font-bold uppercase tracking-widest text-primary/40">
-                Completions
+              <th className="px-4 sm:px-8 py-3 sm:py-4 text-left text-[10px] font-bold uppercase tracking-widest text-primary/40">Completions
               </th>
-              <th className="px-8 py-4 text-left text-[10px] font-bold uppercase tracking-widest text-primary/40">
-                Total Payout
+              <th className="px-4 sm:px-8 py-3 sm:py-4 text-left text-[10px] font-bold uppercase tracking-widest text-primary/40">Total Payout
               </th>
-              <th className="px-8 py-4 text-right text-[10px] font-bold uppercase tracking-widest text-primary/40">
+              <th className="px-4 sm:px-8 py-3 sm:py-4 text-right text-[10px] font-bold uppercase tracking-widest text-primary/40">
                 Avg / Task
               </th>
             </tr>
@@ -843,7 +838,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
                 key={String(c._id)}
                 className="hover:bg-slate-50 transition-colors"
               >
-                <td className="px-8 py-5">
+                <td className="px-4 sm:px-8 py-4 sm:py-5">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded bg-amber-50 flex items-center justify-center text-amber-700">
                       <span className="material-symbols-outlined text-sm">
@@ -884,9 +879,8 @@ export default async function AdminStatsPage({ searchParams }: Props) {
                 </td>
               </tr>
             )}
-          </tbody>
-        </table>
-      </div>
+          </tbody></table></div></div>
     </div>
   );
 }
+

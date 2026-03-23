@@ -110,16 +110,16 @@ export default function SupportPage() {
   }
 
   return (
-    <main className="pb-24">
+    <main className="pb-15 sm:pb-24">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary py-20 px-8">
+      <section className="relative overflow-hidden bg-primary py-16 sm:py-20 px-4 sm:px-8">
         <div className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/5" />
         <div className="relative max-w-4xl mx-auto text-center">
           <span className="inline-block bg-secondary/20 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-5">
             Support Hub
           </span>
-          <h1 className="font-headline text-5xl md:text-6xl font-extrabold text-white tracking-tighter leading-none mb-4">
+          <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tighter leading-none mb-4">
             How can we
             <br />
             <span className="text-secondary">help you?</span>
@@ -132,7 +132,7 @@ export default function SupportPage() {
       </section>
 
       {/* Info bar */}
-      <section className="max-w-5xl mx-auto px-8 -mt-6 relative z-10">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 -mt-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {CONTACT_INFO.map((c) => (
             <div
@@ -154,7 +154,7 @@ export default function SupportPage() {
       </section>
 
       {/* Categories */}
-      <section className="max-w-5xl mx-auto px-8 mt-14">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-14">
         <div className="mb-6">
           <span className="text-[10px] font-bold uppercase tracking-widest text-secondary">
             Browse
@@ -163,7 +163,7 @@ export default function SupportPage() {
             Support categories
           </h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {CATEGORIES.map((c) => (
             <div
               key={c.label}
@@ -188,7 +188,7 @@ export default function SupportPage() {
       </section>
 
       {/* FAQ accordion */}
-      <section className="max-w-5xl mx-auto px-8 mt-14">
+      <section className="max-w-5xl mx-auto px-4 md:px-8 mt-14">
         <div className="flex items-center justify-between mb-6">
           <div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-secondary">
@@ -200,7 +200,7 @@ export default function SupportPage() {
           </div>
           <Link
             href="/faq"
-            className="text-sm text-secondary font-semibold hover:underline flex items-center gap-1"
+            className="text-[13px] sm:text-sm text-secondary font-semibold hover:underline flex items-center gap-1"
           >
             View all FAQs
             <span className="material-symbols-outlined text-sm">
@@ -237,8 +237,8 @@ export default function SupportPage() {
                 </span>
               </button>
               {open === i && (
-                <div className="px-7 pb-6 pl-19 border-t border-primary/5">
-                  <p className="text-primary/60 text-sm leading-relaxed pt-4">
+                <div className="px-7 pb-6 border-t border-primary/5">
+                  <p className="text-primary/60 text-xs sm:text-sm leading-relaxed pt-4">
                     {faq.a}
                   </p>
                 </div>
@@ -249,7 +249,7 @@ export default function SupportPage() {
       </section>
 
       {/* Contact form + sidebar */}
-      <section className="max-w-5xl mx-auto px-8 mt-14">
+      <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-14">
         <div className="grid md:grid-cols-5 gap-8">
           {/* Form */}
           <div className="md:col-span-3">
@@ -354,7 +354,7 @@ export default function SupportPage() {
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                  className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-xs sm:text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                 >
                   <span className="material-symbols-outlined text-sm">
                     send
@@ -371,10 +371,10 @@ export default function SupportPage() {
               <span className="material-symbols-outlined text-secondary text-2xl mb-3 block">
                 tips_and_updates
               </span>
-              <p className="font-bold text-primary mb-2 text-sm">
+              <p className="font-bold text-primary mb-2 text-lg">
                 Before you write
               </p>
-              <p className="text-sm text-primary/60 leading-relaxed">
+              <p className="text-xs sm:text-sm text-primary/60 leading-relaxed">
                 Check the FAQ page first — most common questions are answered
                 there instantly, no waiting required.
               </p>
@@ -413,7 +413,7 @@ export default function SupportPage() {
                 schedule
               </span>
               <p className="font-bold text-white text-sm mb-1">Response time</p>
-              <p className="text-white/50 text-sm leading-relaxed">
+              <p className="text-white/50 text-xs sm:text-sm leading-relaxed">
                 We typically respond within 24 hours on business days. Urgent
                 payment issues are prioritized.
               </p>

@@ -48,7 +48,7 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="bg-white rounded-2xl shadow-xl border border-primary/5 p-8">
+      <div className="bg-white rounded-2xl shadow-xl border border-primary/5 p-4 sm:p-8">
         <h1 className="font-headline text-2xl font-bold text-primary mb-2">
           Welcome back
         </h1>

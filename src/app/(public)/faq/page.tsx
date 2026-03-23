@@ -136,16 +136,16 @@ export default function FaqPage() {
   const cat = FAQ_CATEGORIES[activeCategory];
 
   return (
-    <main className="pb-24">
+    <main className="pb-15 md:pb-24">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary py-20 px-8">
+      <section className="relative overflow-hidden bg-primary py-15 md:py-20 px-4 md:px-8">
         <div className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/5" />
         <div className="relative max-w-4xl mx-auto text-center">
           <span className="inline-block bg-secondary/20 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-5">
             Help Center
           </span>
-          <h1 className="font-headline text-5xl md:text-6xl font-extrabold text-white tracking-tighter leading-none mb-4">
+          <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tighter leading-none mb-4">
             Got questions?
             <br />
             <span className="text-secondary">We have answers.</span>
@@ -164,7 +164,7 @@ export default function FaqPage() {
       </section>
 
       {/* Category cards */}
-      <section className="max-w-5xl mx-auto px-8 -mt-6 relative z-10">
+      <section className="max-w-5xl mx-auto px-4 md:px-8 -mt-6 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {FAQ_CATEGORIES.map((c, i) => (
             <button
@@ -173,7 +173,7 @@ export default function FaqPage() {
                 setActiveCategory(i);
                 setOpen(null);
               }}
-              className={`text-left rounded-2xl border shadow-md p-5 transition-all ${
+              className={`text-left rounded-2xl border shadow-md p-3 sm:p-5 transition-all ${
                 activeCategory === i
                   ? "bg-primary border-primary shadow-lg"
                   : "bg-white border-primary/5 hover:border-secondary/20 hover:shadow-md"
@@ -200,7 +200,7 @@ export default function FaqPage() {
       </section>
 
       {/* Questions */}
-      <section className="max-w-5xl mx-auto px-8 mt-10">
+      <section className="max-w-5xl mx-auto px-4 md:px-8 mt-10">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
             <span className="material-symbols-outlined text-secondary text-base">
@@ -226,7 +226,7 @@ export default function FaqPage() {
               }`}
             >
               <button
-                className="flex justify-between items-center w-full text-left px-7 py-5 gap-4"
+                className="flex justify-between items-center w-full text-left px-4 sm:px-7 py-5 gap-4"
                 onClick={() => setOpen(open === i ? null : i)}
               >
                 <div className="flex items-center gap-4">
@@ -249,7 +249,7 @@ export default function FaqPage() {
                 </span>
               </button>
               {open === i && (
-                <div className="px-7 pb-6 pl-19 border-t border-primary/5">
+                <div className="px-4 sm:px-7 pb-6 sm:pl-19 border-t border-primary/5">
                   <p className="text-primary/60 text-sm leading-relaxed pt-4">
                     {f.a}
                   </p>
@@ -261,8 +261,8 @@ export default function FaqPage() {
       </section>
 
       {/* CTA */}
-      <section className="max-w-5xl mx-auto px-8 mt-16">
-        <div className="bg-primary rounded-3xl p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
+      <section className="max-w-5xl mx-auto px-4 md:px-8 mt-16">
+        <div className="bg-primary rounded-3xl p-7 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
           <div>
             <h3 className="font-headline text-2xl font-extrabold text-white mb-2">
               Still have questions?

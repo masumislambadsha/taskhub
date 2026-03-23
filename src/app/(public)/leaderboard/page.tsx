@@ -52,16 +52,16 @@ export default async function LeaderboardPage() {
   ];
 
   return (
-    <main className="pb-24">
+    <main className="pb-13 md:pb-24">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary py-20 px-8">
+      <section className="relative overflow-hidden bg-primary py-15 md:py-20 px-4 md:px-8">
         <div className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/5" />
         <div className="relative max-w-4xl mx-auto text-center">
           <span className="inline-block bg-amber-400/20 text-amber-300 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-5">
             Hall of Fame
           </span>
-          <h1 className="font-headline text-5xl md:text-6xl font-extrabold text-white tracking-tighter leading-none mb-4">
+          <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tighter leading-none mb-4">
             Top Earners
             <br />
             <span className="text-secondary">This Month</span>
@@ -75,12 +75,12 @@ export default async function LeaderboardPage() {
 
       {/* Podium — top 3 */}
       {topWorkers.length >= 3 && (
-        <section className="max-w-3xl mx-auto px-8 -mt-6 relative z-10">
-          <div className="grid grid-cols-3 gap-4 items-end">
+        <section className="max-w-3xl mx-auto px-4 md:px-8 -mt-6 relative z-10 overflow-hidden">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 items-end">
             {/* 2nd place */}
-            <div className="bg-white rounded-2xl border border-primary/5 shadow-md p-6 text-center">
-              <div className="text-3xl mb-3">🥈</div>
-              <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3 overflow-hidden ring-4 ring-slate-200">
+            <div className="bg-white rounded-2xl border border-primary/5 shadow-md p-3 sm:p-6 text-center min-w-0">
+              <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">🥈</div>
+              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden ring-4 ring-slate-200">
                 {photoMap[topWorkers[1]._id?.toString()] ? (
                   <Image
                     src={photoMap[topWorkers[1]._id?.toString()]!}
@@ -95,24 +95,24 @@ export default async function LeaderboardPage() {
                   </span>
                 )}
               </div>
-              <p className="font-bold text-primary text-sm truncate">
+              <p className="font-bold text-primary text-xs sm:text-sm truncate">
                 {topWorkers[1].workerName}
               </p>
-              <p className="text-[11px] text-primary/40 mt-0.5">
+              <p className="text-[10px] sm:text-[11px] text-primary/40 mt-0.5">
                 {topWorkers[1].totalTasks} tasks
               </p>
-              <p className="font-headline font-extrabold text-secondary mt-2 text-sm">
+              <p className="font-headline font-extrabold text-secondary mt-2 text-xs sm:text-sm">
                 {topWorkers[1].totalCoins.toLocaleString()} coins
               </p>
-              <p className="text-[11px] text-primary/30">
+              <p className="text-[10px] sm:text-[11px] text-primary/30">
                 {coinsToUsdWithdraw(topWorkers[1].totalCoins)}
               </p>
             </div>
 
             {/* 1st place */}
-            <div className="bg-primary rounded-2xl shadow-xl p-7 text-center -mt-6">
-              <div className="text-4xl mb-3">🥇</div>
-              <div className="w-[72px] h-[72px] rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-3 overflow-hidden ring-4 ring-secondary/40">
+            <div className="bg-primary rounded-2xl shadow-xl p-4 sm:p-7 text-center -mt-6 min-w-0">
+              <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">🥇</div>
+              <div className="w-14 h-14 sm:w-[72px] sm:h-[72px] rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden ring-4 ring-secondary/40">
                 {photoMap[topWorkers[0]._id?.toString()] ? (
                   <Image
                     src={photoMap[topWorkers[0]._id?.toString()]!}
@@ -127,16 +127,16 @@ export default async function LeaderboardPage() {
                   </span>
                 )}
               </div>
-              <p className="font-bold text-white truncate">
+              <p className="font-bold text-white text-sm truncate">
                 {topWorkers[0].workerName}
               </p>
-              <p className="text-[11px] text-white/40 mt-0.5">
+              <p className="text-[10px] sm:text-[11px] text-white/40 mt-0.5">
                 {topWorkers[0].totalTasks} tasks
               </p>
-              <p className="font-headline font-extrabold text-secondary mt-2">
+              <p className="font-headline font-extrabold text-secondary mt-2 text-sm">
                 {topWorkers[0].totalCoins.toLocaleString()} coins
               </p>
-              <p className="text-[11px] text-white/30">
+              <p className="text-[10px] sm:text-[11px] text-white/30">
                 {coinsToUsdWithdraw(topWorkers[0].totalCoins)}
               </p>
               <span className="inline-block mt-3 bg-secondary/20 text-secondary text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full">
@@ -145,9 +145,9 @@ export default async function LeaderboardPage() {
             </div>
 
             {/* 3rd place */}
-            <div className="bg-white rounded-2xl border border-primary/5 shadow-md p-6 text-center">
-              <div className="text-3xl mb-3">🥉</div>
-              <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-3 overflow-hidden ring-4 ring-amber-100">
+            <div className="bg-white rounded-2xl border border-primary/5 shadow-md p-3 sm:p-6 text-center min-w-0">
+              <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">🥉</div>
+              <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden ring-4 ring-amber-100">
                 {photoMap[topWorkers[2]._id?.toString()] ? (
                   <Image
                     src={photoMap[topWorkers[2]._id?.toString()]!}
@@ -162,16 +162,16 @@ export default async function LeaderboardPage() {
                   </span>
                 )}
               </div>
-              <p className="font-bold text-primary text-sm truncate">
+              <p className="font-bold text-primary text-xs sm:text-sm truncate">
                 {topWorkers[2].workerName}
               </p>
-              <p className="text-[11px] text-primary/40 mt-0.5">
+              <p className="text-[10px] sm:text-[11px] text-primary/40 mt-0.5">
                 {topWorkers[2].totalTasks} tasks
               </p>
-              <p className="font-headline font-extrabold text-secondary mt-2 text-sm">
+              <p className="font-headline font-extrabold text-secondary mt-2 text-xs sm:text-sm">
                 {topWorkers[2].totalCoins.toLocaleString()} coins
               </p>
-              <p className="text-[11px] text-primary/30">
+              <p className="text-[10px] sm:text-[11px] text-primary/30">
                 {coinsToUsdWithdraw(topWorkers[2].totalCoins)}
               </p>
             </div>
@@ -180,7 +180,7 @@ export default async function LeaderboardPage() {
       )}
 
       {/* Full rankings table */}
-      <section className="max-w-3xl mx-auto px-8 mt-12">
+      <section className="max-w-3xl mx-auto px-4 md:px-8 mt-12">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-headline font-bold text-primary">
             Full Rankings
@@ -275,8 +275,8 @@ export default async function LeaderboardPage() {
       </section>
 
       {/* CTA */}
-      <section className="max-w-3xl mx-auto px-8 mt-12">
-        <div className="bg-primary rounded-3xl p-10 flex flex-col md:flex-row items-center justify-between gap-6">
+      <section className="max-w-3xl mx-auto px-4 md:px-8 mt-12">
+        <div className="bg-primary rounded-3xl p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="font-headline text-xl font-extrabold text-white mb-1">
               Want to be on this list?
@@ -288,7 +288,7 @@ export default async function LeaderboardPage() {
           <div className="flex gap-3 shrink-0">
             <a
               href="/register"
-              className="inline-flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-secondary/90 transition-colors"
+              className="inline-flex items-center gap-2 bg-secondary text-white p-3 md:px-6 md:py-3 rounded-lg font-bold sm:text-sm text-xs hover:bg-secondary/90 transition-colors"
             >
               <span className="material-symbols-outlined text-sm">
                 arrow_forward
@@ -297,7 +297,7 @@ export default async function LeaderboardPage() {
             </a>
             <a
               href="/tasks"
-              className="inline-flex items-center gap-2 bg-white/10 text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-white/20 transition-colors"
+              className="inline-flex items-center gap-2 bg-white/10 text-white p-3 md:px-6 md:py-3 rounded-lg font-bold sm:text-sm text-xs hover:bg-white/20 transition-colors"
             >
               <span className="material-symbols-outlined text-sm">
                 task_alt

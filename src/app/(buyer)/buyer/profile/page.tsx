@@ -7,6 +7,7 @@ import Link from "next/link";
 
 export default function BuyerProfilePage() {
   const { data: session } = useSession();
+  const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
@@ -15,151 +16,108 @@ export default function BuyerProfilePage() {
     await new Promise((r) => setTimeout(r, 800));
     setSaving(false);
     setSaved(true);
+    setEditing(false);
     setTimeout(() => setSaved(false), 2000);
   };
 
   return (
-    <div className="space-y-16">
-      {/* Hero */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-        {/* Left: Avatar + identity */}
-        <div className="lg:col-span-4 flex flex-col items-center lg:items-start">
-          <div className="relative mb-6">
+    <div className="space-y-8">
+      {/* Profile card */}
+      <div className="bg-white rounded-2xl border border-primary/5 shadow-sm overflow-hidden">
+        {/* Banner */}
+        <div className="h-24 bg-primary relative">
+          <div className="absolute -bottom-10 left-6 sm:left-8">
             {session?.user?.image ? (
-              <Image
+              <img
                 src={session.user.image}
                 alt="Profile"
-                width={192}
-                height={192}
-                className="w-48 h-48 rounded-2xl object-cover shadow-[0_24px_40px_-15px_rgba(11,30,38,0.12)] border-4 border-white"
+
+                className="w-20 h-20 rounded-2xl object-cover border-4 border-white shadow-md"
               />
             ) : (
-              <div className="w-48 h-48 rounded-2xl bg-surface-container flex items-center justify-center shadow-[0_24px_40px_-15px_rgba(11,30,38,0.12)] border-4 border-white">
-                <span
-                  className="material-symbols-outlined text-secondary"
-                  style={{ fontSize: 80 }}
-                >
+              <div className="w-20 h-20 rounded-2xl bg-secondary/20 border-4 border-white shadow-md flex items-center justify-center">
+                <span className="material-symbols-outlined text-secondary text-4xl">
                   account_circle
                 </span>
               </div>
             )}
-            <div className="absolute -bottom-3 -right-3 bg-secondary p-3 rounded-full text-white shadow-lg">
-              <span
-                className="material-symbols-outlined"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                storefront
+          </div>
+        </div>
+
+        {/* Identity */}
+        <div className="pt-14 pb-6 px-6 sm:px-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-headline text-2xl font-extrabold text-primary tracking-tight">
+                {session?.user?.name ?? "Buyer"}
+              </h1>
+              <span className="bg-secondary/10 text-secondary px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
+                Buyer
               </span>
             </div>
+            <p className="text-sm text-primary/50 mt-0.5">
+              {session?.user?.email}
+            </p>
           </div>
+          {!editing && (
+            <button
+              onClick={() => setEditing(true)}
+              className="flex items-center gap-2 text-sm font-semibold text-secondary hover:underline shrink-0"
+            >
+              <span className="material-symbols-outlined text-sm">edit</span>
+              Edit Profile
+            </button>
+          )}
+        </div>
+      </div>
 
-          <h1 className="font-headline text-4xl font-extrabold text-primary tracking-tight mb-2 text-center lg:text-left">
-            {session?.user?.name ?? "Buyer"}
-          </h1>
-          <p className="font-body text-on-surface-variant text-sm mb-6 text-center lg:text-left">
-            {session?.user?.email}
+      {/* Stats row */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div className="bg-white rounded-2xl border border-primary/5 shadow-sm p-5">
+          <span className="material-symbols-outlined text-secondary text-xl mb-3 block">
+            task_alt
+          </span>
+          <p className="font-headline text-2xl font-extrabold text-primary">
+            0
           </p>
-
-          <div className="flex gap-2 flex-wrap mb-6 justify-center lg:justify-start">
-            <span className="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-[10px] font-label uppercase tracking-widest font-bold">
-              Buyer Account
-            </span>
-          </div>
-
-          <button className="flex items-center gap-2 text-sm font-semibold text-secondary hover:underline">
-            <span className="material-symbols-outlined text-sm">upload</span>
-            Upload Photo
-          </button>
-          <p className="text-xs text-primary/40 mt-1">JPG, PNG up to 2MB</p>
+          <p className="text-[11px] uppercase tracking-widest text-primary/40 font-bold mt-1">
+            Tasks Posted
+          </p>
         </div>
-
-        {/* Right: Stats */}
-        <div className="lg:col-span-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <div className="bg-surface-container-low p-8 rounded-xl flex flex-col justify-between hover:bg-surface-container-lowest transition-all shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] group">
-              <span className="material-symbols-outlined text-secondary text-3xl mb-4 group-hover:scale-110 transition-transform">
-                task_alt
-              </span>
-              <div>
-                <h3 className="font-headline text-3xl font-extrabold text-primary">
-                  0
-                </h3>
-                <p className="font-label uppercase text-[10px] tracking-widest text-on-surface-variant mt-1">
-                  Tasks Posted
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-primary-container p-8 rounded-xl flex flex-col justify-between shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)]">
-              <span
-                className="material-symbols-outlined text-secondary text-3xl mb-4"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                toll
-              </span>
-              <div>
-                <h3 className="font-headline text-3xl font-extrabold text-on-primary-container">
-                  {session?.user?.coins ?? 0}
-                </h3>
-                <p className="font-label uppercase text-[10px] tracking-widest text-on-primary-container/70 mt-1">
-                  Coin Balance
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-surface-container-low p-8 rounded-xl flex flex-col justify-between hover:bg-surface-container-lowest transition-all shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] group">
-              <span className="material-symbols-outlined text-secondary text-3xl mb-4 group-hover:scale-110 transition-transform">
-                group
-              </span>
-              <div>
-                <h3 className="font-headline text-3xl font-extrabold text-primary">
-                  0
-                </h3>
-                <p className="font-label uppercase text-[10px] tracking-widest text-on-surface-variant mt-1">
-                  Workers Hired
-                </p>
-              </div>
-            </div>
-
-            <div className="col-span-2 sm:col-span-3 bg-surface-container-lowest p-8 rounded-xl shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] relative overflow-hidden">
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                  <h3 className="font-headline text-xl font-bold text-primary mb-2">
-                    Coin Balance
-                  </h3>
-                  <p className="font-body text-on-surface-variant text-sm max-w-md">
-                    Top up your coins to post tasks and hire workers across the
-                    platform.
-                  </p>
-                </div>
-                <Link
-                  href="/buyer/coins"
-                  className="shrink-0 flex items-center gap-2 bg-secondary text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-secondary/90 transition-colors"
-                >
-                  Buy Coins
-                  <span className="material-symbols-outlined text-sm">
-                    arrow_forward
-                  </span>
-                </Link>
-              </div>
-              <div className="absolute right-0 top-0 w-64 h-full bg-linear-to-l from-secondary-container/10 to-transparent pointer-events-none" />
-            </div>
-          </div>
+        <div className="bg-white rounded-2xl border border-primary/5 shadow-sm p-5">
+          <span
+            className="material-symbols-outlined text-secondary text-xl mb-3 block"
+            style={{ fontVariationSettings: "'FILL' 1" }}
+          >
+            toll
+          </span>
+          <p className="font-headline text-2xl font-extrabold text-primary">
+            {session?.user?.coins ?? 0}
+          </p>
+          <p className="text-[11px] uppercase tracking-widest text-primary/40 font-bold mt-1">
+            Coin Balance
+          </p>
         </div>
-      </section>
+        <div className="col-span-2 sm:col-span-1 bg-primary rounded-2xl p-5 flex flex-col justify-between">
+          <span className="material-symbols-outlined text-secondary text-xl mb-3 block">
+            group
+          </span>
+          <p className="font-headline text-2xl font-extrabold text-white">0</p>
+          <p className="text-[11px] uppercase tracking-widest text-white/50 font-bold mt-1">
+            Workers Hired
+          </p>
+        </div>
+      </div>
 
-      {/* Edit Profile Form */}
-      <section>
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="font-headline text-2xl font-extrabold text-primary tracking-tight">
-            Account Details
+      {/* Edit form */}
+      {editing && (
+        <div className="bg-white rounded-2xl border border-primary/5 shadow-sm p-6 sm:p-8">
+          <h2 className="font-headline text-lg font-extrabold text-primary mb-6">
+            Edit Profile
           </h2>
-        </div>
-
-        <div className="bg-surface-container-lowest rounded-2xl shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] p-8 space-y-6">
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="grid sm:grid-cols-2 gap-5">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2">
                 Full Name
               </label>
               <input
@@ -169,7 +127,7 @@ export default function BuyerProfilePage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2">
                 Email
               </label>
               <input
@@ -180,7 +138,7 @@ export default function BuyerProfilePage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2">
                 Company / Organization
               </label>
               <input
@@ -190,7 +148,7 @@ export default function BuyerProfilePage() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2">
                 Website
               </label>
               <input
@@ -199,8 +157,8 @@ export default function BuyerProfilePage() {
                 className="w-full border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30 bg-background"
               />
             </div>
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+            <div className="sm:col-span-2">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2">
                 About
               </label>
               <textarea
@@ -210,12 +168,11 @@ export default function BuyerProfilePage() {
               />
             </div>
           </div>
-
-          <div className="flex items-center gap-4 pt-2 border-t border-primary/5">
+          <div className="flex items-center gap-3 mt-6 pt-5 border-t border-primary/5">
             <button
               onClick={handleSave}
               disabled={saving}
-              className="bg-primary text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60 flex items-center gap-2"
+              className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors disabled:opacity-60"
             >
               {saving ? (
                 <>
@@ -235,9 +192,58 @@ export default function BuyerProfilePage() {
                 "Save Changes"
               )}
             </button>
+            <button
+              onClick={() => setEditing(false)}
+              className="px-4 py-2.5 rounded-xl text-sm font-semibold text-primary/50 hover:bg-primary/5 transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         </div>
-      </section>
+      )}
+
+      {/* Quick actions */}
+      <div className="grid sm:grid-cols-2 gap-4">
+        <Link
+          href="/buyer/coins"
+          className="flex items-center gap-4 bg-white rounded-2xl border border-primary/5 shadow-sm p-5 hover:border-secondary/20 hover:shadow-md transition-all group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors shrink-0">
+            <span
+              className="material-symbols-outlined text-secondary text-xl"
+              style={{ fontVariationSettings: "'FILL' 1" }}
+            >
+              toll
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-primary text-sm">Buy Coins</p>
+            <p className="text-xs text-primary/40 mt-0.5">
+              Top up to post more tasks
+            </p>
+          </div>
+          <span className="material-symbols-outlined text-primary/20 group-hover:text-secondary transition-colors">
+            arrow_forward
+          </span>
+        </Link>
+        <Link
+          href="/buyer/tasks/new"
+          className="flex items-center gap-4 bg-white rounded-2xl border border-primary/5 shadow-sm p-5 hover:border-secondary/20 hover:shadow-md transition-all group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors shrink-0">
+            <span className="material-symbols-outlined text-secondary text-xl">
+              add_circle
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-bold text-primary text-sm">Post a Task</p>
+            <p className="text-xs text-primary/40 mt-0.5">Get work done fast</p>
+          </div>
+          <span className="material-symbols-outlined text-primary/20 group-hover:text-secondary transition-colors">
+            arrow_forward
+          </span>
+        </Link>
+      </div>
     </div>
   );
 }

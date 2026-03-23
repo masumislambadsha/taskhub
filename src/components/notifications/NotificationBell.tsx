@@ -46,7 +46,7 @@ export default function NotificationBell() {
     <div className="relative" ref={panelRef}>
       <button
         onClick={() => dispatch(toggleNotificationPanel())}
-        className="relative p-2 rounded-lg hover:bg-primary/5 text-primary transition-colors"
+        className="relative p-2 pl-0 rounded-lg hover:bg-primary/5 text-primary transition-colors"
       >
         <span className="material-symbols-outlined text-xl">notifications</span>
         {unread > 0 && (
@@ -57,7 +57,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-primary/5 z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-80 bg-white rounded-xl shadow-2xl border border-primary/5 z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-primary/5">
             <span className="font-bold text-primary text-sm">
               Notifications

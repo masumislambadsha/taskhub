@@ -21,7 +21,7 @@ export default function StatCard({
 
   return (
     <div
-      className={`rounded-xl p-6 shadow-sm border ${
+      className={`rounded-xl p-4 sm:p-6 shadow-sm border ${
         accent
           ? "bg-primary text-white border-primary"
           : "bg-white border-primary/5"
@@ -40,7 +40,7 @@ export default function StatCard({
         {isNumber ? <CountUp value={value as number} /> : value}
       </div>
       <div
-        className={`text-sm mt-1 ${accent ? "text-white/70" : "text-primary/60"}`}
+        className={`text-xs sm:text-sm mt-1 ${accent ? "text-white/70" : "text-primary/60"}`}
       >
         {label}
       </div>

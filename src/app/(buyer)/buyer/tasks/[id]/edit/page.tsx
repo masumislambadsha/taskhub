@@ -80,7 +80,7 @@ export default function EditTaskPage() {
       <div className="flex items-center gap-3">
         <Link
           href="/buyer/tasks"
-          className="p-2 rounded-lg hover:bg-primary/5 text-primary"
+          className="p-2 pl-0 rounded-lg hover:bg-primary/5 text-primary"
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </Link>
@@ -89,7 +89,7 @@ export default function EditTaskPage() {
         </h1>
       </div>
 
-      <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-6">
+      <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-primary mb-1.5">
@@ -135,7 +135,7 @@ export default function EditTaskPage() {
               </p>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-primary mb-1.5">
                 Category
@@ -206,7 +206,7 @@ export default function EditTaskPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary/90 transition-colors disabled:opacity-60"
+            className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary/90 transition-colors disabled:opacity-60 text-xs sm:text-sm"
           >
             {loading ? "Saving…" : "Save Changes"}
           </button>

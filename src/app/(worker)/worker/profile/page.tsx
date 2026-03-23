@@ -118,7 +118,7 @@ export default async function WorkerProfilePage() {
               </div>
             </div>
 
-            <div className="col-span-2 sm:col-span-3 bg-surface-container-lowest p-8 rounded-xl shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] relative overflow-hidden">
+            <div className="col-span-2 sm:col-span-3 bg-surface-container-lowest py-4 sm:p-8 rounded-xl shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] relative overflow-hidden">
               <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
                   <h3 className="font-headline text-xl font-bold text-primary mb-2">
@@ -151,7 +151,7 @@ export default async function WorkerProfilePage() {
         <h2 className="font-headline text-2xl font-extrabold text-primary tracking-tight mb-8">
           Mastery Badges
         </h2>
-        <div className="grid grid-cols-3 md:grid-cols-6 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
           {badges.map((b) => (
             <div
               key={b.label}
@@ -175,78 +175,82 @@ export default async function WorkerProfilePage() {
 
       {/* Recent Commissions */}
       <section>
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="font-headline text-2xl font-extrabold text-primary tracking-tight">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-headline text-xl font-bold text-primary">
             Recent Commissions
           </h2>
           <Link
             href="/worker/submissions"
-            className="font-label text-[10px] uppercase tracking-widest text-secondary font-bold hover:underline"
+            className="text-xs text-secondary font-semibold hover:underline flex items-center gap-1"
           >
             View All
+            <span className="material-symbols-outlined text-sm">
+              arrow_forward
+            </span>
           </Link>
         </div>
 
-        {recentTasks.length === 0 ? (
-          <div className="bg-surface-container-lowest rounded-2xl shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] p-10 text-center text-on-surface-variant text-sm">
-            No approved tasks yet. Start browsing tasks to earn coins.
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {recentTasks.map((s) => (
-              <div
-                key={String(s._id)}
-                className="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] hover:bg-background transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
-              >
-                <div className="flex items-center gap-6">
-                  <div className="w-16 h-16 bg-surface-container rounded-xl shrink-0 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-secondary text-2xl">
+        <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
+          {recentTasks.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-14 gap-3">
+              <span className="material-symbols-outlined text-primary/15 text-5xl">
+                assignment_turned_in
+              </span>
+              <p className="text-primary/40 text-sm">No approved tasks yet</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-primary/5">
+              {recentTasks.map((s) => (
+                <div
+                  key={String(s._id)}
+                  className="flex items-center gap-4 px-5 py-4 hover:bg-background/60 transition-colors"
+                >
+                  {/* Icon */}
+                  <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+                    <span
+                      className="material-symbols-outlined text-secondary text-lg"
+                      style={{ fontVariationSettings: "'FILL' 1" }}
+                    >
                       assignment_turned_in
                     </span>
                   </div>
-                  <div>
-                    <h4 className="font-headline font-bold text-lg text-primary">
+
+                  {/* Title + buyer */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-primary truncate">
                       {s.taskTitle}
-                    </h4>
-                    <p className="font-body text-sm text-on-surface-variant mb-2">
-                      by {s.taskBuyerName}
                     </p>
-                    <div className="flex gap-4">
-                      <span className="flex items-center gap-1 text-[10px] font-label text-secondary font-bold uppercase tracking-wider">
-                        <span className="material-symbols-outlined text-xs">
-                          schedule
-                        </span>
-                        {new Date(s.updatedAt as Date).toLocaleDateString()}
+                    <p className="text-xs text-primary/40 mt-0.5">
+                      by {s.taskBuyerName} ·{" "}
+                      {new Date(s.updatedAt as Date).toLocaleDateString(
+                        "en-US",
+                        { month: "short", day: "numeric", year: "numeric" },
+                      )}
+                    </p>
+                  </div>
+
+                  {/* Coins */}
+                  <div className="text-right shrink-0">
+                    <div className="flex items-center gap-1 justify-end">
+                      <span
+                        className="material-symbols-outlined text-amber-500 text-sm"
+                        style={{ fontVariationSettings: "'FILL' 1" }}
+                      >
+                        toll
                       </span>
-                      <span className="flex items-center gap-1 text-[10px] font-label text-on-surface-variant font-bold uppercase tracking-wider">
-                        <span className="material-symbols-outlined text-xs">
-                          check_circle
-                        </span>
-                        Verified
+                      <span className="text-sm font-extrabold text-primary">
+                        {s.payableAmount}
                       </span>
                     </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0">
-                  <div className="text-right">
-                    <p className="font-headline font-extrabold text-primary text-xl">
-                      {s.payableAmount}{" "}
-                      <span className="text-xs font-label uppercase text-on-surface-variant tracking-tighter">
-                        Coins
-                      </span>
-                    </p>
-                    <p className="text-[10px] font-label text-secondary font-bold uppercase tracking-widest">
-                      Completed
+                    <p className="text-[10px] text-secondary font-semibold uppercase tracking-wider mt-0.5">
+                      Approved
                     </p>
                   </div>
-                  <span className="material-symbols-outlined text-outline-variant">
-                    chevron_right
-                  </span>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
       </section>
     </div>
   );
