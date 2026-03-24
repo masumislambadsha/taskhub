@@ -1,11 +1,4 @@
-import { SkeletonTablePage } from "@/components/ui/Skeleton";
+import { SkeletonAdminListPage } from "@/components/ui/Skeleton";
 export default function Loading() {
-  return (
-    <SkeletonTablePage
-      rows={8}
-      cols={6}
-      headers={["Title", "Buyer", "Status", "Workers", "Deadline", "Actions"]}
-      filterCount={1}
-    />
-  );
+  return <SkeletonAdminListPage rows={7} filterCount={1} />;
 }

@@ -57,7 +57,7 @@ export function SkeletonTableRow({ cols = 5 }: { cols?: number }) {
   );
 }
 
-// ── Full table ───────────────────────────────────────────────────────────────
+// ── Full table (no wrapper card — embed inside your own container) ────────────
 export function SkeletonTable({
   rows = 6,
   cols = 5,
@@ -94,6 +94,210 @@ export function SkeletonTable({
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+// ── Mobile card skeleton (matches the sm card layout used in table+card pages) ─
+export function SkeletonMobileCard() {
+  return (
+    <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <Bone className="h-4 w-3/4" />
+        <SkeletonBadge />
+      </div>
+      <div className="flex items-center justify-between">
+        <Bone className="h-3 w-24" />
+        <Bone className="h-3 w-20" />
+      </div>
+      <div className="flex items-center justify-between">
+        <Bone className="h-4 w-20" />
+        <div className="flex gap-2">
+          <Bone className="h-7 w-14 rounded-md" />
+          <Bone className="h-7 w-14 rounded-md" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Table on md+, cards on sm (buyer/tasks, worker/submissions, buyer/submissions, buyer/payments) ─
+export function SkeletonTableWithCards({
+  rows = 5,
+  cols = 5,
+  headers,
+  cardCount = 5,
+  mdBreakpoint = false,
+}: {
+  rows?: number;
+  cols?: number;
+  headers?: string[];
+  cardCount?: number;
+  /** use md: breakpoint instead of sm: (for pages that switch at md) */
+  mdBreakpoint?: boolean;
+}) {
+  const hideCards = mdBreakpoint ? "md:hidden" : "sm:hidden";
+  const hideTable = mdBreakpoint ? "hidden md:block" : "hidden sm:block";
+  return (
+    <>
+      {/* Mobile cards */}
+      <div className={`${hideCards} space-y-3`}>
+        {Array.from({ length: cardCount }).map((_, i) => (
+          <SkeletonMobileCard key={i} />
+        ))}
+      </div>
+      {/* Desktop table */}
+      <div className={hideTable}>
+        <SkeletonTable rows={rows} cols={cols} headers={headers} />
+      </div>
+    </>
+  );
+}
+
+// ── Admin list item skeleton (avatar + text + badge + action buttons) ─────────
+export function SkeletonAdminListItem() {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 sm:px-5 py-4">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <Bone className="w-10 h-10 rounded-full shrink-0" />
+        <div className="space-y-1.5 flex-1 min-w-0">
+          <Bone className="h-4 w-40" />
+          <Bone className="h-3 w-28" />
+        </div>
+      </div>
+      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap pl-13 sm:pl-0">
+        <Bone className="h-7 w-16 rounded-lg" />
+        <Bone className="h-7 w-16 rounded-lg" />
+        <SkeletonBadge />
+        <Bone className="h-7 w-20 rounded-lg" />
+        <Bone className="h-7 w-16 rounded-lg" />
+      </div>
+    </div>
+  );
+}
+
+// ── Admin list page (admin/tasks, admin/users — list layout, not a table) ────
+export function SkeletonAdminListPage({
+  rows = 7,
+  filterCount = 1,
+}: {
+  rows?: number;
+  filterCount?: number;
+}) {
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Bone className="h-7 w-44" />
+        <Bone className="h-4 w-60" />
+      </div>
+      <div className="flex gap-3 flex-wrap">
+        {Array.from({ length: filterCount }).map((_, i) => (
+          <Bone key={i} className="h-10 w-32 rounded-lg" />
+        ))}
+      </div>
+      <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden divide-y divide-primary/5">
+        {Array.from({ length: rows }).map((_, i) => (
+          <SkeletonAdminListItem key={i} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Admin withdrawals page (table on md+, cards on sm) ────────────────────────
+export function SkeletonAdminWithdrawalsPage({ rows = 5 }: { rows?: number }) {
+  return (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <Bone className="h-7 w-52" />
+        <Bone className="h-4 w-64" />
+      </div>
+      <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-primary/5">
+          {Array.from({ length: rows }).map((_, i) => (
+            <div key={i} className="px-4 py-4 space-y-3">
+              <div className="flex items-center gap-3">
+                <Bone className="w-9 h-9 rounded-full shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <Bone className="h-4 w-32" />
+                  <Bone className="h-3 w-40" />
+                </div>
+                <SkeletonBadge />
+              </div>
+              <div className="flex items-center gap-2 pl-12">
+                <Bone className="h-6 w-16 rounded-lg" />
+                <Bone className="h-6 w-14 rounded-lg" />
+                <Bone className="h-3 w-20" />
+              </div>
+              <div className="flex gap-2 pl-12">
+                <Bone className="flex-1 h-8 rounded-lg" />
+                <Bone className="flex-1 h-8 rounded-lg" />
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-background border-b border-primary/5">
+              <tr>
+                {[
+                  "Worker",
+                  "Coins",
+                  "Amount",
+                  "Method",
+                  "Account",
+                  "Status",
+                  "Date",
+                  "Actions",
+                ].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-primary/5">
+              {Array.from({ length: rows }).map((_, i) => (
+                <tr key={i}>
+                  <td className="px-6 py-4">
+                    <Bone className="h-4 w-28 mb-1.5" />
+                    <Bone className="h-3 w-36" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Bone className="h-4 w-12" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Bone className="h-4 w-14" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Bone className="h-4 w-16" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Bone className="h-4 w-24" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <SkeletonBadge />
+                  </td>
+                  <td className="px-6 py-4">
+                    <Bone className="h-3 w-20" />
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex gap-2">
+                      <Bone className="h-7 w-16 rounded-lg" />
+                      <Bone className="h-7 w-14 rounded-lg" />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -361,7 +565,7 @@ export function SkeletonAdminDashboard() {
   );
 }
 
-/** Table page skeleton (submissions, payments, tasks, users, withdrawals) */
+/** Table page skeleton (submissions, payments, tasks — table on sm+, cards on xs) */
 export function SkeletonTablePage({
   rows = 6,
   cols = 5,
@@ -384,7 +588,12 @@ export function SkeletonTablePage({
           <Bone key={i} className="h-10 w-32 rounded-lg" />
         ))}
       </div>
-      <SkeletonTable rows={rows} cols={cols} headers={headers} />
+      <SkeletonTableWithCards
+        rows={rows}
+        cols={cols}
+        headers={headers}
+        cardCount={rows}
+      />
     </div>
   );
 }
@@ -477,8 +686,26 @@ export function SkeletonWithdrawalPage() {
         </div>
         <Bone className="h-12 w-full rounded-lg" />
       </div>
-      {/* history table */}
-      <SkeletonTable rows={4} cols={5} />
+      {/* history list */}
+      <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-primary/5">
+          <Bone className="h-5 w-40" />
+        </div>
+        <div className="divide-y divide-primary/5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 px-5 py-4">
+              <Bone className="w-10 h-10 rounded-full shrink-0" />
+              <div className="flex-1 space-y-1.5">
+                <Bone className="h-4 w-24" />
+                <Bone className="h-3 w-20" />
+              </div>
+              <Bone className="h-4 w-16 hidden sm:block" />
+              <Bone className="h-4 w-14" />
+              <SkeletonBadge />
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
