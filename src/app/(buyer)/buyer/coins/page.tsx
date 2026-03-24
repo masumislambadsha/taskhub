@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
@@ -15,27 +15,39 @@ export default function BuyCoinsPage() {
   const router = useRouter();
   const [selectedGateway, setSelectedGateway] = useState<string>("stripe");
 
+  const handled = useRef(false);
+
   // Handle success redirect
   useEffect(() => {
+    if (handled.current) return;
+
     const paymentId = params.get("paymentId");
     const success = params.get("success");
-    const sandbox = params.get("sandbox");
+    const confirmed = params.get("confirmed");
 
     if (success && paymentId) {
-      axios
-        .post("/api/v1/payments/confirm", { paymentId })
-        .then((r) => {
-          toast.success(`${r.data.coins} coins added to your account!`);
-          update();
-          router.replace("/buyer/coins");
-        })
-        .catch(() => {
-          // Webhook may have already confirmed it
+      handled.current = true;
+      if (confirmed) {
+        update().then(() => {
           toast.success("Payment successful! Coins added.");
-          update();
           router.replace("/buyer/coins");
         });
+      } else {
+        axios
+          .post("/api/v1/payments/confirm", { paymentId })
+          .then((r) => {
+            toast.success(`${r.data.coins} coins added to your account!`);
+            update();
+            router.replace("/buyer/coins");
+          })
+          .catch(() => {
+            toast.success("Payment successful! Coins added.");
+            update();
+            router.replace("/buyer/coins");
+          });
+      }
     } else if (params.get("cancelled")) {
+      handled.current = true;
       toast.error("Payment cancelled.");
       router.replace("/buyer/coins");
     }

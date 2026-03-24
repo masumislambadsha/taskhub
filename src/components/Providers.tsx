@@ -18,7 +18,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <SmoothScroll>{children}</SmoothScroll>
 
           <Toaster
-            position="top-right"
+            position="bottom-center"
             toastOptions={{
               style: {
                 background: "#004030",
