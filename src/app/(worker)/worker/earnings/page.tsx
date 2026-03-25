@@ -1,3 +1,4 @@
+import { MdAccountBalanceWallet, MdArrowForward, MdSchedule, MdTaskAlt } from 'react-icons/md';
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
@@ -111,9 +112,7 @@ export default async function WorkerEarningsPage() {
             className="z-10 mt-4 inline-flex items-center gap-2 bg-secondary text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-secondary/90 transition-colors w-fit"
           >
             Withdraw Now
-            <span className="material-symbols-outlined text-sm">
-              arrow_forward
-            </span>
+            <MdArrowForward className="text-base" />
           </Link>
         </div>
 
@@ -133,12 +132,7 @@ export default async function WorkerEarningsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2 text-secondary font-semibold text-xs sm:text-sm mt-4">
-            <span
-              className="material-symbols-outlined"
-              style={{ fontSize: "16px" }}
-            >
-              schedule
-            </span>
+            <MdSchedule style={{ fontSize: "16px" }} />
             Awaiting buyer approval
           </div>
         </div>
@@ -198,11 +192,11 @@ export default async function WorkerEarningsPage() {
                       : "bg-primary/10 text-primary"
                   }`}
                 >
-                  <span className="material-symbols-outlined text-base sm:text-xl">
-                    {tx.type === "earning"
-                      ? "task_alt"
-                      : "account_balance_wallet"}
-                  </span>
+                  {tx.type === "earning" ? (
+                    <MdTaskAlt className="text-base sm:text-xl" />
+                  ) : (
+                    <MdAccountBalanceWallet className="text-base sm:text-xl" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start gap-2">

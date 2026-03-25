@@ -1,4 +1,6 @@
 "use client";
+import iconMap from '@/lib/iconMap';
+import { MdAdd, MdCategory, MdClose, MdDelete, MdEdit, MdOpenInNew, MdTaskAlt, MdTrendingUp } from 'react-icons/md';
 
 import { useEffect, useState } from "react";
 
@@ -131,9 +133,9 @@ export default function AdminCategoriesPage() {
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm self-start sm:self-auto w-full"
+          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm self-start sm:self-auto sm:w-auto w-full"
         >
-          <span className="material-symbols-outlined text-sm">add</span>
+          <MdAdd className="text-sm" />
           Add Category
         </button>
       </div>
@@ -141,27 +143,21 @@ export default function AdminCategoriesPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 sm:p-6 border border-primary/5 shadow-sm">
-          <span className="material-symbols-outlined text-secondary text-2xl sm:text-3xl mb-2 sm:mb-3 block">
-            category
-          </span>
+          <MdCategory className="text-secondary text-2xl" />
           <div className="text-2xl sm:text-3xl font-bold font-headline text-primary">
             {categories.length}
           </div>
           <div className="text-sm text-primary/60 mt-1">Total Categories</div>
         </div>
         <div className="bg-white rounded-xl p-4 sm:p-6 border border-primary/5 shadow-sm">
-          <span className="material-symbols-outlined text-secondary text-2xl sm:text-3xl mb-2 sm:mb-3 block">
-            task_alt
-          </span>
+          <MdTaskAlt className="text-sm" />
           <div className="text-2xl sm:text-3xl font-bold font-headline text-primary">
             {totalTasks}
           </div>
           <div className="text-sm text-primary/60 mt-1">Total Tasks</div>
         </div>
         <div className="bg-white rounded-xl p-4 sm:p-6 border border-primary/5 shadow-sm">
-          <span className="material-symbols-outlined text-secondary text-2xl sm:text-3xl mb-2 sm:mb-3 block">
-            trending_up
-          </span>
+          <MdTrendingUp className="text-secondary text-2xl" />
           <div className="text-lg sm:text-2xl font-bold font-headline text-primary truncate">
             {Object.values(stats).sort((a, b) => b.count - a.count)[0]?._id ??
               "—"}
@@ -169,9 +165,7 @@ export default function AdminCategoriesPage() {
           <div className="text-sm text-primary/60 mt-1">Top Category</div>
         </div>
         <div className="bg-primary rounded-xl p-4 sm:p-6 border border-primary shadow-sm">
-          <span className="material-symbols-outlined text-secondary text-2xl sm:text-3xl mb-2 sm:mb-3 block">
-            open_in_new
-          </span>
+          <MdOpenInNew className="text-secondary text-2xl" />
           <div className="text-2xl sm:text-3xl font-bold font-headline text-white">
             {Object.values(stats).reduce((s, c) => s + c.open, 0)}
           </div>
@@ -205,9 +199,7 @@ export default function AdminCategoriesPage() {
                   className="px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3 sm:gap-5 hover:bg-slate-50 transition-colors"
                 >
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-secondary text-base sm:text-xl">
-                      {cat.icon}
-                    </span>
+                    {(() => { const Icon = iconMap[cat.icon] ?? MdCategory; return <Icon className="text-base text-secondary" />; })()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1.5 gap-2">
@@ -236,17 +228,13 @@ export default function AdminCategoriesPage() {
                       onClick={() => openEdit(cat)}
                       className="p-2 rounded-lg hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors"
                     >
-                      <span className="material-symbols-outlined text-sm">
-                        edit
-                      </span>
+                      <MdEdit className="text-sm" />
                     </button>
                     <button
                       onClick={() => handleDelete(cat)}
                       className="p-2 rounded-lg hover:bg-red-50 text-primary/40 hover:text-red-500 transition-colors"
                     >
-                      <span className="material-symbols-outlined text-sm">
-                        delete
-                      </span>
+                      <MdDelete className="text-sm" />
                     </button>
                   </div>
                 </div>
@@ -268,7 +256,7 @@ export default function AdminCategoriesPage() {
                 onClick={() => setShowModal(false)}
                 className="text-primary/40 hover:text-primary"
               >
-                <span className="material-symbols-outlined">close</span>
+                <MdClose className="text-sm" />
               </button>
             </div>
 
@@ -303,9 +291,7 @@ export default function AdminCategoriesPage() {
                       }`}
                       title={icon}
                     >
-                      <span className="material-symbols-outlined text-xl">
-                        {icon}
-                      </span>
+                      <MdCategory className="text-secondary text-xl" />
                     </button>
                   ))}
                 </div>
@@ -339,3 +325,6 @@ export default function AdminCategoriesPage() {
     </div>
   );
 }
+
+
+

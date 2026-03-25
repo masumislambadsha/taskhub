@@ -1,10 +1,37 @@
-﻿import { auth } from "@/lib/auth";
+import {
+  MdArrowForward,
+  MdAssignmentTurnedIn,
+  MdLock,
+  MdMonetizationOn,
+  MdPayments,
+  MdTaskAlt,
+  MdToll,
+} from "react-icons/md";
+import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
 import mongoose from "mongoose";
 import { coinsToUsdWithdraw } from "@/lib/coins";
 import Link from "next/link";
 import WorkerProfileClient from "./WorkerProfileClient";
+import {
+  MdStar,
+  MdDiamond,
+  MdLocalFireDepartment,
+  MdMilitaryTech,
+  MdWorkspacePremium,
+  MdEco,
+} from "react-icons/md";
+import { IconType } from "react-icons";
+
+const BADGE_ICON_MAP: Record<string, IconType> = {
+  award_star: MdStar,
+  diamond: MdDiamond,
+  potted_plant: MdEco,
+  local_fire_department: MdLocalFireDepartment,
+  military_tech: MdMilitaryTech,
+  workspace_premium: MdWorkspacePremium,
+};
 
 export default async function WorkerProfilePage() {
   const session = await auth();
@@ -77,9 +104,7 @@ export default async function WorkerProfilePage() {
         <div className="lg:col-span-8">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div className="col-span-2 sm:col-span-1 bg-primary p-8 rounded-xl flex flex-col justify-between hover:bg-surface-container-lowest transition-all shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] group">
-              <span className="material-symbols-outlined text-secondary text-3xl mb-4 group-hover:scale-110 transition-transform">
-                task_alt
-              </span>
+              <MdTaskAlt className="text-secondary text-3xl mb-4 group-hover:scale-110 transition-transform" />
               <div>
                 <h3 className="font-headline text-3xl font-extrabold text-white">
                   {totalApproved}
@@ -91,9 +116,7 @@ export default async function WorkerProfilePage() {
             </div>
 
             <div className="bg-primary p-8 rounded-xl flex flex-col justify-between shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] group">
-              <span className="material-symbols-outlined text-secondary text-3xl mb-4 group-hover:scale-110 transition-transform">
-                monetization_on
-              </span>
+              <MdMonetizationOn className="text-secondary text-3xl mb-4 group-hover:scale-110 transition-transform" />
               <div>
                 <h3 className="font-headline text-3xl font-extrabold text-white">
                   {session!.user.coins}
@@ -105,9 +128,7 @@ export default async function WorkerProfilePage() {
             </div>
 
             <div className="bg-primary p-8 rounded-xl flex flex-col justify-between hover:bg-surface-container-lowest transition-all shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] group">
-              <span className="material-symbols-outlined text-secondary text-3xl mb-4 group-hover:scale-110 transition-transform">
-                payments
-              </span>
+              <MdPayments className="text-secondary text-3xl mb-4 group-hover:scale-110 transition-transform" />
               <div>
                 <h3 className="font-headline text-3xl font-extrabold text-white">
                   {coinsToUsdWithdraw(totalCoins)}
@@ -135,9 +156,7 @@ export default async function WorkerProfilePage() {
                   className="shrink-0 flex items-center gap-2 bg-secondary/10 text-secondary px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-secondary/20 transition-colors"
                 >
                   View All
-                  <span className="material-symbols-outlined text-sm">
-                    arrow_forward
-                  </span>
+                  <MdArrowForward className="text-base" />
                 </Link>
               </div>
               <div className="absolute right-0 top-0 w-64 h-full bg-linear-to-l from-secondary-container/10 to-transparent pointer-events-none" />
@@ -158,12 +177,16 @@ export default async function WorkerProfilePage() {
               className={`bg-primary p-6 rounded-2xl flex flex-col items-center text-center group hover:bg-surface-container-high transition-colors ${!b.earned ? "opacity-50" : ""}`}
             >
               <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-[0_24px_40px_-15px_rgba(11,30,38,0.06)] group-hover:-translate-y-1 transition-transform">
-                <span
-                  className={`material-symbols-outlined text-3xl ${b.earned ? "text-secondary" : "text-on-surface-variant"}`}
-                  style={b.earned ? { fontVariationSettings: "'FILL' 1" } : {}}
-                >
-                  {b.earned ? b.icon : "lock"}
-                </span>
+                {(() => {
+                  const Icon = b.earned
+                    ? (BADGE_ICON_MAP[b.icon] ?? MdTaskAlt)
+                    : MdLock;
+                  return (
+                    <Icon
+                      className={`text-3xl ${b.earned ? "text-secondary" : "text-on-surface-variant"}`}
+                    />
+                  );
+                })()}
               </div>
               <span className="font-label text-[9px] uppercase tracking-tighter text-white">
                 {b.label}
@@ -184,18 +207,14 @@ export default async function WorkerProfilePage() {
             className="text-xs text-secondary font-semibold hover:underline flex items-center gap-1"
           >
             View All
-            <span className="material-symbols-outlined text-sm">
-              arrow_forward
-            </span>
+            <MdArrowForward className="text-base" />
           </Link>
         </div>
 
         <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
           {recentTasks.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-14 gap-3">
-              <span className="material-symbols-outlined text-primary/15 text-5xl">
-                assignment_turned_in
-              </span>
+              <MdAssignmentTurnedIn className="text-primary/15 text-5xl" />
               <p className="text-primary/40 text-sm">No approved tasks yet</p>
             </div>
           ) : (
@@ -207,12 +226,7 @@ export default async function WorkerProfilePage() {
                 >
                   {/* Icon */}
                   <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
-                    <span
-                      className="material-symbols-outlined text-secondary text-lg"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      assignment_turned_in
-                    </span>
+                    <MdAssignmentTurnedIn className="text-secondary text-lg" />
                   </div>
 
                   {/* Title + buyer */}
@@ -232,12 +246,7 @@ export default async function WorkerProfilePage() {
                   {/* Coins */}
                   <div className="text-right shrink-0">
                     <div className="flex items-center gap-1 justify-end">
-                      <span
-                        className="material-symbols-outlined text-amber-500 text-sm"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        toll
-                      </span>
+                      <MdToll className="text-sm text-amber-500" />
                       <span className="text-sm font-extrabold text-primary">
                         {s.payableAmount}
                       </span>

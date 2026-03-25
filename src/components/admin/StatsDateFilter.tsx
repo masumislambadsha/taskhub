@@ -1,7 +1,10 @@
 "use client";
+import { MdCalendarToday, MdExpandLess, MdExpandMore } from 'react-icons/md';
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
+import { Calendar, DateField, DatePicker, Label } from "@heroui/react";
+import { parseDate } from "@internationalized/date";
 
 const PRESETS = [
   { label: "Today", value: "today" },
@@ -73,17 +76,26 @@ export default function StatsDateFilter() {
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 px-4 py-2 bg-white border border-primary/10 rounded-lg text-xs sm:text-sm text-primary/70 shadow-sm hover:border-primary/30 transition-colors"
       >
-        <span className="material-symbols-outlined text-xs text-primary/40" style={{fontSize:"16px"}}>
-          calendar_today
-        </span>
+        <MdCalendarToday
+          className="text-primary/40"
+          style={{ fontSize: "16px" }}
+        />
         <span className="font-medium">{displayLabel}</span>
-        <span className="material-symbols-outlined text-base text-primary/40" style={{fontSize:"16px"}}>
-          {open ? "expand_less" : "expand_more"}
-        </span>
+        {open ? (
+          <MdExpandLess
+            className="text-primary/40"
+            style={{ fontSize: "16px" }}
+          />
+        ) : (
+          <MdExpandMore
+            className="text-primary/40"
+            style={{ fontSize: "16px" }}
+          />
+        )}
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 z-50 bg-white border border-primary/10 rounded-xl shadow-xl w-72 overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 z-50 bg-transparent backdrop-blur-sm border border-primary/10 rounded-xl shadow-xl w-72 overflow-hidden">
           <div className="p-2">
             {PRESETS.filter((p) => p.value !== "custom").map((p) => (
               <button
@@ -104,30 +116,113 @@ export default function StatsDateFilter() {
             <p className="text-[10px] uppercase tracking-widest font-bold text-primary/40 mb-3">
               Custom range
             </p>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <label className="text-xs text-primary/50 w-8">From</label>
-                <input
-                  type="date"
-                  value={from}
-                  onChange={(e) => {
-                    setFrom(e.target.value);
-                    setLocalPreset("custom");
+            <div className="flex flex-col gap-4">
+              <div className="space-y-1">
+                <DatePicker
+                  className="w-full"
+                  value={from ? parseDate(from) : null}
+                  onChange={(date) => {
+                    if (date) {
+                      setFrom(date.toString());
+                      setLocalPreset("custom");
+                    }
                   }}
-                  className="flex-1 border border-primary/10 rounded-lg px-3 py-1.5 text-sm text-primary focus:outline-none focus:border-primary/40"
-                />
+                >
+                  <Label>From</Label>
+                  <DateField.Group>
+                    <DateField.Input>
+                      {(segment) => <DateField.Segment segment={segment} />}
+                    </DateField.Input>
+                    <DateField.Suffix>
+                      <DatePicker.Trigger>
+                        <DatePicker.TriggerIndicator />
+                      </DatePicker.Trigger>
+                    </DateField.Suffix>
+                  </DateField.Group>
+                  <DatePicker.Popover>
+                    <Calendar aria-label="Start date">
+                      <Calendar.Header>
+                        <Calendar.YearPickerTrigger>
+                          <Calendar.YearPickerTriggerHeading />
+                          <Calendar.YearPickerTriggerIndicator />
+                        </Calendar.YearPickerTrigger>
+                        <Calendar.NavButton slot="previous" />
+                        <Calendar.NavButton slot="next" />
+                      </Calendar.Header>
+                      <Calendar.Grid>
+                        <Calendar.GridHeader>
+                          {(day) => (
+                            <Calendar.HeaderCell>{day}</Calendar.HeaderCell>
+                          )}
+                        </Calendar.GridHeader>
+                        <Calendar.GridBody>
+                          {(date) => <Calendar.Cell date={date} />}
+                        </Calendar.GridBody>
+                      </Calendar.Grid>
+                      <Calendar.YearPickerGrid>
+                        <Calendar.YearPickerGridBody>
+                          {({ year }) => (
+                            <Calendar.YearPickerCell year={year} />
+                          )}
+                        </Calendar.YearPickerGridBody>
+                      </Calendar.YearPickerGrid>
+                    </Calendar>
+                  </DatePicker.Popover>
+                </DatePicker>
               </div>
-              <div className="flex items-center gap-2">
-                <label className="text-xs text-primary/50 w-8">To</label>
-                <input
-                  type="date"
-                  value={to}
-                  onChange={(e) => {
-                    setTo(e.target.value);
-                    setLocalPreset("custom");
+
+              <div className="space-y-1">
+                <DatePicker
+                  className="w-full"
+                  value={to ? parseDate(to) : null}
+                  onChange={(date) => {
+                    if (date) {
+                      setTo(date.toString());
+                      setLocalPreset("custom");
+                    }
                   }}
-                  className="flex-1 border border-primary/10 rounded-lg px-3 py-1.5 text-sm text-primary focus:outline-none focus:border-primary/40"
-                />
+                >
+                  <Label>To</Label>
+                  <DateField.Group>
+                    <DateField.Input>
+                      {(segment) => <DateField.Segment segment={segment} />}
+                    </DateField.Input>
+                    <DateField.Suffix>
+                      <DatePicker.Trigger>
+                        <DatePicker.TriggerIndicator />
+                      </DatePicker.Trigger>
+                    </DateField.Suffix>
+                  </DateField.Group>
+                  <DatePicker.Popover>
+                    <Calendar aria-label="End date">
+                      <Calendar.Header>
+                        <Calendar.YearPickerTrigger>
+                          <Calendar.YearPickerTriggerHeading />
+                          <Calendar.YearPickerTriggerIndicator />
+                        </Calendar.YearPickerTrigger>
+                        <Calendar.NavButton slot="previous" />
+                        <Calendar.NavButton slot="next" />
+                      </Calendar.Header>
+                      <Calendar.Grid>
+                        <Calendar.GridHeader>
+                          {(day) => (
+                            <Calendar.HeaderCell>{day}</Calendar.HeaderCell>
+                          )}
+                        </Calendar.GridHeader>
+                        <Calendar.GridBody>
+                          {(date) => <Calendar.Cell date={date} />}
+                        </Calendar.GridBody>
+                      </Calendar.Grid>
+                      <Calendar.YearPickerGrid>
+                        <Calendar.YearPickerGridBody>
+                          {({ year }) => (
+                            <Calendar.YearPickerCell year={year} />
+                          )}
+                        </Calendar.YearPickerGridBody>
+                      </Calendar.YearPickerGrid>
+                    </Calendar>
+                  </DatePicker.Popover>
+                </DatePicker>
               </div>
               <button
                 onClick={() => apply("custom", from, to)}

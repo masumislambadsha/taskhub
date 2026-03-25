@@ -1,4 +1,5 @@
 "use client";
+import { MdToll } from 'react-icons/md';
 
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
@@ -37,13 +38,8 @@ export default function DashboardShell({
           </div>
           <div className="hidden lg:block" />
           <div className="flex items-center gap-2 sm:gap-4">
-            <div className="flex items-center gap-2 bg-background  py-1.5 rounded-lg">
-              <span
-                className="material-symbols-outlined text-amber-500 text-sm"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                toll
-              </span>
+            <div className="flex items-center gap-2   py-1.5 rounded-lg">
+              <MdToll className="text-amber-500 text-lg" />
               <span className="text-sm font-bold text-primary">
                 {session?.user?.coins ?? 0}
               </span>

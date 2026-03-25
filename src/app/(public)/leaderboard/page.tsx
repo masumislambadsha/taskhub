@@ -1,4 +1,10 @@
 import { connectDB } from "@/lib/db";
+import {
+  MdAccountCircle,
+  MdArrowForward,
+  MdLeaderboard,
+  MdTaskAlt,
+} from "react-icons/md";
 import User from "@/models/User";
 import Submission from "@/models/Submission";
 import { coinsToUsdWithdraw } from "@/lib/coins";
@@ -54,19 +60,19 @@ export default async function LeaderboardPage() {
   return (
     <main className="pb-13 md:pb-24">
       {/* Hero */}
-      <section className="relative overflow-hidden bg-primary py-15 md:py-20 px-4 md:px-8">
+      <section className="relative overflow-hidden bg-primary py-20 px-4 sm:px-8">
         <div className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/5" />
-        <div className="relative max-w-4xl mx-auto text-center">
-          <span className="inline-block bg-amber-400/20 text-amber-300 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-5">
+        <div className="relative max-w-4xl mx-auto text-center space-y-4">
+          <span className="inline-block bg-white/10 text-secondary px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full mb-2">
             Hall of Fame
           </span>
-          <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tighter leading-none mb-4">
+          <h1 className="font-headline text-4xl sm:text-5xl md:text-6xl font-extrabold text-white tracking-tighter leading-tight">
             Top Earners
             <br />
-            <span className="text-secondary">This Month</span>
+            <span className="text-secondary/80">This Month</span>
           </h1>
-          <p className="text-white/50 text-sm mt-4 max-w-xl mx-auto leading-relaxed">
+          <p className="text-white/50 text-sm max-w-xl mx-auto leading-relaxed">
             The highest-earning workers on TaskHub, ranked by total coins earned
             through approved submissions. Could your name be here?
           </p>
@@ -90,9 +96,7 @@ export default async function LeaderboardPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="material-symbols-outlined text-primary/30 text-3xl">
-                    account_circle
-                  </span>
+                  <MdAccountCircle className="text-3xl text-primary/30" />
                 )}
               </div>
               <p className="font-bold text-primary text-xs sm:text-sm truncate">
@@ -122,9 +126,7 @@ export default async function LeaderboardPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="material-symbols-outlined text-white/40 text-4xl">
-                    account_circle
-                  </span>
+                  <MdAccountCircle className="text-3xl text-primary/30" />
                 )}
               </div>
               <p className="font-bold text-white text-sm truncate">
@@ -157,9 +159,7 @@ export default async function LeaderboardPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <span className="material-symbols-outlined text-primary/30 text-3xl">
-                    account_circle
-                  </span>
+                  <MdAccountCircle className="text-3xl text-primary/30" />
                 )}
               </div>
               <p className="font-bold text-primary text-xs sm:text-sm truncate">
@@ -232,9 +232,7 @@ export default async function LeaderboardPage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <span className="material-symbols-outlined text-secondary text-xl">
-                      account_circle
-                    </span>
+                    <MdAccountCircle className="text-3xl text-primary/30" />
                   )}
                 </div>
 
@@ -262,9 +260,7 @@ export default async function LeaderboardPage() {
 
             {topWorkers.length === 0 && (
               <div className="px-6 py-16 text-center">
-                <span className="material-symbols-outlined text-primary/20 text-5xl mb-3 block">
-                  leaderboard
-                </span>
+                <MdLeaderboard className="text-5xl text-primary/20 block mb-3 mx-auto" />
                 <p className="text-primary/40 text-sm">
                   No data yet. Complete tasks to appear on the leaderboard.
                 </p>
@@ -290,18 +286,14 @@ export default async function LeaderboardPage() {
               href="/register"
               className="inline-flex items-center gap-2 bg-secondary text-white p-3 md:px-6 md:py-3 rounded-lg font-bold sm:text-sm text-xs hover:bg-secondary/90 transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">
-                arrow_forward
-              </span>
+              <MdArrowForward className="text-base" />
               Join as Worker
             </a>
             <a
               href="/tasks"
               className="inline-flex items-center gap-2 bg-white/10 text-white p-3 md:px-6 md:py-3 rounded-lg font-bold sm:text-sm text-xs hover:bg-white/20 transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">
-                task_alt
-              </span>
+              <MdTaskAlt className="text-base" />
               Browse Tasks
             </a>
           </div>

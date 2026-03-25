@@ -1,7 +1,7 @@
 "use client";
 
 // Base shimmer atom
-function Bone({ className = "" }: { className?: string }) {
+export function Bone({ className = "" }: { className?: string }) {
   return (
     <div
       className={`animate-pulse rounded-md bg-primary/8 ${className}`}
@@ -442,7 +442,7 @@ export function SkeletonPodium() {
       {[false, true, false].map((isFirst, i) => (
         <div
           key={i}
-          className={`bg-white rounded-2xl border border-primary/5 shadow-md p-6 text-center ${isFirst ? "-mt-6 bg-primary/5" : ""}`}
+          className={`bg-white rounded-2xl border border-primary/5 shadow-md p-6 text-center flex flex-col items-center justify-center gap-1 ${isFirst ? "-mt-6 bg-primary/5" : ""}`}
         >
           <Bone className="h-8 w-8 rounded-full mx-auto mb-3" />
           <SkeletonAvatar size="lg" />

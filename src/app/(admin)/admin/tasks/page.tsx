@@ -1,4 +1,13 @@
 "use client";
+import {
+  MdCategory,
+  MdChevronLeft,
+  MdChevronRight,
+  MdClose,
+  MdGroup,
+  MdTaskAlt,
+  MdToll,
+} from "react-icons/md";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +18,17 @@ import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import Image from "next/image";
+import type { Selection } from "@heroui/react";
+import {
+  Dropdown,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownSection,
+  DropdownItem,
+  DropdownItemIndicator,
+  Button,
+  Label,
+} from "@heroui/react";
 
 const swalTheme = {
   confirmButtonColor: "#4a9782",
@@ -108,20 +128,42 @@ export default function AdminTasksPage() {
 
       {/* Filter */}
       <div className="flex gap-3 flex-wrap">
-        <select
-          value={status}
-          onChange={(e) => {
-            setStatus(e.target.value);
-            setPage(1);
-          }}
-          className="px-4 py-2.5 rounded-lg border border-primary/20 bg-white text-sm text-primary focus:outline-none focus:ring-2 focus:ring-secondary"
+        <Dropdown>
+           <Button
+          variant="outline"
+          className="bg-white border-primary/10 text-primary/60 h-10 px-4 pr-8 justify-between font-medium shadow-sm"
         >
-          <option value="">All Status</option>
-          <option value="open">Open</option>
-          <option value="closed">Closed</option>
-          <option value="blocked">Blocked</option>
-          <option value="archived">Archived</option>
-        </select>
+            {status
+              ? status.charAt(0).toUpperCase() + status.slice(1)
+              : "All Status"}
+          </Button>
+          <DropdownPopover className="min-w-[160px] bg-transparent backdrop-blur-sm">
+            <DropdownMenu
+              selectedKeys={new Set([status || ""])}
+              selectionMode="single"
+              onSelectionChange={(keys: Selection) => {
+                const val = Array.from(keys)[0] as string;
+                setStatus(val);
+                setPage(1);
+              }}
+            >
+              <DropdownSection>
+                {[
+                  { value: "", label: "All Status" },
+                  { value: "open", label: "Open" },
+                  { value: "closed", label: "Closed" },
+                  { value: "blocked", label: "Blocked" },
+                  { value: "archived", label: "Archived" },
+                ].map((o) => (
+                  <DropdownItem key={o.value} id={o.value} textValue={o.label}>
+                    <DropdownItemIndicator />
+                    <Label className="bg-transparent">{o.label}</Label>
+                  </DropdownItem>
+                ))}
+              </DropdownSection>
+            </DropdownMenu>
+          </DropdownPopover>
+        </Dropdown>
         {status && (
           <button
             onClick={() => {
@@ -130,7 +172,7 @@ export default function AdminTasksPage() {
             }}
             className="px-4 py-2.5 rounded-lg border border-primary/10 bg-white text-sm text-primary/50 hover:text-primary transition-colors flex items-center gap-1.5"
           >
-            <span className="material-symbols-outlined text-sm">close</span>
+            <MdClose className="text-sm" />
             Clear
           </button>
         )}
@@ -153,9 +195,7 @@ export default function AdminTasksPage() {
           </div>
         ) : tasks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <span className="material-symbols-outlined text-primary/15 text-5xl">
-              task_alt
-            </span>
+            <MdTaskAlt className="text-5xl text-primary/20" />
             <p className="text-primary/40 text-sm">No tasks found</p>
           </div>
         ) : (
@@ -169,12 +209,7 @@ export default function AdminTasksPage() {
                     {/* Icon + title */}
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
-                        <span
-                          className="material-symbols-outlined text-secondary text-lg"
-                          style={{ fontVariationSettings: "'FILL' 1" }}
-                        >
-                          task_alt
-                        </span>
+                        <MdTaskAlt className="text-lg text-secondary" />
                       </div>
                       <div className="min-w-0">
                         <p className="font-semibold text-primary text-sm truncate">
@@ -191,9 +226,7 @@ export default function AdminTasksPage() {
                     <div className="flex items-center gap-2 sm:gap-5 flex-wrap sm:flex-nowrap">
                       {/* Workers */}
                       <div className="flex items-center gap-1 bg-primary/5 px-2.5 py-1.5 rounded-lg">
-                        <span className="material-symbols-outlined text-primary/40 text-sm">
-                          group
-                        </span>
+                        <MdGroup className="text-sm" />
                         <span className="text-xs font-semibold text-primary">
                           {t.filledWorkers}/{t.requiredWorkers}
                         </span>
@@ -201,12 +234,7 @@ export default function AdminTasksPage() {
 
                       {/* Coins */}
                       <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1.5 rounded-lg">
-                        <span
-                          className="material-symbols-outlined text-amber-500 text-sm"
-                          style={{ fontVariationSettings: "'FILL' 1" }}
-                        >
-                          toll
-                        </span>
+                        <MdToll className="text-sm text-amber-500" />
                         <span className="text-xs font-bold text-primary">
                           {t.payableAmount}
                         </span>
@@ -222,9 +250,7 @@ export default function AdminTasksPage() {
                           }
                           className="flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-lg font-medium bg-primary/5 text-primary hover:bg-primary/10 border border-primary/10 transition-colors flex items-center justify-center gap-1"
                         >
-                          <span className="material-symbols-outlined text-sm">
-                            {isExpanded ? "expand_less" : "expand_more"}
-                          </span>
+                          <MdCategory className="text-secondary text-xl" />
                           {isExpanded ? "Hide" : "Details"}
                         </button>
                         <button
@@ -361,9 +387,7 @@ export default function AdminTasksPage() {
             disabled={page === 1}
             className="w-9 h-9 rounded-lg text-sm font-semibold border border-primary/10 bg-white text-primary hover:border-secondary disabled:opacity-30 transition-colors flex items-center justify-center"
           >
-            <span className="material-symbols-outlined text-sm">
-              chevron_left
-            </span>
+            <MdChevronLeft className="text-xl" />
           </button>
           {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
             <button
@@ -383,9 +407,7 @@ export default function AdminTasksPage() {
             disabled={page === pages}
             className="w-9 h-9 rounded-lg text-sm font-semibold border border-primary/10 bg-white text-primary hover:border-secondary disabled:opacity-30 transition-colors flex items-center justify-center"
           >
-            <span className="material-symbols-outlined text-sm">
-              chevron_right
-            </span>
+            <MdChevronRight className="text-xl" />
           </button>
         </div>
       )}

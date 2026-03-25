@@ -1,4 +1,5 @@
 "use client";
+import { MdToll } from 'react-icons/md';
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import { format } from "date-fns";
 import Link from "next/link";
 import CountUp from "@/components/ui/CountUp";
 import { SkeletonTable } from "@/components/ui/Skeleton";
+import { Button } from '@heroui/react';
 
 export default function WorkerSubmissionsPage() {
   const [status, setStatus] = useState("all");
@@ -39,22 +41,27 @@ export default function WorkerSubmissionsPage() {
 
       <div className="flex gap-2 flex-wrap">
         {["all", "pending", "approved", "rejected"].map((s) => (
-          <button
+          <Button
+            variant="outline"
             key={s}
             onClick={() => {
               setStatus(s);
               setPage(1);
             }}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold capitalize transition-colors ${status === s ? "bg-primary text-white" : "bg-white border border-primary/10 text-primary hover:border-secondary"}`}
+            className={`h-10 rounded-lg px-4 justify-between font-medium shadow-sm capitalize transition-all ${
+              status === s
+                ? "bg-primary text-white border-primary"
+                : "bg-white border-primary/10 text-primary/60 hover:border-primary/20"
+            }`}
           >
             {s}
-          </button>
+          </Button>
         ))}
       </div>
 
       {isLoading ? (
         <SkeletonTable
-          rows={6}
+        rows={6}
           cols={5}
           headers={["Task", "Buyer", "Payout", "Status", "Date"]}
         />
@@ -92,12 +99,7 @@ export default function WorkerSubmissionsPage() {
                   <span>{format(new Date(s.createdAt), "MMM d, yyyy")}</span>
                 </div>
                 <div className="mt-2 flex items-center gap-1 font-semibold text-secondary text-sm">
-                  <span
-                    className="material-symbols-outlined text-xs text-amber-500"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    toll
-                  </span>
+                  <MdToll className="text-xs text-amber-500" />
                   <CountUp value={s.payableAmount} />
                   <span className="text-xs font-normal text-primary/40 ml-0.5">
                     coins
@@ -137,12 +139,7 @@ export default function WorkerSubmissionsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="flex items-center gap-1 font-semibold text-secondary">
-                          <span
-                            className="material-symbols-outlined text-xs text-amber-500"
-                            style={{ fontVariationSettings: "'FILL' 1" }}
-                          >
-                            toll
-                          </span>
+                          <MdToll className="text-xs text-amber-500" />
                           <CountUp value={s.payableAmount} />
                         </span>
                       </td>

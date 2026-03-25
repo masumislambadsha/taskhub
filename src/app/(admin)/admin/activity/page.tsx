@@ -1,11 +1,14 @@
 import { auth } from "@/lib/auth";
+import iconMap from '@/lib/iconMap';
+import { MdCategory } from 'react-icons/md';
 import { connectDB } from "@/lib/db";
-import Notification from "@/models/Notification";
+
 import User from "@/models/User";
 import Task from "@/models/Task";
 import Submission from "@/models/Submission";
 import Withdrawal from "@/models/Withdrawal";
 import { format } from "date-fns";
+import ActivityFilter from "@/components/admin/ActivityFilter";
 
 type LogEntry = {
   id: string;
@@ -19,9 +22,14 @@ type LogEntry = {
   tagColor: string;
 };
 
-export default async function AdminActivityPage() {
+export default async function AdminActivityPage({
+  searchParams,
+}: {
+  searchParams: { filter?: string };
+}) {
   await auth();
   await connectDB();
+  const filter = searchParams.filter || "all";
 
   const [recentUsers, recentTasks, recentSubmissions, recentWithdrawals] =
     await Promise.all([
@@ -41,6 +49,7 @@ export default async function AdminActivityPage() {
       detail: `${u.name} · ${u.email}`,
       time: new Date(u.createdAt as unknown as string),
       tag: u.role,
+      type: "users",
       tagColor: "bg-secondary/10 text-secondary",
     })),
     ...recentTasks.map((t) => ({
@@ -52,6 +61,7 @@ export default async function AdminActivityPage() {
       detail: t.title,
       time: new Date(t.createdAt as unknown as string),
       tag: t.status,
+      type: "tasks",
       tagColor: "bg-amber-50 text-amber-700",
     })),
     ...recentSubmissions.map((s) => ({
@@ -73,6 +83,7 @@ export default async function AdminActivityPage() {
       detail: `${s.workerName} → ${s.taskTitle}`,
       time: new Date(s.updatedAt as unknown as string),
       tag: s.status,
+      type: "submissions",
       tagColor:
         s.status === "approved"
           ? "bg-secondary/10 text-secondary"
@@ -89,6 +100,7 @@ export default async function AdminActivityPage() {
       detail: `${w.workerName} · ${w.coinRequested} coins via ${w.paymentSystem}`,
       time: new Date(w.createdAt as unknown as string),
       tag: w.status,
+      type: "withdrawals",
       tagColor:
         w.status === "approved"
           ? "bg-secondary/10 text-secondary"
@@ -97,6 +109,7 @@ export default async function AdminActivityPage() {
             : "bg-amber-50 text-amber-700",
     })),
   ]
+    .filter((log) => filter === "all" || log.type === filter)
     .sort((a, b) => b.time.getTime() - a.time.getTime())
     .slice(0, 50);
 
@@ -112,10 +125,7 @@ export default async function AdminActivityPage() {
             Platform-wide event history
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-white border border-primary/10 rounded-lg text-sm text-primary/60 shadow-sm self-start sm:self-auto w-full">
-          <span className="material-symbols-outlined text-lg">filter_list</span>
-          All Events
-        </div>
+        <ActivityFilter />
       </div>
 
       {/* Stats */}
@@ -138,9 +148,7 @@ export default async function AdminActivityPage() {
             key={s.label}
             className="bg-white rounded-xl p-4 sm:p-5 border border-primary/5 shadow-sm"
           >
-            <span className="material-symbols-outlined text-secondary text-2xl mb-2 block">
-              {s.icon}
-            </span>
+            {(() => { const Icon = iconMap[s.icon] ?? MdCategory; return <Icon className="text-xl text-secondary" />; })()}
             <div className="text-2xl font-bold font-headline text-primary">
               {s.value}
             </div>
@@ -165,11 +173,7 @@ export default async function AdminActivityPage() {
               <div
                 className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 ${log.iconBg}`}
               >
-                <span
-                  className={`material-symbols-outlined text-sm ${log.iconColor}`}
-                >
-                  {log.icon}
-                </span>
+                {(() => { const Icon = iconMap[log.icon] ?? MdCategory; return <Icon className={`text-lg ${log.iconColor}`} />; })()}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -205,3 +209,5 @@ export default async function AdminActivityPage() {
     </div>
   );
 }
+
+

@@ -1,4 +1,5 @@
 "use client";
+import { MdAdd, MdAddPhotoAlternate, MdChat, MdClose, MdToll } from 'react-icons/md';
 
 import { useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -134,12 +135,7 @@ export default function TaskDetailPage() {
           <div className="bg-background rounded-lg p-3 text-center">
             <div className="text-xs text-primary/50 mb-1">Payout</div>
             <div className="font-bold text-secondary flex items-center justify-center gap-1">
-              <span
-                className="material-symbols-outlined text-sm text-amber-500"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                toll
-              </span>
+              <MdToll className="text-sm text-amber-500" />
               <CountUp value={task.payableAmount} />
             </div>
           </div>
@@ -197,7 +193,7 @@ export default function TaskDetailPage() {
               }}
               className="flex items-center gap-1.5 text-xs font-semibold text-secondary hover:text-primary border border-secondary/30 hover:border-primary/30 px-3 py-1.5 rounded-lg transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">chat</span>
+              <MdChat className="text-sm" />
               Message Buyer
             </button>
           )}
@@ -251,9 +247,7 @@ export default function TaskDetailPage() {
                       onClick={() => remove(i)}
                       className="p-2.5 text-red-400 hover:text-red-600"
                     >
-                      <span className="material-symbols-outlined text-sm">
-                        close
-                      </span>
+                      <MdClose className="text-sm" />
                     </button>
                   )}
                 </div>
@@ -261,13 +255,16 @@ export default function TaskDetailPage() {
               <button
                 type="button"
                 onClick={() => append("")}
-                className="text-xs text-secondary hover:text-primary flex items-center gap-1"
+                className="text-xs text-secondary hover:text-primary flex items-center gap-1 mt-2"
               >
-                <span className="material-symbols-outlined text-sm text">
-                  add
-                </span>{" "}
-                Add another link
+                <MdAdd className="text-sm" /> Add another link
               </button>
+
+              {errors.proofLinks && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.proofLinks.message || "Invalid or missing links"}
+                </p>
+              )}
             </div>
 
             <div>
@@ -322,9 +319,7 @@ export default function TaskDetailPage() {
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full h-32 rounded-lg border-2 border-dashed border-primary/20 bg-background hover:border-secondary/40 hover:bg-secondary/5 transition-colors flex flex-col items-center justify-center gap-2 text-primary/40 hover:text-secondary"
                 >
-                  <span className="material-symbols-outlined text-3xl">
-                    add_photo_alternate
-                  </span>
+                  <MdAddPhotoAlternate className="text-3xl" />
                   <span className="text-sm font-medium">
                     Click to upload proof image
                   </span>

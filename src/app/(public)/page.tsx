@@ -1,3 +1,30 @@
+import {
+  MdAnalytics,
+  MdApi,
+  MdArrowForward,
+  MdAssignment,
+  MdAssignmentTurnedIn,
+  MdBolt,
+  MdCategory,
+  MdContactSupport,
+  MdDashboard,
+  MdExpandMore,
+  MdFactCheck,
+  MdInfo,
+  MdPayments,
+  MdPerson,
+  MdPostAdd,
+  MdRateReview,
+  MdSchedule,
+  MdSearch,
+  MdSpeed,
+  MdStar,
+  MdToll,
+  MdTrendingFlat,
+  MdTrendingUp,
+  MdVerified,
+  MdVerifiedUser,
+} from "react-icons/md";
 import Link from "next/link";
 import MarqueeBrands from "@/components/ui/MarqueeBrands";
 import StatsSection from "@/components/ui/StatsSection";
@@ -6,6 +33,7 @@ import CoinPackageCards from "@/components/ui/CoinPackageCards";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import HomeAnimations from "@/components/HomeAnimations";
+import { IconType } from "react-icons";
 
 async function getTopWorkers() {
   try {
@@ -26,73 +54,73 @@ const FALLBACK_WORKERS = [
   { name: "Priya Sharma", coins: 9450, approval: "100%" },
 ];
 
-const WORKER_FEATURES = [
+const WORKER_FEATURES: { icon: IconType; title: string; desc: string }[] = [
   {
-    icon: "verified_user",
+    icon: MdVerifiedUser,
     title: "Secure Payments",
     desc: "Our escrow system ensures you get paid for every approved task, with instant withdrawals to multiple providers.",
   },
   {
-    icon: "schedule",
+    icon: MdSchedule,
     title: "Total Flexibility",
     desc: "Choose tasks that fit your schedule. No minimum hours, no long-term commitments, just pure execution.",
   },
   {
-    icon: "trending_up",
+    icon: MdTrendingUp,
     title: "Skill Progression",
     desc: "Higher ratings unlock higher-paying, exclusive tasks. Build your reputation in the marketplace.",
   },
 ];
 
-const BUYER_FEATURES = [
+const BUYER_FEATURES: { icon: IconType; title: string; desc: string }[] = [
   {
-    icon: "speed",
+    icon: MdSpeed,
     title: "Unmatched Speed",
     desc: "Tasks are picked up in seconds. Reach 10,000 completions per day with our distributed workforce.",
   },
   {
-    icon: "fact_check",
+    icon: MdFactCheck,
     title: "Quality Assurance",
     desc: "Built-in consensus algorithms and manual audit tools ensure only the highest quality data enters your system.",
   },
   {
-    icon: "api",
+    icon: MdApi,
     title: "Full API Access",
     desc: "Automate task creation and result ingestion. Integrate TaskHub directly into your existing data pipelines.",
   },
 ];
 
-const HOW_WORKERS = [
+const HOW_WORKERS: { icon: IconType; title: string; desc: string }[] = [
   {
-    icon: "search",
+    icon: MdSearch,
     title: "Browse Curated Tasks",
     desc: "Access a personalized feed of micro-tasks that match your skill profile and availability.",
   },
   {
-    icon: "assignment_turned_in",
+    icon: MdAssignmentTurnedIn,
     title: "Execute & Submit",
     desc: "Follow clear guidelines to complete tasks. Our interface makes documentation seamless.",
   },
   {
-    icon: "payments",
+    icon: MdPayments,
     title: "Withdraw Earnings",
     desc: "Cash out your coins via Stripe, bKash, or SSLCommerz whenever you want.",
   },
 ];
 
-const HOW_BUYERS = [
+const HOW_BUYERS: { icon: IconType; title: string; desc: string }[] = [
   {
-    icon: "post_add",
+    icon: MdPostAdd,
     title: "Define Your Scope",
     desc: "Post tasks with specific requirements, quality thresholds, and target demographics.",
   },
   {
-    icon: "rate_review",
+    icon: MdRateReview,
     title: "Review Submissions",
     desc: "Approve or reject worker submissions with one click. Full control over quality.",
   },
   {
-    icon: "analytics",
+    icon: MdAnalytics,
     title: "Scale Operations",
     desc: "Reach thousands of completions per day with our distributed workforce.",
   },
@@ -191,9 +219,7 @@ export default async function HomePage() {
               className="bg-primary text-white px-7 py-3.5 rounded-lg font-bold flex items-center justify-center gap-2 shadow-xl shadow-primary/10 hover:scale-95 transition-transform"
             >
               Start earning
-              <span className="material-symbols-outlined text-lg">
-                arrow_forward
-              </span>
+              <MdArrowForward className="text-lg" />
             </Link>
             <Link
               href="/register?role=buyer"
@@ -219,19 +245,13 @@ export default async function HomePage() {
                 </div>
                 <div className="space-y-4">
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/40 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-white text-sm">
-                      dashboard
-                    </span>
+                    <MdDashboard className="text-white text-sm" />
                   </div>
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-white/60 text-sm">
-                      search
-                    </span>
+                    <MdSearch className="text-white/60 text-sm" />
                   </div>
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                    <span className="material-symbols-outlined text-white/60 text-sm">
-                      assignment
-                    </span>
+                    <MdAssignment className="text-white/60 text-sm" />
                   </div>
                 </div>
               </div>
@@ -245,12 +265,7 @@ export default async function HomePage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 px-2 sm:px-4 py-1.5 rounded-full">
-                    <span
-                      className="material-symbols-outlined text-amber-500 text-sm"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      toll
-                    </span>
+                    <MdToll className="text-sm text-amber-500" />
                     <span className="text-sm font-bold text-amber-600">
                       1,240
                     </span>
@@ -344,9 +359,10 @@ export default async function HomePage() {
                 className="bg-white p-5 sm:p-8 rounded-xl shadow-sm border border-primary/5 flex gap-4 sm:gap-6 items-start min-w-0"
               >
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
-                  <span className="material-symbols-outlined text-base sm:text-xl">
-                    {s.icon}
-                  </span>
+                  {(() => {
+                    const Icon = s.icon;
+                    return <Icon className="text-base sm:text-xl" />;
+                  })()}
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2 text-primary">
@@ -373,9 +389,10 @@ export default async function HomePage() {
                 className="bg-primary p-5 sm:p-8 rounded-xl shadow-xl shadow-primary/10 text-white flex gap-4 sm:gap-6 items-start min-w-0"
               >
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-white/10 flex items-center justify-center text-secondary shrink-0">
-                  <span className="material-symbols-outlined text-base sm:text-xl">
-                    {s.icon}
-                  </span>
+                  {(() => {
+                    const Icon = s.icon;
+                    return <Icon className="text-base sm:text-xl" />;
+                  })()}
                 </div>
                 <div className="min-w-0">
                   <h3 className="font-bold text-base sm:text-lg mb-1 sm:mb-2">
@@ -410,9 +427,10 @@ export default async function HomePage() {
                   data-gsap="feature-item"
                   className="flex gap-4 sm:gap-6"
                 >
-                  <span className="material-symbols-outlined text-secondary mt-1 shrink-0">
-                    {f.icon}
-                  </span>
+                  {(() => {
+                    const Icon = f.icon;
+                    return <Icon className="text-secondary mt-1 shrink-0" />;
+                  })()}
                   <div className="min-w-0">
                     <h4 className="font-bold text-primary text-lg sm:text-xl mb-1 sm:mb-2">
                       {f.title}
@@ -428,16 +446,12 @@ export default async function HomePage() {
           <div data-gsap="feature-visual" className="lg:w-1/2 w-full min-w-0">
             <div className="bg-white p-5 md:p-10 rounded-2xl shadow-2xl border border-primary/5 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-8">
-                <span className="material-symbols-outlined text-accent text-6xl opacity-10">
-                  payments
-                </span>
+                <MdPayments className="text-accent text-6xl opacity-10" />
               </div>
               <div className="space-y-5 sm:space-y-6">
                 <div className="flex items-center gap-3 sm:gap-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-secondary">
-                      person
-                    </span>
+                    <MdPerson className="text-secondary" />
                   </div>
                   <div className="min-w-0">
                     <div className="font-bold text-primary text-sm">
@@ -521,11 +535,22 @@ export default async function HomePage() {
               </h2>
               <div className="space-y-7 sm:space-y-10">
                 {BUYER_FEATURES.map((f) => (
-                  <div key={f.title} data-gsap="feature-item" className="flex gap-4 sm:gap-6">
-                    <span className="material-symbols-outlined text-primary mt-1 shrink-0">{f.icon}</span>
+                  <div
+                    key={f.title}
+                    data-gsap="feature-item"
+                    className="flex gap-4 sm:gap-6"
+                  >
+                    {(() => {
+                      const Icon = f.icon;
+                      return <Icon className="text-primary mt-1 shrink-0" />;
+                    })()}
                     <div className="min-w-0">
-                      <h4 className="font-bold text-primary text-lg sm:text-xl mb-1 sm:mb-2">{f.title}</h4>
-                      <p className="text-primary/60 font-light text-sm sm:text-base">{f.desc}</p>
+                      <h4 className="font-bold text-primary text-lg sm:text-xl mb-1 sm:mb-2">
+                        {f.title}
+                      </h4>
+                      <p className="text-primary/60 font-light text-sm sm:text-base">
+                        {f.desc}
+                      </p>
                     </div>
                   </div>
                 ))}
@@ -553,12 +578,20 @@ export default async function HomePage() {
                   </div>
                   <div className="grid grid-cols-2 gap-3 sm:gap-4">
                     <div className="bg-white/5 p-3 sm:p-4 rounded-lg border border-white/10">
-                      <div className="text-[10px] uppercase text-white/40 mb-1">Active Workers</div>
-                      <div className="text-lg sm:text-xl font-bold text-white"><CountUp value={8294} /></div>
+                      <div className="text-[10px] uppercase text-white/40 mb-1">
+                        Active Workers
+                      </div>
+                      <div className="text-lg sm:text-xl font-bold text-white">
+                        <CountUp value={8294} />
+                      </div>
                     </div>
                     <div className="bg-white/5 p-3 sm:p-4 rounded-lg border border-white/10">
-                      <div className="text-[10px] uppercase text-white/40 mb-1">Cost Per Task</div>
-                      <div className="text-lg sm:text-xl font-bold text-white">$<CountUp value={0.02} decimals={2} /></div>
+                      <div className="text-[10px] uppercase text-white/40 mb-1">
+                        Cost Per Task
+                      </div>
+                      <div className="text-lg sm:text-xl font-bold text-white">
+                        $<CountUp value={0.02} decimals={2} />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -579,27 +612,21 @@ export default async function HomePage() {
             </h2>
             <div className="space-y-4 text-primary/70">
               <p className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-secondary mt-0.5">
-                  toll
-                </span>
+                <MdToll className="text-secondary mt-0.5" />
                 <span>
                   <strong className="text-primary">Buyers</strong> purchase 10
                   coins for $1 USD.
                 </span>
               </p>
               <p className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-secondary mt-0.5">
-                  payments
-                </span>
+                <MdPayments className="text-secondary mt-0.5" />
                 <span>
                   <strong className="text-primary">Workers</strong> withdraw $1
                   USD per 20 coins earned.
                 </span>
               </p>
               <p className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-secondary mt-0.5">
-                  info
-                </span>
+                <MdInfo className="text-secondary mt-0.5" />
                 <span>
                   The spread between buy and withdraw rates sustains the
                   platform.
@@ -627,7 +654,7 @@ export default async function HomePage() {
             className="text-secondary font-bold flex items-center gap-2 hover:underline shrink-0"
           >
             View leaderboard
-            <span className="material-symbols-outlined">trending_flat</span>
+            <MdTrendingFlat />
           </Link>
         </div>
         <div className="flex gap-6 overflow-x-auto pb-8 snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -653,12 +680,7 @@ export default async function HomePage() {
                     )}
                   </div>
                   <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-secondary rounded-full border-2 border-white flex items-center justify-center">
-                    <span
-                      className="material-symbols-outlined text-[14px] text-white"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      verified
-                    </span>
+                    <MdVerified className="text-secondary text-xl" />
                   </div>
                 </div>
                 <h4 className="font-bold text-lg text-primary">{w.name}</h4>
@@ -669,12 +691,7 @@ export default async function HomePage() {
                     Coins Earned
                   </div>
                   <div className="font-bold text-primary flex items-center gap-1">
-                    <span
-                      className="material-symbols-outlined text-sm text-amber-500"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      toll
-                    </span>
+                    <MdToll className="text-sm text-amber-500" />
                     {w.coins.toLocaleString()}
                   </div>
                 </div>
@@ -728,13 +745,7 @@ export default async function HomePage() {
             >
               <div className="flex gap-1 text-amber-400 mb-6">
                 {[...Array(5)].map((_, i) => (
-                  <span
-                    key={i}
-                    className="material-symbols-outlined"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    star
-                  </span>
+                  <MdStar key={i} className="text-amber-400" />
                 ))}
               </div>
               <p className="text-lg font-light leading-relaxed text-primary/70 group-hover:text-white mb-6 italic">
@@ -753,9 +764,7 @@ export default async function HomePage() {
               data-gsap="testimonial-card"
               className="bg-white group hover:bg-primary group rounded-2xl shadow-xl p-10 text-primary transition-all duration-400"
             >
-              <span className="material-symbols-outlined text-secondary text-4xl mb-6 block">
-                bolt
-              </span>
+              <MdBolt className="text-secondary text-xl" />
               <p className="text-lg font-light leading-relaxed text-primary/70 group-hover:text-white mb-6 italic">
                 &ldquo;Lightning fast turnaround on our marketing outreach
                 tasks. What used to take a week now takes four hours.&rdquo;
@@ -832,9 +841,7 @@ export default async function HomePage() {
               href="/support"
               className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-primary/90 transition-colors shadow-lg"
             >
-              <span className="material-symbols-outlined text-sm">
-                contact_support
-              </span>
+              <MdContactSupport className="text-sm" />
               Visit Support Hub
             </a>
             {/* decorative */}
@@ -850,9 +857,7 @@ export default async function HomePage() {
                     key={f.label}
                     className="flex items-center gap-3 bg-white rounded-xl p-4 border hover:bg-primary  border-primary/5 shadow-sm group transition-all duration-200"
                   >
-                    <span className="material-symbols-outlined text-secondary text-xl hover:text-white">
-                      {f.icon}
-                    </span>
+                    <MdCategory className="text-secondary text-xl" />
                     <span className="text-sm font-semibold text-primary group-hover:text-white">
                       {f.label}
                     </span>
@@ -878,9 +883,7 @@ export default async function HomePage() {
                     </span>
                     <span className="font-bold text-primary">{item.q}</span>
                   </div>
-                  <span className="material-symbols-outlined text-primary/30 shrink-0 group-open:rotate-180 transition-transform duration-300">
-                    expand_more
-                  </span>
+                  <MdExpandMore className="text-primary/30 shrink-0 group-open:rotate-180 transition-transform duration-300" />
                 </summary>
                 <div className="px-7 pb-6 pl-13 md:pl-[4.75rem]">
                   <p className="text-primary/60 text-sm leading-relaxed border-t border-primary/5 pt-4">

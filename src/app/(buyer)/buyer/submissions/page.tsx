@@ -1,4 +1,5 @@
 "use client";
+import { MdClose, MdToll } from 'react-icons/md';
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -110,12 +111,7 @@ export default function BuyerSubmissionsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="flex items-center gap-1 text-secondary font-semibold">
-                        <span
-                          className="material-symbols-outlined text-xs text-amber-500"
-                          style={{ fontVariationSettings: "'FILL' 1" }}
-                        >
-                          toll
-                        </span>
+                        <MdToll className="text-sm text-amber-500" />
                         {s.payableAmount}
                       </span>
                     </td>
@@ -172,7 +168,7 @@ export default function BuyerSubmissionsPage() {
                 }}
                 className="text-primary/40 hover:text-primary"
               >
-                <span className="material-symbols-outlined">close</span>
+                <MdClose className="text-sm" />
               </button>
             </div>
             <div className="space-y-3 text-sm">
@@ -264,3 +260,5 @@ export default function BuyerSubmissionsPage() {
     </div>
   );
 }
+
+

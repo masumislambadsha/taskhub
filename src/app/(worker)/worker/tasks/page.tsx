@@ -1,4 +1,17 @@
 "use client";
+import { MdToll } from "react-icons/md";
+import type { Selection } from "@heroui/react";
+import {
+  Dropdown,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownSection,
+  DropdownItem,
+  DropdownItemIndicator,
+  Button,
+  Label,
+  Input,
+} from "@heroui/react";
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -50,49 +63,85 @@ export default function WorkerTasksPage() {
 
       {/* Filters */}
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 flex flex-col sm:flex-row  gap-3">
-        <input
+        <Input
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
             setPage(1);
           }}
           placeholder="Search tasks…"
-          className="flex-1 min-w-48 px-4 py-2.5 rounded-lg border border-primary/20 bg-background text-sm text-primary focus:outline-none focus:ring-2 focus:ring-secondary"
+          className="flex-1 min-w-48"
         />
-        <select
-          value={category}
-          onChange={(e) => {
-            setCategory(e.target.value);
-            setPage(1);
-          }}
-          className="px-4 py-2.5 rounded-lg border border-primary/20 bg-background text-sm text-primary focus:outline-none focus:ring-2 focus:ring-secondary"
-        >
-          <option value="">All Categories</option>
-          {categories.map((c) => (
-            <option key={c.name} value={c.name}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <Dropdown>
+          <Button
+            variant="outline"
+            className="bg-background rounded-lg border-primary/10 text-primary/60 h-10 px-4 justify-between font-medium shadow-sm"
+          >
+            {category || "All Categories"}
+          </Button>
+          <DropdownPopover className="min-w-[200px] bg-transparent backdrop-blur-sm">
+            <DropdownMenu
+              selectedKeys={new Set([category || ""])}
+              selectionMode="single"
+              onSelectionChange={(keys: Selection) => {
+                const val = Array.from(keys)[0] as string;
+                setCategory(val === "" ? "" : val);
+                setPage(1);
+              }}
+            >
+              <DropdownSection>
+                <DropdownItem key="" id="" textValue="All Categories">
+                  <DropdownItemIndicator />
+                  <Label>All Categories</Label>
+                </DropdownItem>
+                {categories.map((c: { name: string }) => (
+                  <DropdownItem key={c.name} id={c.name} textValue={c.name}>
+                    <DropdownItemIndicator />
+                    <Label className="">{c.name}</Label>
+                  </DropdownItem>
+                ))}
+              </DropdownSection>
+            </DropdownMenu>
+          </DropdownPopover>
+        </Dropdown>
         <input
-          type="number"
+         
           value={minPayout || ""}
           onChange={(e) => {
             setMinPayout(Number(e.target.value));
             setPage(1);
           }}
           placeholder="Min payout"
-          className="w-full sm:w-32 px-4 py-2.5 rounded-lg border border-primary/20 bg-background text-sm text-primary focus:outline-none focus:ring-2 focus:ring-secondary"
+          className="w-full sm:w-28 h-[39px] px-4 py-2.5 rounded-lg shadow-sm border-primary/20 bg-background text-sm text-primary focus:outline-none "
         />
-        <select
-          value={sort}
-          onChange={(e) => setSort(e.target.value)}
-          className="px-4 py-2.5 rounded-lg border border-primary/20 bg-background text-sm text-primary focus:outline-none focus:ring-2 focus:ring-secondary"
-        >
-          <option value="-createdAt">Newest</option>
-          <option value="-payableAmount">Highest Payout</option>
-          <option value="completionDate">Deadline Soon</option>
-        </select>
+        <Dropdown>
+          <Button
+            variant="outline"
+            className="bg-background rounded-lg border-primary/10 text-primary/60 h-10 px-4 justify-between font-medium shadow-sm"
+          >
+            {SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "Sort"}
+          </Button>
+          <DropdownPopover className="min-w-[180px] bg-transparent backdrop-blur-sm">
+            <DropdownMenu
+              selectedKeys={new Set([sort])}
+              selectionMode="single"
+              onSelectionChange={(keys: Selection) => {
+                const val = Array.from(keys)[0] as string;
+                setSort(val);
+                setPage(1);
+              }}
+            >
+              <DropdownSection>
+                {SORT_OPTIONS.map((o) => (
+                  <DropdownItem key={o.value} id={o.value} textValue={o.label}>
+                    <DropdownItemIndicator />
+                    <Label>{o.label}</Label>
+                  </DropdownItem>
+                ))}
+              </DropdownSection>
+            </DropdownMenu>
+          </DropdownPopover>
+        </Dropdown>
       </div>
 
       {isLoading ? (
@@ -126,12 +175,7 @@ export default function WorkerTasksPage() {
               <p className="text-xs text-primary/50">by {task.buyerName}</p>
               <div className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-1 font-bold text-secondary">
-                  <span
-                    className="material-symbols-outlined text-sm text-amber-500"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    toll
-                  </span>
+                  <MdToll className="text-sm text-amber-500" />
                   <CountUp value={task.payableAmount} /> coins
                 </span>
                 <span className="text-xs text-primary/50">
@@ -169,3 +213,9 @@ export default function WorkerTasksPage() {
     </div>
   );
 }
+
+const SORT_OPTIONS = [
+  { value: "-createdAt", label: "Newest" },
+  { value: "-payableAmount", label: "Highest Payout" },
+  { value: "completionDate", label: "Deadline Soon" },
+];

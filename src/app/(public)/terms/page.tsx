@@ -1,4 +1,6 @@
 import Link from "next/link";
+import iconMap from '@/lib/iconMap';
+import { MdCategory, MdInfo, MdPrivacyTip, MdSupportAgent } from 'react-icons/md';
 
 const SECTIONS = [
   {
@@ -115,9 +117,7 @@ export default function TermsPage() {
               key={h.label}
               className="bg-white rounded-2xl border border-primary/5 shadow-md p-5 text-center"
             >
-              <span className="material-symbols-outlined text-secondary text-2xl mb-2 block">
-                {h.icon}
-              </span>
+              <MdCategory className="text-secondary text-xl" />
               <p className="font-headline text-base font-extrabold text-primary">
                 {h.label}
               </p>
@@ -132,9 +132,7 @@ export default function TermsPage() {
       {/* Intro callout */}
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-12">
         <div className="bg-secondary/5 border border-secondary/20 rounded-2xl p-4 py-5 sm:p-7 flex gap-5 items-start">
-          <span className="material-symbols-outlined text-secondary text-3xl shrink-0 mt-0.5">
-            info
-          </span>
+          <MdInfo className="text-secondary text-3xl shrink-0 mt-0.5" />
           <div>
             <p className="font-bold text-primary mb-1">
               Plain-language summary
@@ -159,9 +157,7 @@ export default function TermsPage() {
             >
               <div className="flex gap-4 sm:gap-5 items-start">
                 <div className="shrink-0 w-12 h-12 rounded-xl bg-primary flex items-center justify-center group-hover:bg-secondary transition-colors">
-                  <span className="material-symbols-outlined text-secondary group-hover:text-white text-xl transition-colors">
-                    {s.icon}
-                  </span>
+                  {(() => { const Icon = iconMap[s.icon] ?? MdCategory; return <Icon className="text-xl group-hover:text-white text-secondary" />; })()}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
@@ -199,18 +195,14 @@ export default function TermsPage() {
               href="/support"
               className="inline-flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-lg font-bold text-xs sm:text-sm hover:bg-secondary/90 transition-colors"
             >
-              <span className="material-symbols-outlined text-xs sm:text-sm">
-                support_agent
-              </span>
+              <MdSupportAgent className="text-sm" />
               Contact Support
             </Link>
             <Link
               href="/privacy"
               className="inline-flex items-center gap-2 bg-white/10 text-white px-6 py-3 rounded-lg font-bold text-xs sm:text-sm hover:bg-white/20 transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">
-                privacy_tip
-              </span>
+              <MdPrivacyTip className="text-sm" />
               Privacy Policy
             </Link>
           </div>
@@ -219,3 +211,6 @@ export default function TermsPage() {
     </main>
   );
 }
+
+
+

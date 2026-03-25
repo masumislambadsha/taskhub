@@ -1,4 +1,5 @@
 "use client";
+import { MdMarkEmailRead } from 'react-icons/md';
 
 import { useState } from "react";
 import Link from "next/link";
@@ -34,9 +35,7 @@ export default function ForgotPasswordPage() {
         {sent ? (
           <div className="text-center space-y-4">
             <div className="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center mx-auto">
-              <span className="material-symbols-outlined text-secondary text-3xl">
-                mark_email_read
-              </span>
+              <MdMarkEmailRead className="text-secondary text-3xl" />
             </div>
             <h1 className="font-headline text-2xl font-bold text-primary">
               Check your inbox
@@ -102,3 +101,5 @@ export default function ForgotPasswordPage() {
     </div>
   );
 }
+
+

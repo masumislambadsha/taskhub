@@ -1,6 +1,7 @@
 "use client";
+import { MdNotifications } from 'react-icons/md';
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
 import {
@@ -15,14 +16,8 @@ import { formatDistanceToNow } from "date-fns";
 export default function NotificationBell() {
   const dispatch = useDispatch();
   const open = useSelector((s: RootState) => s.ui.notificationPanelOpen);
-  const btnRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
   const qc = useQueryClient();
-  const [pos, setPos] = useState<{
-    top: number;
-    left?: number;
-    right?: number;
-  }>({ top: 0, right: 0 });
 
   const { data } = useQuery<INotification[]>({
     queryKey: ["notifications"],
@@ -38,18 +33,6 @@ export default function NotificationBell() {
   const unread = data?.filter((n) => !n.isRead).length ?? 0;
 
   function handleToggle() {
-    if (!open && btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      const dropdownWidth = Math.min(320, window.innerWidth - 16);
-      const rightFromEdge = window.innerWidth - rect.right;
-      // If dropdown would overflow left, anchor to left edge instead
-      const wouldOverflowLeft = rect.right - dropdownWidth < 8;
-      setPos(
-        wouldOverflowLeft
-          ? { top: rect.bottom + 8, left: 8 }
-          : { top: rect.bottom + 8, right: rightFromEdge },
-      );
-    }
     dispatch(toggleNotificationPanel());
   }
 
@@ -58,8 +41,7 @@ export default function NotificationBell() {
       if (
         dropRef.current &&
         !dropRef.current.contains(e.target as Node) &&
-        btnRef.current &&
-        !btnRef.current.contains(e.target as Node)
+        !e.composedPath().some((el) => el instanceof HTMLButtonElement && el.classList.contains('bell-btn'))
       ) {
         dispatch(closeNotificationPanel());
       }
@@ -71,32 +53,20 @@ export default function NotificationBell() {
   return (
     <div className="relative">
       <button
-        ref={btnRef}
         onClick={handleToggle}
-        className="relative p-2  rounded-lg hover:bg-primary/5 text-primary transition-colors"
+        className="bell-btn relative p-2 rounded-lg hover:bg-primary/5 text-primary transition-colors"
       >
-        <span className="material-symbols-outlined text-xl">notifications</span>
+        <MdNotifications className="text-2xl" />
         {unread > 0 && (
           <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
             {unread > 9 ? "9+" : unread}
           </span>
         )}
       </button>
-
       {open && (
         <div
           ref={dropRef}
-          className="fixed bg-white rounded-xl shadow-2xl border border-primary/5 z-200 overflow-hidden"
-          style={{
-            top: pos.top,
-            ...(pos.left !== undefined
-              ? { left: pos.left }
-              : { right: pos.right }),
-            width: Math.min(
-              320,
-              (typeof window !== "undefined" ? window.innerWidth : 400) - 16,
-            ),
-          }}
+          className="fixed sm:absolute top-16 sm:top-full left-0 right-0 sm:left-auto sm:right-0 sm:w-80 bg-white rounded-xl shadow-2xl border border-primary/5 z-200 overflow-hidden sm:mt-2"
         >
           <div className="flex items-center justify-between px-4 py-3 border-b border-primary/5">
             <span className="font-bold text-primary text-sm">

@@ -6,7 +6,9 @@ import { useSession } from "next-auth/react";
 import { IMessage } from "@/types";
 
 const SOCKET_URL =
-  process.env.NEXT_PUBLIC_SOCKET_URL || "https://task-hub-io.vercel.app" || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_SOCKET_URL ||
+  "https://task-hub-io.vercel.app" ||
+  "http://localhost:3001";
 
 let socketInstance: Socket | null = null;
 
@@ -85,6 +87,7 @@ export function useSocket({
       receiverId: string;
       receiverName: string;
       content: string;
+      senderPhoto?: string;
     }) => {
       socketRef.current?.emit("message:send", data);
     },

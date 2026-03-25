@@ -1,4 +1,10 @@
 "use client";
+import {
+  MdChevronLeft,
+  MdChevronRight,
+  MdReceiptLong,
+  MdToll,
+} from "react-icons/md";
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -66,9 +72,7 @@ export default function AdminPaymentsPage() {
           </div>
         ) : payments.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <span className="material-symbols-outlined text-primary/15 text-5xl">
-              receipt_long
-            </span>
+            <MdReceiptLong className="text-5xl text-primary/20 block mb-3 mx-auto" />
             <p className="text-primary/40 text-sm">No payments found</p>
           </div>
         ) : (
@@ -107,12 +111,7 @@ export default function AdminPaymentsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1 font-semibold text-primary">
-                          <span
-                            className="material-symbols-outlined text-xs text-amber-500"
-                            style={{ fontVariationSettings: "'FILL' 1" }}
-                          >
-                            toll
-                          </span>
+                          <MdToll className="text-sm text-amber-500" />
                           <CountUp value={p.coinsPurchased} />
                         </div>
                       </td>
@@ -169,12 +168,7 @@ export default function AdminPaymentsPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-wrap pl-12">
                     <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
-                      <span
-                        className="material-symbols-outlined text-amber-500 text-sm"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        toll
-                      </span>
+                      <MdToll className="text-sm text-amber-500" />
                       <span className="text-xs font-bold text-primary">
                         <CountUp value={p.coinsPurchased} />
                       </span>
@@ -208,9 +202,7 @@ export default function AdminPaymentsPage() {
             disabled={page === 1}
             className="w-9 h-9 rounded-lg text-sm font-semibold border border-primary/10 bg-white text-primary hover:border-secondary disabled:opacity-30 transition-colors flex items-center justify-center"
           >
-            <span className="material-symbols-outlined text-sm">
-              chevron_left
-            </span>
+            <MdChevronLeft className="text-xl" />
           </button>
           {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
             <button
@@ -226,9 +218,7 @@ export default function AdminPaymentsPage() {
             disabled={page === pages}
             className="w-9 h-9 rounded-lg text-sm font-semibold border border-primary/10 bg-white text-primary hover:border-secondary disabled:opacity-30 transition-colors flex items-center justify-center"
           >
-            <span className="material-symbols-outlined text-sm">
-              chevron_right
-            </span>
+            <MdChevronRight className="text-xl" />
           </button>
         </div>
       )}
