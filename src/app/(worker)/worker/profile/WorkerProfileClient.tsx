@@ -1,7 +1,16 @@
 "use client";
+import {
+  MdAccountCircle,
+  MdCheck,
+  MdEdit,
+  MdRefresh,
+  MdUpload,
+  MdVerified,
+} from "react-icons/md";
 
-import { useState, useRef } from "react";
-import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 interface Props {
   name: string;
@@ -18,6 +27,9 @@ export default function WorkerProfileClient({
   level,
   isTop,
 }: Props) {
+  const { update } = useSession();
+  const router = useRouter();
+
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -25,6 +37,13 @@ export default function WorkerProfileClient({
   const [previewUrl, setPreviewUrl] = useState<string | null>(image);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const nameRef = useRef<HTMLInputElement>(null);
+
+  const [currentName, setCurrentName] = useState(name);
+
+  // Sync internal name if prop changes (e.g. on router.refresh)
+  useEffect(() => {
+    setCurrentName(name);
+  }, [name]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,15 +67,20 @@ export default function WorkerProfileClient({
         if (!uploadRes.ok) throw new Error("Image upload failed");
         uploadedUrl = (await uploadRes.json()).url;
       }
+      const newName = nameRef.current?.value ?? name;
       const res = await fetch("/api/v1/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: nameRef.current?.value ?? name,
+          name: newName,
           ...(uploadedUrl && { image: uploadedUrl }),
         }),
       });
       if (!res.ok) throw new Error("Failed to save profile");
+
+      await update({ name: newName, image: uploadedUrl ?? image });
+      router.refresh();
+
       setSaved(true);
       setEditing(false);
       setTimeout(() => setSaved(false), 2000);
@@ -69,50 +93,34 @@ export default function WorkerProfileClient({
 
   return (
     <div className="lg:col-span-4 flex flex-col gap-4">
-      {/* Profile card */}
       <div className="bg-primary rounded-xl p-6 flex flex-col items-center text-center relative overflow-hidden">
-        {/* subtle bg decoration */}
         <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-secondary/10 pointer-events-none" />
         <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none" />
-
-        {/* Avatar */}
         <div className="relative mb-4 z-10">
           {previewUrl ? (
-            <Image
+            <img
               src={previewUrl}
               alt="Profile"
               width={96}
               height={96}
               className="w-24 h-24 rounded-full object-cover ring-4 ring-white/20"
-              unoptimized={previewUrl.startsWith("blob:")}
             />
           ) : (
             <div className="w-24 h-24 rounded-full bg-white/10 ring-4 ring-white/20 flex items-center justify-center">
-              <span
-                className="material-symbols-outlined text-white/50"
+              <MdAccountCircle
+                className="text-white/50"
                 style={{ fontSize: 48 }}
-              >
-                account_circle
-              </span>
+              />
             </div>
           )}
           <div className="absolute -bottom-1 -right-1 bg-secondary w-7 h-7 rounded-full flex items-center justify-center shadow-lg">
-            <span
-              className="material-symbols-outlined text-white text-sm"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              verified
-            </span>
+            <MdVerified className="text-white text-sm" />
           </div>
         </div>
-
-        {/* Name & email */}
         <h1 className="font-headline text-xl font-extrabold text-white tracking-tight z-10">
-          {name}
+          {currentName}
         </h1>
         <p className="text-white/50 text-xs mt-1 z-10">{email}</p>
-
-        {/* Badges */}
         <div className="flex gap-2 flex-wrap justify-center mt-3 z-10">
           <span className="bg-secondary/20 text-secondary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
             {level}
@@ -123,20 +131,17 @@ export default function WorkerProfileClient({
             </span>
           )}
         </div>
-
-        {/* Edit button */}
         {!editing && (
           <button
             onClick={() => setEditing(true)}
             className="mt-5 z-10 flex items-center gap-1.5 text-xs font-semibold text-white/60 hover:text-white transition-colors"
           >
-            <span className="material-symbols-outlined text-sm">edit</span>
+            <MdEdit className="text-sm" />
             Edit Profile
           </button>
         )}
       </div>
 
-      {/* Edit form */}
       {editing && (
         <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-5">
           {error && <p className="text-red-500 text-xs mb-3">{error}</p>}
@@ -149,7 +154,7 @@ export default function WorkerProfileClient({
               <input
                 ref={nameRef}
                 type="text"
-                defaultValue={name}
+                defaultValue={currentName}
                 className="w-full border border-primary/15 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30 bg-background text-primary"
               />
             </div>
@@ -169,9 +174,7 @@ export default function WorkerProfileClient({
                 Photo
               </label>
               <label className="flex items-center gap-2 border border-primary/15 rounded-lg px-3 py-2.5 text-sm bg-background cursor-pointer hover:bg-primary/5 transition-colors">
-                <span className="material-symbols-outlined text-sm text-secondary">
-                  upload
-                </span>
+                <MdUpload className="text-sm text-secondary" />
                 <span className="text-primary/50 text-xs truncate">
                   {selectedFile ? selectedFile.name : "Upload image"}
                 </span>
@@ -191,16 +194,12 @@ export default function WorkerProfileClient({
               >
                 {saving ? (
                   <>
-                    <span className="material-symbols-outlined text-sm animate-spin">
-                      refresh
-                    </span>
+                    <MdRefresh className="text-sm animate-spin" />
                     Saving…
                   </>
                 ) : saved ? (
                   <>
-                    <span className="material-symbols-outlined text-sm">
-                      check
-                    </span>
+                    <MdCheck className="text-sm" />
                     Saved
                   </>
                 ) : (

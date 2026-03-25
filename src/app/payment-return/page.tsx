@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 export default function PaymentReturnPage() {
   const params = useSearchParams();
@@ -27,9 +28,7 @@ export default function PaymentReturnPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-3 text-primary/60">
-        <span className="material-symbols-outlined animate-spin text-4xl text-secondary">
-          progress_activity
-        </span>
+        <LuLoaderCircle className="animate-spin text-4xl text-secondary" />
         <p className="text-sm">Confirming your payment...</p>
       </div>
     </div>

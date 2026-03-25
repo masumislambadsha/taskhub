@@ -8,10 +8,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginFormData } from "@/lib/validators/auth";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 export default function LoginPage() {
   const params = useSearchParams();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const {
     register,
@@ -91,12 +93,26 @@ export default function LoginPage() {
                 Forgot password?
               </Link>
             </div>
-            <input
-              {...register("password")}
-              type="password"
-              className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                {...register("password")}
+                type={showPassword ? "text" : "password"}
+                className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary pr-12"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-primary/40 hover:text-secondary transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <MdVisibilityOff className="text-xl" />
+                ) : (
+                  <MdVisibility className="text-xl" />
+                )}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.password.message}

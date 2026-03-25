@@ -1,3 +1,12 @@
+import {
+  MdArrowForward,
+  MdAssignment,
+  MdChevronRight,
+  MdPayments,
+  MdPerson,
+  MdSearch,
+  MdToll,
+} from "react-icons/md";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
@@ -95,7 +104,7 @@ export default async function WorkerDashboard() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-headline text-2xl font-bold text-primary">
-            Welcome back, {session!.user.name?.split(" ")[0]} 👋
+            Welcome back, {session!.user.name?.split(" ")[0]}
           </h1>
           <p className="text-primary/60 text-sm mt-1">
             {format(new Date(), "EEEE, MMMM d, yyyy")}
@@ -103,9 +112,9 @@ export default async function WorkerDashboard() {
         </div>
         <Link
           href="/worker/tasks"
-          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors w-full"
+          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors w-full sm:w-auto"
         >
-          <span className="material-symbols-outlined text-sm ">search</span>
+          <MdSearch className="text-sm" />
           Browse Tasks
         </Link>
       </div>
@@ -225,7 +234,7 @@ export default async function WorkerDashboard() {
       {/* Bottom row */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Recent submissions */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-primary/5 shadow-sm max-w-[280px]">
+        <div className="lg:col-span-2 bg-white rounded-xl border border-primary/5 shadow-sm  max-w-[290px] md:max-w-full ">
           <div className="px-4 sm:px-6 py-4 border-b border-primary/5 flex items-center justify-between">
             <h2 className="font-bold text-primary">Recent Submissions</h2>
             <Link
@@ -237,9 +246,7 @@ export default async function WorkerDashboard() {
           </div>
           {recentSubmissions.length === 0 ? (
             <div className="py-14 text-center">
-              <span className="material-symbols-outlined text-4xl text-primary/20 block mb-3">
-                assignment
-              </span>
+              <MdAssignment className="text-4xl text-primary/20 block mb-3 mx-auto" />
               <p className="text-primary/40 text-sm">No submissions yet</p>
               <Link
                 href="/worker/tasks"
@@ -265,12 +272,7 @@ export default async function WorkerDashboard() {
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     <span className="flex items-center gap-1 text-sm font-bold text-secondary">
-                      <span
-                        className="material-symbols-outlined text-xs text-amber-500"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        toll
-                      </span>
+                      <MdToll className="text-xs text-amber-500" />
                       {s.payableAmount}
                     </span>
                     <Badge status={s.status} />
@@ -300,9 +302,7 @@ export default async function WorkerDashboard() {
                 className="mt-4 flex items-center justify-center gap-2 bg-white/20 hover:bg-white/30 text-white py-2.5 rounded-lg text-sm font-semibold transition-colors"
               >
                 Withdraw Now
-                <span className="material-symbols-outlined text-sm">
-                  arrow_forward
-                </span>
+                <MdArrowForward className="text-base" />
               </Link>
             </div>
           ) : (
@@ -332,50 +332,49 @@ export default async function WorkerDashboard() {
             {[
               {
                 href: "/worker/tasks",
-                icon: "search",
+                icon: MdSearch,
                 label: "Browse Tasks",
                 desc: "Find work to complete",
               },
               {
                 href: "/worker/submissions",
-                icon: "assignment",
+                icon: MdAssignment,
                 label: "My Submissions",
                 desc: `${pending} pending review`,
               },
               {
                 href: "/worker/earnings",
-                icon: "payments",
+                icon: MdPayments,
                 label: "Earnings Portal",
                 desc: `$${coinsToUsdWithdraw(totalEarnings)} total earned`,
               },
               {
                 href: "/worker/profile",
-                icon: "person",
+                icon: MdPerson,
                 label: "My Profile",
                 desc: "View badges & stats",
               },
-            ].map((a) => (
-              <Link
-                key={a.href}
-                href={a.href}
-                className="flex items-center gap-3 p-4 hover:bg-background/60 transition-colors"
-              >
-                <div className="w-9 h-9 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
-                  <span className="material-symbols-outlined text-sm">
-                    {a.icon}
-                  </span>
-                </div>
-                <div className="min-w-0">
-                  <p className="font-semibold text-primary text-sm">
-                    {a.label}
-                  </p>
-                  <p className="text-xs text-primary/40 truncate">{a.desc}</p>
-                </div>
-                <span className="material-symbols-outlined text-primary/20 ml-auto text-sm">
-                  chevron_right
-                </span>
-              </Link>
-            ))}
+            ].map((a) => {
+              const Icon = a.icon;
+              return (
+                <Link
+                  key={a.href}
+                  href={a.href}
+                  className="flex items-center gap-3 p-4 hover:bg-background/60 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
+                    <Icon className="text-sm" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-primary text-sm">
+                      {a.label}
+                    </p>
+                    <p className="text-xs text-primary/40 truncate">{a.desc}</p>
+                  </div>
+                  <MdChevronRight className="text-primary/20 ml-auto text-sm" />
+                </Link>
+              );
+            })}
           </div>
         </div>
       </div>

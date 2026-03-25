@@ -1,4 +1,11 @@
 "use client";
+import {
+  MdChevronLeft,
+  MdChevronRight,
+  MdClose,
+  MdGroup,
+  MdToll,
+} from "react-icons/md";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +16,17 @@ import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { SkeletonTable } from "@/components/ui/Skeleton";
+import type { Selection } from "@heroui/react";
+import {
+  Dropdown,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownSection,
+  DropdownItem,
+  DropdownItemIndicator,
+  Button,
+  Label,
+} from "@heroui/react";
 
 const swalTheme = {
   confirmButtonColor: "#4a9782",
@@ -134,31 +152,71 @@ export default function AdminUsersPage() {
 
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
-        <select
-          value={role}
-          onChange={(e) => {
-            setRole(e.target.value);
-            setPage(1);
-          }}
-          className="px-4 py-2.5 rounded-lg border border-primary/20 bg-white text-sm text-primary focus:outline-none focus:ring-2 focus:ring-secondary"
+        <Dropdown>
+           <Button
+          variant="outline"
+          className="bg-white border-primary/10 text-primary/60 h-10 px-4 pr-8 justify-between font-medium shadow-sm"
         >
-          <option value="">All Roles</option>
-          <option value="worker">Worker</option>
-          <option value="buyer">Buyer</option>
-          <option value="admin">Admin</option>
-        </select>
-        <select
-          value={status}
-          onChange={(e) => {
-            setStatus(e.target.value);
-            setPage(1);
-          }}
-          className="px-4 py-2.5 rounded-lg border border-primary/20 bg-white text-sm text-primary focus:outline-none focus:ring-2 focus:ring-secondary"
+            {role ? role.charAt(0).toUpperCase() + role.slice(1) : "All Roles"}
+          </Button>
+          <DropdownPopover className="min-w-[150px] bg-transparent backdrop-blur-sm">
+            <DropdownMenu
+              selectedKeys={new Set([role || ""])}
+              selectionMode="single"
+              onSelectionChange={(keys: Selection) => {
+                setRole(Array.from(keys)[0] as string);
+                setPage(1);
+              }}
+            >
+              <DropdownSection>
+                {[
+                  { value: "", label: "All Roles" },
+                  { value: "worker", label: "Worker" },
+                  { value: "buyer", label: "Buyer" },
+                  { value: "admin", label: "Admin" },
+                ].map((o) => (
+                  <DropdownItem key={o.value} id={o.value} textValue={o.label}>
+                    <DropdownItemIndicator />
+                    <Label>{o.label}</Label>
+                  </DropdownItem>
+                ))}
+              </DropdownSection>
+            </DropdownMenu>
+          </DropdownPopover>
+        </Dropdown>
+        <Dropdown>
+           <Button
+          variant="outline"
+          className="bg-white border-primary/10 text-primary/60 h-10 px-4 pr-6 justify-between font-medium shadow-sm"
         >
-          <option value="">All Status</option>
-          <option value="active">Active</option>
-          <option value="suspended">Suspended</option>
-        </select>
+            {status
+              ? status.charAt(0).toUpperCase() + status.slice(1)
+              : "All Status"}
+          </Button>
+          <DropdownPopover className="min-w-[150px] bg-transparent backdrop-blur-sm">
+            <DropdownMenu
+              selectedKeys={new Set([status || ""])}
+              selectionMode="single"
+              onSelectionChange={(keys: Selection) => {
+                setStatus(Array.from(keys)[0] as string);
+                setPage(1);
+              }}
+            >
+              <DropdownSection>
+                {[
+                  { value: "", label: "All Status" },
+                  { value: "active", label: "Active" },
+                  { value: "suspended", label: "Suspended" },
+                ].map((o) => (
+                  <DropdownItem key={o.value} id={o.value} textValue={o.label}>
+                    <DropdownItemIndicator />
+                    <Label>{o.label}</Label>
+                  </DropdownItem>
+                ))}
+              </DropdownSection>
+            </DropdownMenu>
+          </DropdownPopover>
+        </Dropdown>
         {(role || status) && (
           <button
             onClick={() => {
@@ -168,7 +226,7 @@ export default function AdminUsersPage() {
             }}
             className="px-4 py-2.5 rounded-lg border border-primary/10 bg-white text-sm text-primary/50 hover:text-primary transition-colors flex items-center gap-1.5"
           >
-            <span className="material-symbols-outlined text-sm">close</span>
+            <MdClose className="text-sm" />
             Clear
           </button>
         )}
@@ -184,9 +242,7 @@ export default function AdminUsersPage() {
           />
         ) : users.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <span className="material-symbols-outlined text-primary/15 text-5xl">
-              group
-            </span>
+            <MdGroup className="text-5xl text-primary/20 block mb-2 mx-auto" />
             <p className="text-primary/40 text-sm">No users found</p>
           </div>
         ) : (
@@ -217,26 +273,11 @@ export default function AdminUsersPage() {
                 {/* Meta row */}
                 <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
                   {/* Role selector */}
-                  <select
-                    defaultValue={u.role}
-                    onChange={(e) =>
-                      handleRoleChange(u, e.target.value, e.target)
-                    }
-                    className="text-xs border border-primary/15 rounded-lg px-2.5 py-1.5 bg-background text-primary focus:outline-none focus:ring-2 focus:ring-secondary/30"
-                  >
-                    <option value="worker">Worker</option>
-                    <option value="buyer">Buyer</option>
-                    <option value="admin">Admin</option>
-                  </select>
+                  <RoleDropdown user={u} onRoleChange={handleRoleChange} />
 
                   {/* Coins */}
                   <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1.5 rounded-lg">
-                    <span
-                      className="material-symbols-outlined text-amber-500 text-sm"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      toll
-                    </span>
+                    <MdToll className="text-sm text-amber-500" />
                     <span className="text-xs font-bold text-primary">
                       {u.coins}
                     </span>
@@ -279,9 +320,7 @@ export default function AdminUsersPage() {
             disabled={page === 1}
             className="w-9 h-9 rounded-lg text-sm font-semibold border border-primary/10 bg-white text-primary hover:border-secondary disabled:opacity-30 transition-colors flex items-center justify-center"
           >
-            <span className="material-symbols-outlined text-sm">
-              chevron_left
-            </span>
+            <MdChevronLeft className="text-xl" />
           </button>
           {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
             <button
@@ -301,12 +340,56 @@ export default function AdminUsersPage() {
             disabled={page === pages}
             className="w-9 h-9 rounded-lg text-sm font-semibold border border-primary/10 bg-white text-primary hover:border-secondary disabled:opacity-30 transition-colors flex items-center justify-center"
           >
-            <span className="material-symbols-outlined text-sm">
-              chevron_right
-            </span>
+            <MdChevronRight className="text-xl" />
           </button>
         </div>
       )}
     </div>
+  );
+}
+
+function RoleDropdown({
+  user,
+  onRoleChange,
+}: {
+  user: IUser;
+  onRoleChange: (u: IUser, role: string, el: HTMLSelectElement) => void;
+}) {
+  const [currentRole, setCurrentRole] = useState(user.role);
+  const ROLES = ["worker", "buyer", "admin"];
+  return (
+    <Dropdown>
+      <Button
+        variant="outline"
+        className="text-xs border border-primary/15 rounded-lg px-2.5 py-1.5 bg-background text-primary capitalize"
+      >
+         {/* <Button
+          variant="outline"
+          className="bg-white border-primary/10 text-primary/60 h-10 px-4 min-w-[160px] justify-between font-medium shadow-sm"
+        > */}
+        {currentRole}
+      </Button>
+      <DropdownPopover className="min-w-[120px] bg-transparent backdrop-blur-sm">
+        <DropdownMenu
+          selectedKeys={new Set([currentRole])}
+          selectionMode="single"
+          onSelectionChange={(keys: Selection) => {
+            const newRole = Array.from(keys)[0] as string;
+            const fakeEl = { value: currentRole } as HTMLSelectElement;
+            onRoleChange(user, newRole, fakeEl);
+            setCurrentRole(newRole);
+          }}
+        >
+          <DropdownSection>
+            {ROLES.map((r) => (
+              <DropdownItem key={r} id={r} textValue={r}>
+                <DropdownItemIndicator />
+                <Label className="capitalize">{r}</Label>
+              </DropdownItem>
+            ))}
+          </DropdownSection>
+        </DropdownMenu>
+      </DropdownPopover>
+    </Dropdown>
   );
 }

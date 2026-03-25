@@ -1,3 +1,4 @@
+import { MdPublic } from 'react-icons/md';
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
 
@@ -99,7 +100,7 @@ export default function Footer() {
               href="#"
               className="w-9 h-9 rounded-full border border-primary/10 flex items-center justify-center text-primary hover:bg-primary hover:text-white transition-all"
             >
-              <span className="material-symbols-outlined text-sm">public</span>
+              <MdPublic className="text-base text-secondary" />
             </a>
           </div>
         </div>

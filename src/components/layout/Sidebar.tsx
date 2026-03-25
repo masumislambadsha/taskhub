@@ -1,4 +1,26 @@
 "use client";
+import {
+  MdAccountBalance,
+  MdAccountCircle,
+  MdAddCircle,
+  MdAnalytics,
+  MdAssignment,
+  MdAssignmentTurnedIn,
+  MdCategory,
+  MdDashboard,
+  MdGroup,
+  MdHome,
+  MdLogout,
+  MdMail,
+  MdPayments,
+  MdRateReview,
+  MdReceiptLong,
+  MdSearch,
+  MdSettings,
+  MdTask,
+  MdTaskAlt,
+  MdToll,
+} from "react-icons/md";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -8,53 +30,54 @@ import { setSidebarOpen } from "@/store/uiSlice";
 import Logo from "@/components/ui/Logo";
 import { signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
+import { IconType } from "react-icons";
 
 interface NavItem {
   href: string;
   label: string;
-  icon: string;
+  icon: IconType;
 }
 
 const workerNav: NavItem[] = [
-  { href: "/worker/dashboard", label: "Dashboard", icon: "dashboard" },
-  { href: "/worker/tasks", label: "Browse Tasks", icon: "search" },
-  { href: "/worker/submissions", label: "My Submissions", icon: "assignment" },
-  { href: "/worker/earnings", label: "Earnings", icon: "toll" },
-  { href: "/worker/withdrawals", label: "Withdrawals", icon: "payments" },
-  { href: "/worker/messages", label: "Messages", icon: "mail" },
-  { href: "/worker/profile", label: "My Profile", icon: "account_circle" },
-  { href: "/worker/settings", label: "Settings", icon: "settings" },
+  { href: "/worker/dashboard", label: "Dashboard", icon: MdDashboard },
+  { href: "/worker/tasks", label: "Browse Tasks", icon: MdSearch },
+  { href: "/worker/submissions", label: "My Submissions", icon: MdAssignment },
+  { href: "/worker/earnings", label: "Earnings", icon: MdToll },
+  { href: "/worker/withdrawals", label: "Withdrawals", icon: MdPayments },
+  { href: "/worker/messages", label: "Messages", icon: MdMail },
+  { href: "/worker/profile", label: "My Profile", icon: MdAccountCircle },
+  { href: "/worker/settings", label: "Settings", icon: MdSettings },
 ];
 
 const buyerNav: NavItem[] = [
-  { href: "/buyer/dashboard", label: "Dashboard", icon: "dashboard" },
-  { href: "/buyer/tasks", label: "My Tasks", icon: "task" },
-  { href: "/buyer/tasks/new", label: "Post Task", icon: "add_circle" },
+  { href: "/buyer/dashboard", label: "Dashboard", icon: MdDashboard },
+  { href: "/buyer/tasks", label: "My Tasks", icon: MdTask },
+  { href: "/buyer/tasks/new", label: "Post Task", icon: MdAddCircle },
   {
     href: "/buyer/submissions",
     label: "Review Submissions",
-    icon: "rate_review",
+    icon: MdRateReview,
   },
-  { href: "/buyer/messages", label: "Messages", icon: "mail" },
-  { href: "/buyer/coins", label: "Buy Coins", icon: "toll" },
-  { href: "/buyer/payments", label: "Payment History", icon: "receipt_long" },
-  { href: "/buyer/profile", label: "My Profile", icon: "account_circle" },
+  { href: "/buyer/messages", label: "Messages", icon: MdMail },
+  { href: "/buyer/coins", label: "Buy Coins", icon: MdToll },
+  { href: "/buyer/payments", label: "Payment History", icon: MdReceiptLong },
+  { href: "/buyer/profile", label: "My Profile", icon: MdAccountCircle },
 ];
 
 const adminNav: NavItem[] = [
-  { href: "/admin/dashboard", label: "Dashboard", icon: "dashboard" },
-  { href: "/admin/users", label: "Manage Users", icon: "group" },
-  { href: "/admin/tasks", label: "Manage Tasks", icon: "task_alt" },
+  { href: "/admin/dashboard", label: "Dashboard", icon: MdDashboard },
+  { href: "/admin/users", label: "Manage Users", icon: MdGroup },
+  { href: "/admin/tasks", label: "Manage Tasks", icon: MdTaskAlt },
   {
     href: "/admin/submissions",
     label: "Submissions",
-    icon: "assignment_turned_in",
+    icon: MdAssignmentTurnedIn,
   },
-  { href: "/admin/withdrawals", label: "Withdrawals", icon: "account_balance" },
-  { href: "/admin/payments", label: "Payments", icon: "payments" },
-  { href: "/admin/stats", label: "Analytics", icon: "analytics" },
-  { href: "/admin/categories", label: "Categories", icon: "category" },
-  { href: "/admin/activity", label: "Activity Log", icon: "receipt_long" },
+  { href: "/admin/withdrawals", label: "Withdrawals", icon: MdAccountBalance },
+  { href: "/admin/payments", label: "Payments", icon: MdPayments },
+  { href: "/admin/stats", label: "Analytics", icon: MdAnalytics },
+  { href: "/admin/categories", label: "Categories", icon: MdCategory },
+  { href: "/admin/activity", label: "Activity Log", icon: MdReceiptLong },
 ];
 
 interface SidebarProps {
@@ -73,12 +96,12 @@ export default function Sidebar({ role }: SidebarProps) {
 
   return (
     <>
-      {/* Desktop sidebar — always visible, no animation needed */}
+      {/* Desktop sidebar */}
       <aside className="hidden lg:flex fixed top-0 left-0 h-full w-64 bg-primary z-40 flex-col">
         <SidebarContent navItems={navItems} pathname={pathname} close={close} />
       </aside>
 
-      {/* Mobile sidebar — slides down from top like public navbar */}
+      {/* Mobile sidebar */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
@@ -106,7 +129,7 @@ export default function Sidebar({ role }: SidebarProps) {
                 } else if (!active) {
                   active = pathname.startsWith(item.href + "/");
                 }
-
+                const Icon = item.icon;
                 return (
                   <motion.div
                     key={item.href}
@@ -128,9 +151,7 @@ export default function Sidebar({ role }: SidebarProps) {
                           : "text-white/60 hover:bg-white/10 hover:text-white"
                       }`}
                     >
-                      <span className="material-symbols-outlined text-xl">
-                        {item.icon}
-                      </span>
+                      <Icon className="text-xl" />
                       {item.label}
                     </Link>
                   </motion.div>
@@ -154,16 +175,14 @@ export default function Sidebar({ role }: SidebarProps) {
                 onClick={close}
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-white/60 hover:bg-white/10 hover:text-white transition-all"
               >
-                <span className="material-symbols-outlined text-xl">home</span>
+                <MdHome className="text-xl" />
                 Home
               </Link>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-red-500/10 hover:text-red-500 transition-all w-full text-red-300"
               >
-                <span className="material-symbols-outlined text-xl">
-                  logout
-                </span>
+                <MdLogout className="text-xl" />
                 Sign Out
               </button>
             </motion.div>
@@ -187,7 +206,6 @@ function SidebarContent({
 }) {
   return (
     <>
-      {/* Logo */}
       <div className="h-16 flex items-center px-6 border-b border-white/10 shrink-0">
         <Link href="/" onClick={close}>
           <Logo size={32} light />
@@ -204,6 +222,7 @@ function SidebarContent({
           } else if (!active) {
             active = pathname.startsWith(item.href + "/");
           }
+          const Icon = item.icon;
 
           const linkEl = (
             <Link
@@ -216,9 +235,7 @@ function SidebarContent({
                   : "text-white/60 hover:bg-white/10 hover:text-white"
               }`}
             >
-              <span className="material-symbols-outlined text-xl">
-                {item.icon}
-              </span>
+              <Icon className="text-xl" />
               {item.label}
             </Link>
           );
@@ -243,21 +260,20 @@ function SidebarContent({
         })}
       </nav>
 
-      {/* Logout */}
       <div className="px-4 py-4 border-t border-white/10 shrink-0 flex flex-col gap-1">
         <Link
           href="/"
           onClick={close}
           className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-white/60 hover:bg-white/10 hover:text-white transition-all"
         >
-          <span className="material-symbols-outlined text-xl">home</span>
+          <MdHome className="text-xl" />
           Home
         </Link>
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
           className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium hover:bg-red-500/10 hover:text-red-500 transition-all w-full text-red-300"
         >
-          <span className="material-symbols-outlined text-xl">logout</span>
+          <MdLogout className="text-xl" />
           Sign Out
         </button>
       </div>

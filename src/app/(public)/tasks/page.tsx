@@ -1,3 +1,4 @@
+import { MdAccountBalanceWallet, MdAddCircle, MdAddPhotoAlternate, MdArrowBack, MdArrowForward, MdAssignment, MdChevronLeft, MdChevronRight, MdClose, MdEdit, MdGroup, MdPayments, MdReceiptLong, MdTaskAlt, MdToll } from 'react-icons/md';
 import Link from "next/link";
 import { connectDB } from "@/lib/db";
 import Task from "@/models/Task";
@@ -54,12 +55,7 @@ export default async function PublicTasksPage() {
             <div className="text-sm text-primary/60">by {task.buyerName}</div>
             <div className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-1 font-bold text-secondary">
-                <span
-                  className="material-symbols-outlined text-sm text-amber-500"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                  toll
-                </span>
+                <MdToll className="text-sm text-amber-500" />
                 <CountUp value={task.payableAmount} /> coins
               </span>
               <span className="text-primary/50">
@@ -74,7 +70,7 @@ export default async function PublicTasksPage() {
               href={
                 session?.user?.role === "worker"
                   ? `/worker/tasks/${String(task._id)}`
-                  : "/register"
+                  : "/login"
               }
               className="mt-auto block text-center bg-primary text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
             >
@@ -88,3 +84,5 @@ export default async function PublicTasksPage() {
     </div>
   );
 }
+
+

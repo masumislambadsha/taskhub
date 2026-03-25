@@ -1,4 +1,5 @@
 "use client";
+import { MdToll } from 'react-icons/md';
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -81,12 +82,7 @@ export default function BuyerPaymentsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="flex items-center gap-1 font-semibold text-primary">
-                        <span
-                          className="material-symbols-outlined text-xs text-amber-500"
-                          style={{ fontVariationSettings: "'FILL' 1" }}
-                        >
-                          toll
-                        </span>
+                        <MdToll className="text-sm text-amber-500" />
                         <CountUp value={p.coinsPurchased} />
                       </span>
                     </td>
@@ -123,3 +119,5 @@ export default function BuyerPaymentsPage() {
     </div>
   );
 }
+
+

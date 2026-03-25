@@ -1,4 +1,6 @@
 import { auth } from "@/lib/auth";
+import iconMap from '@/lib/iconMap';
+import { MdCategory, MdDescription, MdPayments, MdToll } from 'react-icons/md';
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import Task from "@/models/Task";
@@ -310,9 +312,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
                 {m.label}
               </p>
               <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-primary/5 flex items-center justify-center">
-                <span className="material-symbols-outlined text-sm sm:text-base text-primary/50" style={{fontSize:"17px"}}>
-                  {m.icon}
-                </span>
+                {(() => { const Icon = iconMap[m.icon] ?? MdCategory; return <Icon className="text-xl text-secondary" />; })()}
               </div>
             </div>
             <h3 className="font-headline text-2xl sm:text-3xl font-extrabold text-primary mb-1">
@@ -327,9 +327,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
             <div
               className={`flex items-center gap-1 text-xs font-bold ${m.up ? "text-secondary" : "text-red-500"}`}
             >
-              <span className="material-symbols-outlined text-sm">
-                {m.up ? "trending_up" : "trending_down"}
-              </span>
+              <MdCategory className="text-secondary text-xl" />
               {m.trend}
             </div>
             <div className="absolute bottom-0 left-0 w-full h-10 bg-linear-to-t from-secondary/5 to-transparent" />
@@ -421,12 +419,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
                 <div
                   className={`w-8 h-8 rounded-lg ${item.bg} flex items-center justify-center`}
                 >
-                  <span
-                    className={`material-symbols-outlined text-base ${item.color}`}
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    {item.icon}
-                  </span>
+                  {(() => { const Icon = iconMap[item.icon] ?? MdCategory; return <Icon className={`text-lg ${item.color}`} />; })()}
                 </div>
                 <span className="text-sm text-primary/70">{item.label}</span>
               </div>
@@ -664,9 +657,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
                   <div key={String(g._id)}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-base text-primary/50">
-                          {icons[g._id] ?? "payments"}
-                        </span>
+                        <MdPayments className="text-base text-primary/50" />
                         <span className="text-sm font-semibold text-primary capitalize">
                           {g._id}
                         </span>
@@ -735,12 +726,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
                 </div>
                 <div className="text-right shrink-0">
                   <div className="flex items-center gap-1 justify-end">
-                    <span
-                      className="material-symbols-outlined text-sm text-amber-500"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      toll
-                    </span>
+                    <MdToll className="text-sm text-amber-500" />
                     <span className="text-sm font-bold text-primary">
                       {w.earnings.toLocaleString()}
                     </span>
@@ -783,9 +769,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
                   className="flex items-center gap-3 sm:gap-4 px-4 sm:px-8 py-4 hover:bg-slate-50 transition-colors"
                 >
                   <div className="w-9 h-9 rounded-lg bg-secondary/10 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-base text-secondary">
-                      {gatewayIcons[p.gateway] ?? "payments"}
-                    </span>
+                    <MdPayments className="text-base text-secondary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-primary truncate">
@@ -840,10 +824,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
               >
                 <td className="px-4 sm:px-8 py-4 sm:py-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded bg-amber-50 flex items-center justify-center text-amber-700">
-                      <span className="material-symbols-outlined text-sm">
-                        description
-                      </span>
+                    <div className="w-9 h-9 rounded bg-amber-50 flex items-center justify-center text-amber-700">`n                  <MdDescription className="text-base text-secondary" />
                     </div>
                     <p className="font-bold text-primary max-w-[200px] truncate">
                       {c._id}
@@ -855,12 +836,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
                 </td>
                 <td className="px-8 py-5 font-medium text-primary">
                   <span className="flex items-center gap-1">
-                    <span
-                      className="material-symbols-outlined text-sm text-amber-500"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      toll
-                    </span>
+                    <MdToll className="text-sm text-amber-500" />
                     {c.totalPayout.toLocaleString()}
                   </span>
                 </td>
@@ -883,4 +859,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
     </div>
   );
 }
+
+
+
 

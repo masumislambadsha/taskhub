@@ -1,4 +1,5 @@
 "use client";
+import { MdAccountBalanceWallet, MdPayments, MdToll } from "react-icons/md";
 
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,6 +18,19 @@ import { MIN_WITHDRAWAL_COINS, PAYMENT_GATEWAYS } from "@/lib/constants";
 import { format } from "date-fns";
 import CountUp from "@/components/ui/CountUp";
 import Swal from "sweetalert2";
+import type { Selection } from "@heroui/react";
+import {
+  Dropdown,
+  DropdownMenu,
+  DropdownPopover,
+  DropdownSection,
+  DropdownItem,
+  DropdownItemIndicator,
+  Button,
+  Label,
+} from "@heroui/react";
+import BkashIcon from "@/components/icons/BkashIcon";
+import { SiStripe } from "react-icons/si";
 
 export default function WorkerWithdrawalsPage() {
   const { data: session, update } = useSession();
@@ -37,6 +51,7 @@ export default function WorkerWithdrawalsPage() {
     handleSubmit,
     watch,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<WithdrawalFormData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,16 +63,16 @@ export default function WorkerWithdrawalsPage() {
   });
 
   const coinRequested = watch("coinRequested") || 0;
+  const paymentSystem = watch("paymentSystem") || "stripe";
 
   function onSubmit(d: WithdrawalFormData) {
     if (d.coinRequested > coins) {
       toast.error(`Insufficient balance. Your balance is ${coins} coins.`);
       return;
     }
-
     Swal.fire({
       title: "Confirm Withdrawal",
-      html: `Withdraw <strong>${d.coinRequested} coins</strong> (≈ $${coinsToUsdWithdraw(d.coinRequested)} USD) via <strong>${d.paymentSystem}</strong>?`,
+      html: `Withdraw <strong>${d.coinRequested} coins</strong> (≈ ${coinsToUsdWithdraw(d.coinRequested)} USD) via <strong>${d.paymentSystem}</strong>?`,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Yes, withdraw",
@@ -86,7 +101,6 @@ export default function WorkerWithdrawalsPage() {
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      {/* Header */}
       <div>
         <h1 className="font-headline text-2xl font-bold text-primary">
           Withdrawals
@@ -96,7 +110,6 @@ export default function WorkerWithdrawalsPage() {
         </p>
       </div>
 
-      {/* Balance */}
       <div className="bg-linear-to-r from-primary to-secondary text-white rounded-xl p-5 flex items-center justify-between">
         <div>
           <p className="text-sm text-white/70">Available Balance</p>
@@ -118,7 +131,6 @@ export default function WorkerWithdrawalsPage() {
         )}
       </div>
 
-      {/* Request form */}
       {canWithdraw ? (
         <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6">
           <h2 className="font-bold text-primary mb-5">Request Withdrawal</h2>
@@ -156,16 +168,38 @@ export default function WorkerWithdrawalsPage() {
                 <label className="block text-sm font-medium text-primary mb-1.5">
                   Payment Method
                 </label>
-                <select
-                  {...register("paymentSystem")}
-                  className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary capitalize"
-                >
-                  {PAYMENT_GATEWAYS.map((g) => (
-                    <option key={g} value={g}>
-                      {g}
-                    </option>
-                  ))}
-                </select>
+                <Dropdown>
+                  <Button
+                    variant="secondary"
+                    className="w-full justify-between px-4 py-6 rounded-lg border border-primary/20 bg-background text-primary"
+                  >
+                    <GatewayOption gateway={paymentSystem} />
+                  </Button>
+                  <DropdownPopover className="min-w-[220px] bg-transparent backdrop-blur-sm">
+                    <DropdownMenu
+                      selectedKeys={new Set([paymentSystem])}
+                      selectionMode="single"
+                      onSelectionChange={(keys: Selection) => {
+                        const val = Array.from(keys)[0] as string;
+                        setValue(
+                          "paymentSystem",
+                          val as WithdrawalFormData["paymentSystem"],
+                        );
+                      }}
+                    >
+                      <DropdownSection>
+                        {PAYMENT_GATEWAYS.map((g) => (
+                          <DropdownItem key={g} id={g} textValue={g}>
+                            <DropdownItemIndicator />
+                            <Label>
+                              <GatewayOption gateway={g} />
+                            </Label>
+                          </DropdownItem>
+                        ))}
+                      </DropdownSection>
+                    </DropdownMenu>
+                  </DropdownPopover>
+                </Dropdown>
               </div>
               <div>
                 <label className="block text-sm font-medium text-primary mb-1.5">
@@ -210,7 +244,6 @@ export default function WorkerWithdrawalsPage() {
         </div>
       )}
 
-      {/* History */}
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-primary/5 flex items-center justify-between">
           <h2 className="font-bold text-primary">Withdrawal History</h2>
@@ -223,9 +256,7 @@ export default function WorkerWithdrawalsPage() {
 
         {withdrawals.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-14 gap-3">
-            <span className="material-symbols-outlined text-primary/15 text-5xl">
-              account_balance_wallet
-            </span>
+            <MdAccountBalanceWallet className="text-primary/15 text-5xl" />
             <p className="text-primary/40 text-sm">
               No withdrawal requests yet
             </p>
@@ -237,17 +268,9 @@ export default function WorkerWithdrawalsPage() {
                 key={w._id}
                 className="flex items-center gap-4 px-5 py-4 hover:bg-background/60 transition-colors"
               >
-                {/* Icon */}
                 <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
-                  <span
-                    className="material-symbols-outlined text-secondary text-lg"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                  >
-                    payments
-                  </span>
+                  <MdPayments className="text-secondary text-lg" />
                 </div>
-
-                {/* Method + date */}
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-primary capitalize">
                     {w.paymentSystem}
@@ -256,32 +279,21 @@ export default function WorkerWithdrawalsPage() {
                     {format(new Date(w.createdAt), "MMM d, yyyy")}
                   </p>
                 </div>
-
-                {/* Coins */}
                 <div className="text-right shrink-0 hidden sm:block">
                   <p className="text-xs text-primary/40 mb-0.5">Coins</p>
                   <div className="flex items-center gap-1 justify-end">
-                    <span
-                      className="material-symbols-outlined text-amber-500 text-sm"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      toll
-                    </span>
+                    <MdToll className="text-sm text-amber-500" />
                     <span className="text-sm font-bold text-primary">
                       <CountUp value={w.coinRequested} />
                     </span>
                   </div>
                 </div>
-
-                {/* USD */}
                 <div className="text-right shrink-0">
                   <p className="text-xs text-primary/40 mb-0.5">Amount</p>
                   <p className="text-sm font-extrabold text-secondary">
                     $<CountUp value={w.amount} decimals={2} />
                   </p>
                 </div>
-
-                {/* Status */}
                 <div className="shrink-0">
                   <Badge status={w.status} />
                 </div>
@@ -291,5 +303,31 @@ export default function WorkerWithdrawalsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function GatewayOption({ gateway }: { gateway: string }) {
+  if (gateway === "stripe") {
+    return (
+      <span className="flex items-center gap-2 text-[#635BFF]">
+        <SiStripe size={18} />
+        <span className="font-semibold text-sm">Stripe</span>
+      </span>
+    );
+  }
+  if (gateway === "bkash") {
+    return (
+      <span className="flex items-center justify-center bg-[#E2136E] rounded px-2 py-0.5">
+        <BkashIcon height={18} />
+      </span>
+    );
+  }
+  // eslint-disable-next-line @next/next/no-img-element
+  return (
+    <img
+      src="/sslcommerz-logo.png"
+      alt="SSLCommerz"
+      style={{ height: 22, width: "auto" }}
+    />
   );
 }

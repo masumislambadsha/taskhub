@@ -1,4 +1,6 @@
 import Link from "next/link";
+import iconMap from '@/lib/iconMap';
+import { MdCategory, MdCheckCircle, MdGavel, MdPrivacyTip, MdSupportAgent } from 'react-icons/md';
 
 const SECTIONS = [
   {
@@ -196,15 +198,13 @@ export default function PrivacyPage() {
           {PRINCIPLES.map((p) => (
             <div
               key={p.title}
-              className="bg-white rounded-2xl border border-primary/5 shadow-md p-5 text-center"
+              className="bg-white rounded-2xl border border-primary/5 shadow-md p-5 text-center flex flex-col items-center justify-center gap-1 group hover:bg-primary transition-all duration-200 "
             >
-              <span className="material-symbols-outlined text-secondary text-2xl mb-2 block">
-                {p.icon}
-              </span>
-              <p className="font-headline text-sm font-extrabold text-primary">
+              <MdCategory className="text-secondary  text-xl" />
+              <p className="font-headline text-xs sm:text-sm md:text-lg font-extrabold text-primary group-hover:text-white transition-all duration-200 ">
                 {p.title}
               </p>
-              <p className="text-[11px] text-primary/40 mt-1 leading-snug">
+              <p className="text-[11px] text-primary/40 mt-1 group-hover:text-white/70 transition-all duration-200 leading-snug">
                 {p.desc}
               </p>
             </div>
@@ -214,10 +214,8 @@ export default function PrivacyPage() {
 
       {/* Intro callout */}
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-10 sm:mt-12">
-        <div className="bg-secondary/5 border border-secondary/20 rounded-2xl p-5 sm:p-7 flex gap-4 sm:gap-5 items-start">
-          <span className="material-symbols-outlined text-secondary text-3xl shrink-0 mt-0.5">
-            privacy_tip
-          </span>
+        <div className="bg-secondary/5 border border-secondary/20 rounded-2xl p-5 sm:p-7 sm:grid sm:grid-cols-1 md:flex  gap-4 sm:gap-5 items-start">
+          <MdPrivacyTip className="text-5xl" />
           <div>
             <p className="font-bold text-primary mb-1">The short version</p>
             <p className="text-sm text-primary/60 leading-relaxed">
@@ -239,9 +237,7 @@ export default function PrivacyPage() {
           >
             <div className="flex gap-4 sm:gap-5 items-start">
               <div className="shrink-0 w-12 h-12 rounded-xl bg-primary flex items-center justify-center group-hover:bg-secondary transition-colors">
-                <span className="material-symbols-outlined text-secondary group-hover:text-white text-xl transition-colors">
-                  {s.icon}
-                </span>
+                {(() => { const Icon = iconMap[s.icon] ?? MdCategory; return <Icon className="text-xl group-hover:text-white text-secondary" />; })()}
               </div>
               <div className="flex-1">
                 <div className="flex flex-wrap items-center gap-3 mb-2">
@@ -267,9 +263,7 @@ export default function PrivacyPage() {
                         key={b}
                         className="flex items-start gap-2 text-sm text-primary/50"
                       >
-                        <span className="material-symbols-outlined text-secondary text-sm mt-0.5 shrink-0">
-                          check_circle
-                        </span>
+                        <MdCheckCircle className="text-secondary text-lg sm:text-sm" />
                         {b}
                       </li>
                     ))}
@@ -298,16 +292,14 @@ export default function PrivacyPage() {
               href="/support"
               className="inline-flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-lg font-bold text-xs sm:text-sm hover:bg-secondary/90 transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">
-                support_agent
-              </span>
+              <MdSupportAgent className="text-sm" />
               Contact Support
             </Link>
             <Link
               href="/terms"
               className="inline-flex items-center gap-2 bg-white/10 text-white px-6 py-3 rounded-lg font-bold text-xs sm:text-sm hover:bg-white/20 transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">gavel</span>
+              <MdGavel className="text-sm" />
               Terms of Service
             </Link>
           </div>
@@ -316,3 +308,6 @@ export default function PrivacyPage() {
     </main>
   );
 }
+
+
+

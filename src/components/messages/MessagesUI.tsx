@@ -1,5 +1,10 @@
 "use client";
-
+import {
+  MdArrowBack,
+  MdChatBubbleOutline,
+  MdForum,
+  MdSend,
+} from "react-icons/md";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,6 +20,29 @@ interface MessagesUIProps {
   selectHint: string;
 }
 
+function Avatar({
+  name,
+  photo,
+  size = 10,
+}: {
+  name: string;
+  photo?: string | null;
+  size?: number;
+}) {
+  const dim = `w-${size} h-${size}`;
+  return (
+    <div
+      className={`${dim} rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-sm overflow-hidden`}
+    >
+      {photo ? (
+        <img src={photo} alt={name} className="w-full h-full object-cover" />
+      ) : (
+        name[0]?.toUpperCase()
+      )}
+    </div>
+  );
+}
+
 export default function MessagesUI({
   role,
   emptyHint,
@@ -28,7 +56,6 @@ export default function MessagesUI({
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [typingUser, setTypingUser] = useState<string | null>(null);
-  // mobile: "list" | "chat"
   const [mobileView, setMobileView] = useState<"list" | "chat">("list");
 
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -42,7 +69,6 @@ export default function MessagesUI({
     refetchInterval: 15000,
   });
 
-  // Auto-open from URL params
   useEffect(() => {
     const conv = searchParams.get("conv");
     const taskId = searchParams.get("taskId");
@@ -83,10 +109,21 @@ export default function MessagesUI({
     ),
   ];
 
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
+  }, []);
+
   useEffect(() => {
-    const el = messagesContainerRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [allMessages]);
+    if (activeConv?.conversationId) {
+      scrollToBottom("auto");
+    }
+  }, [activeConv?.conversationId, scrollToBottom]);
+
+  useEffect(() => {
+    if (allMessages.length > 0) {
+      scrollToBottom();
+    }
+  }, [allMessages.length, scrollToBottom]);
 
   const handleMessage = useCallback(
     (msg: IMessage) => {
@@ -147,6 +184,7 @@ export default function MessagesUI({
       receiverId: activeConv.otherUserId,
       receiverName: activeConv.otherUserName,
       content: input.trim(),
+      senderPhoto: session.user.image ?? undefined,
     });
     setInput("");
     sendTypingStop(activeConv.conversationId);
@@ -160,6 +198,7 @@ export default function MessagesUI({
   }
 
   const myId = session?.user?.id;
+  const myPhoto = session?.user?.image ?? undefined;
 
   // ─── Conversation list ────────────────────────────────────────────────────
   const ConvList = (
@@ -177,9 +216,7 @@ export default function MessagesUI({
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
           <div className="p-8 text-center">
-            <span className="material-symbols-outlined text-primary/20 text-4xl block mb-2">
-              chat_bubble_outline
-            </span>
+            <MdChatBubbleOutline className="text-primary/20 text-4xl block mb-2" />
             <p className="text-sm text-primary/40">No conversations yet</p>
             <p className="text-xs text-primary/30 mt-1">{emptyHint}</p>
           </div>
@@ -195,9 +232,11 @@ export default function MessagesUI({
               }`}
             >
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary font-bold text-sm">
-                  {conv.otherUserName[0]?.toUpperCase()}
-                </div>
+                <Avatar
+                  name={conv.otherUserName}
+                  photo={conv.otherUserPhoto}
+                  size={10}
+                />
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center gap-2">
                     <span className="font-semibold text-sm text-primary truncate">
@@ -234,18 +273,18 @@ export default function MessagesUI({
   // ─── Chat panel ───────────────────────────────────────────────────────────
   const ChatPanel = activeConv ? (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Header */}
       <div className="h-14 sm:h-16 px-4 sm:px-6 border-b border-primary/5 flex items-center gap-3 shrink-0">
-        {/* Back button — mobile only */}
         <button
           className="md:hidden p-1.5 -ml-1 rounded-lg hover:bg-primary/5 text-primary transition-colors"
           onClick={() => setMobileView("list")}
         >
-          <span className="material-symbols-outlined text-xl">arrow_back</span>
+          <MdArrowBack className="text-xl" />
         </button>
-        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm shrink-0">
-          {activeConv.otherUserName[0]?.toUpperCase()}
-        </div>
+        <Avatar
+          name={activeConv.otherUserName}
+          photo={activeConv.otherUserPhoto}
+          size={9}
+        />
         <div className="min-w-0">
           <p className="font-semibold text-sm text-primary truncate">
             {activeConv.otherUserName}
@@ -256,7 +295,6 @@ export default function MessagesUI({
         </div>
       </div>
 
-      {/* Messages */}
       <div
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-4"
@@ -273,16 +311,25 @@ export default function MessagesUI({
               className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : ""}`}
             >
               {!isMe && (
-                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                  {msg.senderName[0]?.toUpperCase()}
-                </div>
+                <Avatar
+                  name={msg.senderName}
+                  photo={msg.senderPhoto}
+                  size={7}
+                />
+              )}
+              {isMe && (
+                <Avatar
+                  name={session?.user?.name ?? "Me"}
+                  photo={myPhoto}
+                  size={7}
+                />
               )}
               <div
-              style={{width:"200px"}}
+                style={{ width: "200px" }}
                 className={`max-w-[280px] sm:max-w-[70%] space-y-1 flex flex-col ${isMe ? "items-end" : "items-start"}`}
               >
                 <div
-                style={{maxWidth:"250px"}}
+                  style={{ maxWidth: "250px" }}
                   className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                     isMe
                       ? "bg-primary text-white rounded-br-sm"
@@ -304,9 +351,7 @@ export default function MessagesUI({
 
         {typingUser && (
           <div className="flex items-end gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
-              {typingUser[0]?.toUpperCase()}
-            </div>
+            <Avatar name={typingUser} size={7} />
             <div className="bg-background px-4 py-3 rounded-2xl rounded-bl-sm">
               <div className="flex gap-1 items-center">
                 <span className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:0ms]" />
@@ -319,7 +364,6 @@ export default function MessagesUI({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
       <div className="p-3 sm:p-4 border-t border-primary/5 shrink-0">
         <label className="flex items-center gap-3 bg-background rounded-xl px-4 py-2 border border-primary/10 focus-within:border-secondary/40 transition-colors cursor-text w-full">
           <input
@@ -335,12 +379,7 @@ export default function MessagesUI({
             disabled={!input.trim()}
             className="p-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            <span
-              className="material-symbols-outlined text-sm"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              send
-            </span>
+            <MdSend className="text-sm" />
           </button>
         </label>
         <p className="text-[10px] text-primary/30 mt-2 text-center">
@@ -351,9 +390,7 @@ export default function MessagesUI({
   ) : (
     <div className="flex-1 flex items-center justify-center h-full">
       <div className="text-center">
-        <span className="material-symbols-outlined text-primary/10 text-6xl block mb-3">
-          forum
-        </span>
+        <MdForum className="text-primary/10 text-6xl block mb-3" />
         <p className="text-primary/40 font-medium">Select a conversation</p>
         <p className="text-xs text-primary/30 mt-1">{selectHint}</p>
       </div>
@@ -365,15 +402,12 @@ export default function MessagesUI({
       className="border border-primary/5 rounded-xl bg-white overflow-hidden"
       style={{ height: "calc(100vh - 64px - 48px)" }}
     >
-      {/* ── Desktop: side-by-side ── */}
       <div className="hidden md:flex h-full">
         <div className="w-80 shrink-0 border-r border-primary/5 h-full overflow-hidden">
           {ConvList}
         </div>
         <div className="flex-1 overflow-hidden">{ChatPanel}</div>
       </div>
-
-      {/* ── Mobile: single-panel toggle ── */}
       <div className="md:hidden h-full">
         {mobileView === "list" ? ConvList : ChatPanel}
       </div>

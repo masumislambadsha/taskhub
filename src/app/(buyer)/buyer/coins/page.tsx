@@ -8,23 +8,28 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { COIN_PACKAGES, PAYMENT_GATEWAYS } from "@/lib/constants";
 import { CoinPackage } from "@/types";
+import { SiStripe } from "react-icons/si";
+import { PiCoinFill } from "react-icons/pi";
+import BkashIcon from "@/components/icons/BkashIcon";
+
+const GATEWAY_COLORS: Record<string, string> = {
+  stripe: "#635BFF",
+  bkash: "#E2136E",
+  sslcommerz: "#1a3c8f",
+};
 
 export default function BuyCoinsPage() {
   const { data: session, update } = useSession();
   const params = useSearchParams();
   const router = useRouter();
   const [selectedGateway, setSelectedGateway] = useState<string>("stripe");
-
   const handled = useRef(false);
 
-  // Handle success redirect
   useEffect(() => {
     if (handled.current) return;
-
     const paymentId = params.get("paymentId");
     const success = params.get("success");
     const confirmed = params.get("confirmed");
-
     if (success && paymentId) {
       handled.current = true;
       if (confirmed) {
@@ -84,7 +89,6 @@ export default function BuyCoinsPage() {
         </p>
       </div>
 
-      {/* Gateway selector */}
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-5">
         <p className="text-sm font-medium text-primary mb-3">Payment Method</p>
         <div className="flex gap-3 flex-wrap">
@@ -92,19 +96,24 @@ export default function BuyCoinsPage() {
             <button
               key={g}
               onClick={() => setSelectedGateway(g)}
-              className={`px-5 py-2.5 rounded-lg border-2 text-sm font-semibold capitalize transition-all ${selectedGateway === g ? "border-secondary bg-secondary/5 text-primary" : "border-primary/10 text-primary/60 hover:border-secondary/50"}`}
+              style={
+                selectedGateway === g
+                  ? {
+                      borderColor: GATEWAY_COLORS[g],
+                      backgroundColor: `${GATEWAY_COLORS[g]}12`,
+                    }
+                  : {}
+              }
+              className={`flex items-center px-4 py-2.5 rounded-lg border-2 transition-all ${
+                selectedGateway === g ? "" : "border-primary/10"
+              }`}
             >
-              {g === "stripe"
-                ? "💳 Stripe"
-                : g === "bkash"
-                  ? "📱 bKash"
-                  : "🏦 SSLCommerz"}
+              <GatewayLogo gateway={g} />
             </button>
           ))}
         </div>
       </div>
 
-      {/* Packages */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {COIN_PACKAGES.map((pkg: CoinPackage) => (
           <div
@@ -115,12 +124,7 @@ export default function BuyCoinsPage() {
               {pkg.label}
             </div>
             <div className="flex items-center justify-center gap-1">
-              <span
-                className="material-symbols-outlined text-amber-500"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                toll
-              </span>
+              <PiCoinFill className="text-amber-500 text-2xl" />
               <span className="text-2xl sm:text-3xl font-bold font-headline text-primary">
                 {pkg.coins}
               </span>
@@ -150,5 +154,31 @@ export default function BuyCoinsPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+function GatewayLogo({ gateway }: { gateway: string }) {
+  if (gateway === "stripe") {
+    return (
+      <span className="flex items-center gap-2 text-[#635BFF]">
+        <SiStripe size={22} />
+        <span className="font-bold text-sm">Stripe</span>
+      </span>
+    );
+  }
+  if (gateway === "bkash") {
+    return (
+      <span className="flex items-center justify-center bg-[#E2136E] rounded px-3 py-1">
+        <BkashIcon height={22} />
+      </span>
+    );
+  }
+  // eslint-disable-next-line @next/next/no-img-element
+  return (
+    <img
+      src="/sslcommerz-logo.png"
+      alt="SSLCommerz"
+      style={{ height: 28, width: "auto" }}
+    />
   );
 }

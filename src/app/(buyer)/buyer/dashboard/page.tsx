@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { MdAddCircle, MdCategory, MdChevronRight, MdRateReview, MdToll } from 'react-icons/md';
 import { connectDB } from "@/lib/db";
 import Task from "@/models/Task";
 import Submission from "@/models/Submission";
@@ -91,7 +92,7 @@ export default async function BuyerDashboard() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-headline text-2xl font-bold text-primary">
-            Welcome back, {session!.user.name?.split(" ")[0]} 👋
+            Welcome back, {session!.user.name?.split(" ")[0]}
           </h1>
           <p className="text-primary/60 text-sm mt-1">
             {format(new Date(), "EEEE, MMMM d, yyyy")}
@@ -101,7 +102,7 @@ export default async function BuyerDashboard() {
           href="/buyer/tasks/new"
           className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
         >
-          <span className="material-symbols-outlined text-sm">add_circle</span>
+          <MdAddCircle className="text-sm" />
           Create Task
         </Link>
       </div>
@@ -239,10 +240,8 @@ export default async function BuyerDashboard() {
             </Link>
           </div>
           {recentSubmissions.length === 0 ? (
-            <div className="py-14 text-center">
-              <span className="material-symbols-outlined text-4xl text-primary/20 block mb-3">
-                rate_review
-              </span>
+            <div className="py-14 text-center flex justify-center items-center flex-col">
+              <MdRateReview className="text-4xl text-primary/20 block mb-3 mx-auto" />
               <p className="text-primary/40 text-sm">No pending submissions</p>
               <Link
                 href="/buyer/tasks/new"
@@ -269,12 +268,7 @@ export default async function BuyerDashboard() {
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     <span className="flex items-center gap-1 text-sm font-bold text-secondary">
-                      <span
-                        className="material-symbols-outlined text-xs text-amber-500"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        toll
-                      </span>
+                      <MdToll className="text-sm text-amber-500" />
                       {s.payableAmount}
                     </span>
                     <Badge status={s.status} />
@@ -325,17 +319,13 @@ export default async function BuyerDashboard() {
               className="flex items-center gap-3 p-4 hover:bg-background/60 transition-colors"
             >
               <div className="w-9 h-9 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
-                <span className="material-symbols-outlined text-sm">
-                  {a.icon}
-                </span>
+                <MdCategory className="text-secondary text-xl" />
               </div>
               <div className="min-w-0">
                 <p className="font-semibold text-primary text-sm">{a.label}</p>
                 <p className="text-xs text-primary/40 truncate">{a.desc}</p>
               </div>
-              <span className="material-symbols-outlined text-primary/20 ml-auto text-sm">
-                chevron_right
-              </span>
+              <MdChevronRight className="text-xl" />
             </Link>
           ))}
         </div>
@@ -343,3 +333,6 @@ export default async function BuyerDashboard() {
     </div>
   );
 }
+
+
+

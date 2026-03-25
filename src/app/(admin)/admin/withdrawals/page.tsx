@@ -1,4 +1,5 @@
 "use client";
+import { MdChevronLeft, MdChevronRight, MdToll } from "react-icons/md";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -216,12 +217,7 @@ export default function AdminWithdrawalsPage() {
                   </div>
                   <div className="flex flex-wrap items-center gap-2 pl-12">
                     <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
-                      <span
-                        className="material-symbols-outlined text-amber-500 text-sm"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        toll
-                      </span>
+                      <MdToll className="text-sm text-amber-500" />
                       <span className="text-xs font-bold text-primary">
                         <CountUp value={w.coinRequested} />
                       </span>
@@ -276,9 +272,7 @@ export default function AdminWithdrawalsPage() {
             disabled={page === 1}
             className="w-9 h-9 rounded-lg text-sm font-semibold border border-primary/10 bg-white text-primary hover:border-secondary disabled:opacity-30 transition-colors flex items-center justify-center"
           >
-            <span className="material-symbols-outlined text-sm">
-              chevron_left
-            </span>
+            <MdChevronLeft className="text-xl" />
           </button>
           {Array.from({ length: pages }, (_, i) => i + 1).map((p) => (
             <button
@@ -298,9 +292,7 @@ export default function AdminWithdrawalsPage() {
             disabled={page === pages}
             className="w-9 h-9 rounded-lg text-sm font-semibold border border-primary/10 bg-white text-primary hover:border-secondary disabled:opacity-30 transition-colors flex items-center justify-center"
           >
-            <span className="material-symbols-outlined text-sm">
-              chevron_right
-            </span>
+            <MdChevronRight className="text-xl" />
           </button>
         </div>
       )}

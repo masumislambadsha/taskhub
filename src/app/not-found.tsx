@@ -1,3 +1,4 @@
+import { MdAssignmentLate, MdContactSupport, MdHome } from 'react-icons/md';
 import Link from "next/link";
 
 export default function NotFound() {
@@ -30,12 +31,10 @@ export default function NotFound() {
               </h1>
               <div className="absolute inset-0 flex items-center justify-center pt-8">
                 <div className="bg-white/80 backdrop-blur-xl shadow-xl p-8 rounded-xl border border-primary/5 flex flex-col items-center gap-4">
-                  <span
-                    className="material-symbols-outlined text-secondary"
-                    style={{ fontSize: 72, fontVariationSettings: "'FILL' 1" }}
-                  >
-                    assignment_late
-                  </span>
+                  <MdAssignmentLate
+                    className="text-secondary"
+                    style={{ fontSize: 72 }}
+                  />
                   <div className="flex gap-2">
                     <span className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
                     <span className="w-3 h-3 rounded-full bg-amber-300" />
@@ -61,16 +60,14 @@ export default function NotFound() {
               href="/"
               className="px-8 py-4 bg-primary text-white rounded-lg font-semibold text-lg hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-xl">home</span>
+              <MdHome className="text-xl" />
               Back to Home
             </Link>
             <Link
               href="/support"
               className="px-8 py-4 text-primary font-semibold text-lg underline decoration-secondary underline-offset-8 hover:decoration-primary transition-all flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-xl">
-                contact_support
-              </span>
+              <MdContactSupport className="text-xl" />
               Contact Support
             </Link>
           </div>

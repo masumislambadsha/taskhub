@@ -1,4 +1,5 @@
 "use client";
+import { MdError, MdRefresh } from 'react-icons/md';
 
 import { useEffect } from "react";
 import Link from "next/link";
@@ -23,12 +24,7 @@ export default function Error({
 
           <div className="relative bg-white shadow-xl rounded-xl overflow-hidden flex flex-col items-center text-center p-8 md:p-12 border border-primary/5">
             <div className="mb-8 p-4 bg-red-50 rounded-full">
-              <span
-                className="material-symbols-outlined text-red-600"
-                style={{ fontSize: 64 }}
-              >
-                error
-              </span>
+              <MdError className="text-red-600" style={{ fontSize: 64 }} />
             </div>
 
             <h1 className="font-headline text-3xl md:text-4xl font-extrabold text-primary mb-4 tracking-tight">
@@ -44,9 +40,7 @@ export default function Error({
                 onClick={reset}
                 className="bg-primary text-white px-8 py-3.5 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 active:scale-95 transition-all shadow-lg"
               >
-                <span className="material-symbols-outlined text-sm">
-                  refresh
-                </span>
+                <MdRefresh className="text-sm" />
                 Try again
               </button>
               <Link

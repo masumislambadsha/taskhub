@@ -1,3 +1,20 @@
+import {
+  MdAccountBalanceWallet,
+  MdAddCircle,
+  MdAddPhotoAlternate,
+  MdArrowBack,
+  MdArrowForward,
+  MdAssignment,
+  MdChevronLeft,
+  MdChevronRight,
+  MdClose,
+  MdEdit,
+  MdGroup,
+  MdPayments,
+  MdReceiptLong,
+  MdTaskAlt,
+  MdToll,
+} from "react-icons/md";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
@@ -62,7 +79,7 @@ export default async function AdminDashboard() {
         />
         <StatCard
           label="Total Revenue"
-          value={`$${totalRevenue.toFixed(2)}`}
+          value={`$${totalRevenue.toFixed()}`}
           icon="payments"
           accent
         />
@@ -78,9 +95,7 @@ export default async function AdminDashboard() {
               className="text-xs text-secondary hover:underline flex items-center gap-1"
             >
               View all
-              <span className="material-symbols-outlined text-sm">
-                arrow_forward
-              </span>
+              <MdArrowForward className="text-base" />
             </a>
           </div>
           <div className="divide-y divide-primary/5">
@@ -121,16 +136,12 @@ export default async function AdminDashboard() {
               className="text-xs text-secondary hover:underline flex items-center gap-1"
             >
               View all
-              <span className="material-symbols-outlined text-sm">
-                arrow_forward
-              </span>
+              <MdArrowForward className="text-base" />
             </a>
           </div>
           {recentWithdrawals.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 gap-2">
-              <span className="material-symbols-outlined text-primary/15 text-4xl">
-                account_balance_wallet
-              </span>
+              <MdAccountBalanceWallet className="text-5xl text-primary/20 block mb-2 mx-auto" />
               <p className="text-primary/40 text-sm">No pending withdrawals</p>
             </div>
           ) : (
@@ -142,12 +153,7 @@ export default async function AdminDashboard() {
                 >
                   {/* Icon */}
                   <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
-                    <span
-                      className="material-symbols-outlined text-secondary text-sm"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      payments
-                    </span>
+                    <MdPayments className="text-base text-secondary" />
                   </div>
                   {/* Info */}
                   <div className="flex-1 min-w-0">

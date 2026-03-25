@@ -1,4 +1,5 @@
 "use client";
+import { MdCheckCircle, MdError, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -12,6 +13,8 @@ function ResetPasswordForm() {
 
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
 
@@ -47,9 +50,7 @@ function ResetPasswordForm() {
     return (
       <div className="text-center space-y-4">
         <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mx-auto">
-          <span className="material-symbols-outlined text-red-500 text-3xl">
-            error
-          </span>
+          <MdError className="text-red-500 text-3xl" />
         </div>
         <h1 className="font-headline text-2xl font-bold text-primary">
           Invalid link
@@ -71,9 +72,7 @@ function ResetPasswordForm() {
     return (
       <div className="text-center space-y-4">
         <div className="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center mx-auto">
-          <span className="material-symbols-outlined text-secondary text-3xl">
-            check_circle
-          </span>
+          <MdCheckCircle className="text-secondary text-3xl" />
         </div>
         <h1 className="font-headline text-2xl font-bold text-primary">
           Password updated
@@ -101,27 +100,53 @@ function ResetPasswordForm() {
           <label className="block text-sm font-medium text-primary mb-1.5">
             New password
           </label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary"
-            placeholder="••••••••"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary pr-12"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-primary/40 hover:text-secondary transition-colors"
+            >
+              {showPassword ? (
+                <MdVisibilityOff className="text-xl" />
+              ) : (
+                <MdVisibility className="text-xl" />
+              )}
+            </button>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-primary mb-1.5">
             Confirm password
           </label>
-          <input
-            type="password"
-            required
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary"
-            placeholder="••••••••"
-          />
+          <div className="relative">
+            <input
+              type={showConfirm ? "text" : "password"}
+              required
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary pr-12"
+              placeholder="••••••••"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirm(!showConfirm)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-primary/40 hover:text-secondary transition-colors"
+            >
+              {showConfirm ? (
+                <MdVisibilityOff className="text-xl" />
+              ) : (
+                <MdVisibility className="text-xl" />
+              )}
+            </button>
+          </div>
         </div>
         <button
           type="submit"

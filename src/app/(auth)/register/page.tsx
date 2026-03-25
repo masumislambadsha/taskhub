@@ -1,5 +1,7 @@
 "use client";
 
+import { MdAddAPhoto, MdArrowBack, MdBusinessCenter, MdCategory, MdEdit, MdUpload, MdWork, MdVisibility, MdVisibilityOff } from 'react-icons/md';
+
 import { useState, useRef } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -49,6 +51,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -138,11 +142,9 @@ export default function RegisterPage() {
                   setValue("role", r);
                   setStep(2);
                 }}
-                className={`p-6 rounded-xl border-2 text-center transition-all ${role === r ? "border-secondary bg-secondary/5" : "border-primary/10 hover:border-secondary/50"}`}
+                className={`p-6 rounded-xl border-2 text-center transition-all flex items-center justify-center flex-col ${role === r ? "border-secondary bg-secondary/5" : "border-primary/10 hover:border-secondary/50"}`}
               >
-                <span className="material-symbols-outlined text-3xl text-secondary mb-2 block">
-                  {r === "worker" ? "work" : "business_center"}
-                </span>
+                <MdCategory className="text-secondary text-xl" />
                 <div className="font-bold text-primary capitalize">{r}</div>
                 <div className="text-xs text-primary/50 mt-1">
                   {r === "worker"
@@ -184,8 +186,7 @@ export default function RegisterPage() {
           onClick={() => setStep(1)}
           className="flex items-center gap-1 text-sm text-primary/50 hover:text-primary mb-6"
         >
-          <span className="material-symbols-outlined text-sm">arrow_back</span>{" "}
-          Back
+          <MdArrowBack className="text-xl" /> Back
         </button>
         <h1 className="font-headline text-2xl font-bold text-primary mb-1">
           Create your account
@@ -226,17 +227,13 @@ export default function RegisterPage() {
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="material-symbols-outlined text-white text-xl">
-                        edit
-                      </span>
+                      <MdEdit className="text-sm" />
                     </div>
                   </>
                 ) : uploading ? (
                   <div className="w-6 h-6 border-2 border-secondary border-t-transparent rounded-full animate-spin" />
                 ) : (
-                  <span className="material-symbols-outlined text-primary/30 text-3xl">
-                    add_a_photo
-                  </span>
+                  <MdAddAPhoto className="text-primary/30 text-3xl" />
                 )}
               </div>
               <div className="flex-1 space-y-2">
@@ -246,9 +243,7 @@ export default function RegisterPage() {
                   disabled={uploading}
                   className="w-full px-4 py-2.5 rounded-lg border border-primary/20 bg-background text-sm text-primary hover:border-secondary transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
                 >
-                  <span className="material-symbols-outlined text-sm">
-                    upload
-                  </span>
+                  <MdUpload className="text-sm" />
                   {uploading ? "Uploading…" : "Upload image"}
                 </button>
                 <p className="text-xs text-primary/40 text-center">
@@ -313,12 +308,25 @@ export default function RegisterPage() {
             <label className="block text-sm font-medium text-primary mb-1.5">
               Password
             </label>
-            <input
-              {...register("password")}
-              type="password"
-              className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary"
-              placeholder="Min 6 characters"
-            />
+            <div className="relative">
+              <input
+                {...register("password")}
+                type={showPassword ? "text" : "password"}
+                className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary pr-12"
+                placeholder="Min 6 characters"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-primary/40 hover:text-secondary transition-colors"
+              >
+                {showPassword ? (
+                  <MdVisibilityOff className="text-xl" />
+                ) : (
+                  <MdVisibility className="text-xl" />
+                )}
+              </button>
+            </div>
             {errors.password && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.password.message}
@@ -330,12 +338,25 @@ export default function RegisterPage() {
             <label className="block text-sm font-medium text-primary mb-1.5">
               Confirm Password
             </label>
-            <input
-              {...register("confirmPassword")}
-              type="password"
-              className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary"
-              placeholder="Repeat password"
-            />
+            <div className="relative">
+              <input
+                {...register("confirmPassword")}
+                type={showConfirmPassword ? "text" : "password"}
+                className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary pr-12"
+                placeholder="Repeat password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-primary/40 hover:text-secondary transition-colors"
+              >
+                {showConfirmPassword ? (
+                  <MdVisibilityOff className="text-xl" />
+                ) : (
+                  <MdVisibility className="text-xl" />
+                )}
+              </button>
+            </div>
             {errors.confirmPassword && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.confirmPassword.message}

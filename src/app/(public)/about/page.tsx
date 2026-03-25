@@ -1,4 +1,6 @@
 import Link from "next/link";
+import iconMap from '@/lib/iconMap';
+import { MdArrowForward, MdBusinessCenter, MdCategory, MdEngineering, MdHandshake } from 'react-icons/md';
 
 const STATS = [
   { value: "10K+", label: "Tasks Completed", icon: "task_alt" },
@@ -106,15 +108,13 @@ export default function AboutPage() {
           {STATS.map((s) => (
             <div
               key={s.label}
-              className="bg-white rounded-2xl border border-primary/5 shadow-md p-6 text-center"
+              className="bg-white rounded-2xl border border-primary/5 shadow-md p-6 text-center flex flex-col items-center justify-center gap-1 group hover:bg-primary transition-all duration-200 "
             >
-              <span className="material-symbols-outlined text-secondary text-2xl mb-2 block">
-                {s.icon}
-              </span>
-              <p className="font-headline text-[26px] sm:text-3xl font-extrabold text-primary">
+              {(() => { const Icon = iconMap[s.icon] ?? MdCategory; return <Icon className="text-2xl text-secondary group-hover:text-white transition-all duration-200" />; })()}
+              <p className="font-headline text-[26px] sm:text-3xl font-extrabold text-primary group-hover:text-white transition-all duration-200">
                 {s.value}
               </p>
-              <p className="text-[10px] sm:text-xs text-primary/50 mt-1 font-medium">
+              <p className="text-[10px] sm:text-xs group-hover:text-white text-primary/50 mt-1 font-medium">
                 {s.label}
               </p>
             </div>
@@ -146,9 +146,7 @@ export default function AboutPage() {
           <div className="absolute inset-0 bg-secondary/5 rounded-3xl rotate-3" />
           <div className="absolute inset-0 bg-primary/5 rounded-3xl -rotate-2" />
           <div className="absolute inset-0 bg-white rounded-3xl border border-primary/10 shadow-lg flex flex-col justify-center items-center gap-4 p-8">
-            <span className="material-symbols-outlined text-secondary text-5xl">
-              handshake
-            </span>
+            <MdHandshake className="text-secondary text-5xl" />
             <p className="font-headline text-xl font-bold text-primary text-center">
               Fair for workers.
               <br />
@@ -175,22 +173,20 @@ export default function AboutPage() {
           {VALUES.map((v, i) => (
             <div
               key={v.title}
-              className="group bg-white rounded-2xl border border-primary/5 shadow-sm p-4 sm:p-7 hover:shadow-md hover:border-secondary/20 transition-all"
+              className="group bg-white rounded-2xl border border-primary/5 shadow-sm p-4 sm:p-7 hover:shadow-md hover:border-secondary/20 transition-all hover:bg-primary  duration-300"
             >
               <div className="flex items-start gap-5">
                 <div className="shrink-0 w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center group-hover:bg-secondary/20 transition-colors">
-                  <span className="material-symbols-outlined text-secondary text-xl">
-                    {v.icon}
-                  </span>
+                  <MdCategory className="text-secondary group-hover:text-white text-xl" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-bold text-primary/30 font-headline">
+                    <span className="text-[10px] font-bold group-hover:text-white text-primary/30 font-headline">
                       0{i + 1}
                     </span>
-                    <h3 className="font-bold text-primary">{v.title}</h3>
+                    <h3 className="font-bold group-hover:text-white text-primary">{v.title}</h3>
                   </div>
-                  <p className="text-[12px] sm:text-sm text-primary/60 leading-relaxed">
+                  <p className="text-[12px]  group-hover:text-white sm:text-sm text-primary/60 leading-relaxed">
                     {v.desc}
                   </p>
                 </div>
@@ -252,9 +248,7 @@ export default function AboutPage() {
                 key={t.name}
                 className="flex items-center gap-3 bg-white/5 hover:bg-white/10 transition-colors rounded-xl px-5 py-4"
               >
-                <span className="material-symbols-outlined text-secondary text-xl">
-                  {t.icon}
-                </span>
+                <MdCategory className="text-secondary text-xl" />
                 <span className="text-white font-semibold text-sm">
                   {t.name}
                 </span>
@@ -269,9 +263,7 @@ export default function AboutPage() {
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-secondary/10 rounded-2xl p-8 flex flex-col justify-between">
             <div>
-              <span className="material-symbols-outlined text-secondary text-3xl mb-4 block">
-                engineering
-              </span>
+              <MdEngineering className="text-secondary text-3xl" />
               <h3 className="font-headline text-xl font-bold text-primary mb-2">
                 Ready to earn?
               </h3>
@@ -284,17 +276,13 @@ export default function AboutPage() {
               href="/register"
               className="mt-6 inline-flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-secondary/90 transition-colors w-fit"
             >
-              <span className="material-symbols-outlined text-sm">
-                arrow_forward
-              </span>
+              <MdArrowForward className="text-base" />
               Join as Worker
             </Link>
           </div>
           <div className="bg-primary rounded-2xl p-8 flex flex-col justify-between">
             <div>
-              <span className="material-symbols-outlined text-secondary text-3xl mb-4 block">
-                business_center
-              </span>
+              <MdBusinessCenter className="text-3xl text-secondary" />
               <h3 className="font-headline text-xl font-bold text-white mb-2">
                 Need tasks done?
               </h3>
@@ -307,9 +295,7 @@ export default function AboutPage() {
               href="/register"
               className="mt-6 inline-flex items-center gap-2 bg-white/10 text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-white/20 transition-colors w-fit"
             >
-              <span className="material-symbols-outlined text-sm">
-                arrow_forward
-              </span>
+              <MdArrowForward className="text-base" />
               Post a Task
             </Link>
           </div>
@@ -318,3 +304,6 @@ export default function AboutPage() {
     </main>
   );
 }
+
+
+

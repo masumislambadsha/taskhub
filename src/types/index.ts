@@ -113,6 +113,7 @@ export interface IMessage {
   senderId: string;
   receiverId: string;
   senderName: string;
+  senderPhoto?: string;
   content: string;
   isRead: boolean;
   createdAt: string;

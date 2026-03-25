@@ -1,4 +1,5 @@
 "use client";
+import { MdAdd, MdGroup, MdToll } from 'react-icons/md';
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -70,7 +71,7 @@ export default function BuyerTasksPage() {
           href="/buyer/tasks/new"
           className="flex items-center gap-2 bg-primary text-white px-4 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors shrink-0"
         >
-          <span className="material-symbols-outlined text-sm">add</span>
+          <MdAdd className="text-sm" />
           <span className="hidden sm:inline">New Task</span>
           <span className="sm:hidden">New</span>
         </Link>
@@ -123,9 +124,7 @@ export default function BuyerTasksPage() {
                 </div>
                 <div className="flex items-center justify-between text-xs text-primary/50 mb-3">
                   <span className="flex items-center gap-1">
-                    <span className="material-symbols-outlined text-xs">
-                      group
-                    </span>
+                    <MdGroup className="text-xs" />
                     {t.filledWorkers}/{t.requiredWorkers} workers
                   </span>
                   <span>
@@ -134,12 +133,7 @@ export default function BuyerTasksPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1 font-semibold text-secondary text-sm">
-                    <span
-                      className="material-symbols-outlined text-xs text-amber-500"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      toll
-                    </span>
+                    <MdToll className="text-xs text-amber-500" />
                     <CountUp value={t.payableAmount} />
                     <span className="text-xs font-normal text-primary/40">
                       coins
@@ -211,12 +205,7 @@ export default function BuyerTasksPage() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="flex items-center gap-1 text-secondary font-semibold">
-                          <span
-                            className="material-symbols-outlined text-xs text-amber-500"
-                            style={{ fontVariationSettings: "'FILL' 1" }}
-                          >
-                            toll
-                          </span>
+                          <MdToll className="text-xs text-amber-500" />
                           <CountUp value={t.payableAmount} />
                         </span>
                       </td>

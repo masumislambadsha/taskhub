@@ -1,4 +1,6 @@
 import Link from "next/link";
+import iconMap from '@/lib/iconMap';
+import { MdArrowForward, MdBusinessCenter, MdCategory, MdEngineering, MdSavings, MdShoppingCart, MdSwapHoriz } from 'react-icons/md';
 
 const BUYER_STEPS = [
   {
@@ -133,9 +135,7 @@ export default function HowItWorksPage() {
               key={f.label}
               className="bg-white rounded-2xl border border-primary/5 shadow-md p-4 sm:p-5 text-center"
             >
-              <span className="material-symbols-outlined text-secondary text-2xl mb-2 block">
-                {f.icon}
-              </span>
+              <MdCategory className="text-secondary text-xl" />
               <p className="font-headline text-sm sm:text-base font-extrabold text-primary">
                 {f.label}
               </p>
@@ -149,9 +149,7 @@ export default function HowItWorksPage() {
       <section className="max-w-5xl mx-auto px-4 md:px-8 mt-10 sm:mt-20">
         <div className="flex items-center gap-4 mb-8 sm:mb-10">
           <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-primary flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-secondary text-lg sm:text-xl">
-              business_center
-            </span>
+            <MdBusinessCenter className="text-3xl text-secondary" />
           </div>
           <div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-secondary">
@@ -170,9 +168,7 @@ export default function HowItWorksPage() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-primary group-hover:bg-secondary transition-colors flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-secondary group-hover:text-white text-lg transition-colors">
-                    {s.icon}
-                  </span>
+                  {(() => { const Icon = iconMap[s.icon] ?? MdCategory; return <Icon className="text-xl group-hover:text-white text-secondary" />; })()}
                 </div>
                 <span className="font-headline text-2xl font-extrabold text-primary/10">
                   {s.step}
@@ -196,9 +192,7 @@ export default function HowItWorksPage() {
       <section className="max-w-5xl mx-auto px-4 md:px-8">
         <div className="flex items-center gap-4 mb-8 sm:mb-10">
           <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-white text-lg sm:text-xl">
-              engineering
-            </span>
+            <MdEngineering className="text-white text-3xl" />
           </div>
           <div>
             <span className="text-[10px] font-bold uppercase tracking-widest text-secondary">
@@ -217,9 +211,7 @@ export default function HowItWorksPage() {
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl bg-secondary/10 group-hover:bg-secondary transition-colors flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-secondary group-hover:text-white text-lg transition-colors">
-                    {s.icon}
-                  </span>
+                  {(() => { const Icon = iconMap[s.icon] ?? MdCategory; return <Icon className="text-xl group-hover:text-white text-secondary" />; })()}
                 </div>
                 <span className="font-headline text-2xl font-extrabold text-primary/10">
                   {s.step}
@@ -251,18 +243,14 @@ export default function HowItWorksPage() {
           </div>
           <div className="grid sm:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-10">
             <div className="bg-white/5 rounded-2xl p-5 sm:p-6 text-center">
-              <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
-                shopping_cart
-              </span>
+              <MdShoppingCart className="text-secondary text-3xl mb-3 block" />
               <p className="font-headline text-xl sm:text-2xl font-extrabold text-white">
                 $1 = 10 coins
               </p>
               <p className="text-white/40 text-xs mt-1">Buyer purchase rate</p>
             </div>
             <div className="bg-secondary/20 rounded-2xl p-5 sm:p-6 text-center flex flex-col items-center justify-center">
-              <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
-                swap_horiz
-              </span>
+              <MdSwapHoriz className="text-secondary text-3xl mb-3 block" />
               <p className="font-headline text-lg font-extrabold text-white">
                 Platform fee
               </p>
@@ -271,9 +259,7 @@ export default function HowItWorksPage() {
               </p>
             </div>
             <div className="bg-white/5 rounded-2xl p-5 sm:p-6 text-center">
-              <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
-                savings
-              </span>
+              <MdSavings className="text-secondary text-3xl mb-3 block" />
               <p className="font-headline text-xl sm:text-2xl font-extrabold text-white">
                 20 coins = $1
               </p>
@@ -306,11 +292,9 @@ export default function HowItWorksPage() {
           {PAYMENT_METHODS.map((m) => (
             <div
               key={m.name}
-              className="bg-white rounded-2xl border border-primary/5 shadow-sm p-6 sm:p-7 text-center hover:shadow-md hover:border-secondary/20 transition-all"
+              className="bg-white rounded-2xl border border-primary/5 shadow-sm p-6 sm:p-7 text-center hover:shadow-md hover:border-secondary/20 transition-all flex items-center justify-center gap-1 flex-col"
             >
-              <span className="material-symbols-outlined text-secondary text-3xl mb-3 block">
-                {m.icon}
-              </span>
+              {(() => { const Icon = iconMap[m.icon] ?? MdCategory; return <Icon className="text-xl text-secondary" />; })()}
               <p className="font-bold text-primary">{m.name}</p>
               <p className="text-xs text-primary/40 mt-1">{m.note}</p>
             </div>
@@ -323,9 +307,7 @@ export default function HowItWorksPage() {
         <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
           <div className="bg-secondary/10 rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
             <div>
-              <span className="material-symbols-outlined text-secondary text-3xl mb-4 block">
-                engineering
-              </span>
+              <MdEngineering className="text-secondary text-3xl" />
               <h3 className="font-headline text-xl font-bold text-primary mb-2">
                 Ready to earn?
               </h3>
@@ -338,17 +320,13 @@ export default function HowItWorksPage() {
               href="/register"
               className="mt-6 inline-flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-secondary/90 transition-colors w-fit"
             >
-              <span className="material-symbols-outlined text-sm">
-                arrow_forward
-              </span>
+              <MdArrowForward className="text-base" />
               Join as Worker
             </Link>
           </div>
           <div className="bg-primary rounded-2xl p-6 sm:p-8 flex flex-col justify-between">
             <div>
-              <span className="material-symbols-outlined text-secondary text-3xl mb-4 block">
-                business_center
-              </span>
+              <MdBusinessCenter className="text-3xl text-secondary" />
               <h3 className="font-headline text-xl font-bold text-white mb-2">
                 Need tasks done?
               </h3>
@@ -361,9 +339,7 @@ export default function HowItWorksPage() {
               href="/register"
               className="mt-6 inline-flex items-center gap-2 bg-white/10 text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-white/20 transition-colors w-fit"
             >
-              <span className="material-symbols-outlined text-sm">
-                arrow_forward
-              </span>
+              <MdArrowForward className="text-base" />
               Post a Task
             </Link>
           </div>
@@ -372,3 +348,6 @@ export default function HowItWorksPage() {
     </main>
   );
 }
+
+
+

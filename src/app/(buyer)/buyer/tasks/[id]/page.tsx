@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { MdArrowBack, MdCategory, MdEdit } from 'react-icons/md';
 import { connectDB } from "@/lib/db";
 import Task from "@/models/Task";
 import Submission from "@/models/Submission";
@@ -46,9 +47,7 @@ export default async function BuyerTaskDetailPage({ params }: Props) {
               href="/buyer/tasks"
               className="text-primary/40 hover:text-primary transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">
-                arrow_back
-              </span>
+              <MdArrowBack className="text-xl" />
             </Link>
             <Badge status={task.status} />
           </div>
@@ -68,7 +67,7 @@ export default async function BuyerTaskDetailPage({ params }: Props) {
           href={`/buyer/tasks/${id}/edit`}
           className="shrink-0 flex items-center gap-2 bg-white border border-primary/10 text-primary px-4 py-2 rounded-lg text-sm font-semibold hover:border-secondary/30 transition-colors shadow-sm"
         >
-          <span className="material-symbols-outlined text-sm">edit</span>
+          <MdEdit className="text-sm" />
           Edit Task
         </Link>
       </div>
@@ -90,11 +89,7 @@ export default async function BuyerTaskDetailPage({ params }: Props) {
             key={s.label}
             className={`rounded-xl p-5 shadow-sm border ${s.accent ? "bg-primary text-white border-primary" : "bg-white border-primary/5"}`}
           >
-            <span
-              className={`material-symbols-outlined text-2xl mb-2 block text-secondary`}
-            >
-              {s.icon}
-            </span>
+            <MdCategory className="text-secondary text-xl" />
             <div
               className={`text-2xl font-bold font-headline ${s.accent ? "text-white" : "text-primary"}`}
             >

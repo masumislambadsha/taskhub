@@ -5,6 +5,7 @@ export interface IUserDoc extends Document {
   email: string;
   passwordHash?: string;
   photoUrl?: string;
+  about?: string;
   role: "worker" | "buyer" | "admin";
   coins: number;
   status: "active" | "suspended";
@@ -18,6 +19,7 @@ const UserSchema = new Schema<IUserDoc>(
     email: { type: String, required: true, unique: true, lowercase: true },
     passwordHash: { type: String },
     photoUrl: { type: String },
+    about: { type: String },
     role: {
       type: String,
       enum: ["worker", "buyer", "admin"],

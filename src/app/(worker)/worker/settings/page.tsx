@@ -1,17 +1,19 @@
 "use client";
+import { MdAccountCircle, MdLock, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { IconType } from "react-icons";
 
 function Section({
-  icon,
+  icon: Icon,
   title,
   subtitle,
   children,
 }: {
-  icon: string;
+  icon: IconType;
   title: string;
   subtitle: string;
   children: React.ReactNode;
@@ -19,7 +21,7 @@ function Section({
   return (
     <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
       <div className="px-4 sm:px-6 py-5 border-b border-primary/5 flex items-center gap-3">
-        <span className="material-symbols-outlined text-secondary">{icon}</span>
+        <Icon className="text-secondary text-xl" />
         <div>
           <h2 className="font-bold text-primary text-sm">{title}</h2>
           <p className="text-primary/50 text-xs mt-0.5">{subtitle}</p>
@@ -32,13 +34,15 @@ function Section({
 
 export default function WorkerSettingsPage() {
   const { data: session } = useSession();
-
   const [pwForm, setPwForm] = useState({
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
   });
   const [pwLoading, setPwLoading] = useState(false);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,9 +83,8 @@ export default function WorkerSettingsPage() {
         </p>
       </div>
 
-      {/* Account Info */}
       <Section
-        icon="account_circle"
+        icon={MdAccountCircle}
         title="Account Info"
         subtitle="Your current account details"
       >
@@ -114,9 +117,8 @@ export default function WorkerSettingsPage() {
         </p>
       </Section>
 
-      {/* Change Password */}
       <Section
-        icon="lock"
+        icon={MdLock}
         title="Change Password"
         subtitle="Update your login password"
       >
@@ -125,49 +127,88 @@ export default function WorkerSettingsPage() {
             <label className="block text-xs font-bold uppercase tracking-widest text-primary/60 mb-1.5">
               Current Password
             </label>
-            <input
-              type="password"
-              value={pwForm.currentPassword}
-              onChange={(e) =>
-                setPwForm((p) => ({ ...p, currentPassword: e.target.value }))
-              }
-              required
-              className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary/30 text-sm"
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                type={showCurrent ? "text" : "password"}
+                value={pwForm.currentPassword}
+                onChange={(e) =>
+                  setPwForm((p) => ({ ...p, currentPassword: e.target.value }))
+                }
+                required
+                className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary/30 text-sm pr-12"
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-primary/40 hover:text-secondary transition-colors"
+              >
+                {showCurrent ? (
+                  <MdVisibilityOff className="text-xl" />
+                ) : (
+                  <MdVisibility className="text-xl" />
+                )}
+              </button>
+            </div>
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest text-primary/60 mb-1.5">
                 New Password
               </label>
-              <input
-                type="password"
-                value={pwForm.newPassword}
-                onChange={(e) =>
-                  setPwForm((p) => ({ ...p, newPassword: e.target.value }))
-                }
-                required
-                minLength={6}
-                className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary/30 text-sm"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  type={showNew ? "text" : "password"}
+                  value={pwForm.newPassword}
+                  onChange={(e) =>
+                    setPwForm((p) => ({ ...p, newPassword: e.target.value }))
+                  }
+                  required
+                  minLength={6}
+                  className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary/30 text-sm pr-12"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNew(!showNew)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-primary/40 hover:text-secondary transition-colors"
+                >
+                  {showNew ? (
+                    <MdVisibilityOff className="text-xl" />
+                  ) : (
+                    <MdVisibility className="text-xl" />
+                  )}
+                </button>
+              </div>
             </div>
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest text-primary/60 mb-1.5">
                 Confirm Password
               </label>
-              <input
-                type="password"
-                value={pwForm.confirmPassword}
-                onChange={(e) =>
-                  setPwForm((p) => ({ ...p, confirmPassword: e.target.value }))
-                }
-                required
-                minLength={6}
-                className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary/30 text-sm"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  value={pwForm.confirmPassword}
+                  onChange={(e) =>
+                    setPwForm((p) => ({ ...p, confirmPassword: e.target.value }))
+                  }
+                  required
+                  minLength={6}
+                  className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary/30 text-sm pr-12"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-primary/40 hover:text-secondary transition-colors"
+                >
+                  {showConfirm ? (
+                    <MdVisibilityOff className="text-xl" />
+                  ) : (
+                    <MdVisibility className="text-xl" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
           <button

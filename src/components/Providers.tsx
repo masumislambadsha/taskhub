@@ -16,7 +16,6 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       <ReduxProvider store={store}>
         <QueryClientProvider client={queryClient}>
           <SmoothScroll>{children}</SmoothScroll>
-
           <Toaster
             position="bottom-center"
             toastOptions={{

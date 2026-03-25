@@ -1,3 +1,4 @@
+import { MdAccountBalanceWallet, MdAddCircle, MdAddPhotoAlternate, MdArrowBack, MdArrowForward, MdAssignment, MdChevronLeft, MdChevronRight, MdClose, MdEdit, MdGroup, MdPayments, MdReceiptLong, MdTaskAlt, MdToll } from 'react-icons/md';
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
@@ -51,9 +52,7 @@ export default async function AdminSubmissionsPage() {
 
         {submissions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <span className="material-symbols-outlined text-primary/15 text-5xl">
-              assignment
-            </span>
+            <MdAssignment className="text-5xl text-primary/20 block mb-3 mx-auto" />
             <p className="text-primary/40 text-sm">No submissions found</p>
           </div>
         ) : (
@@ -104,12 +103,7 @@ export default async function AdminSubmissionsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1">
-                          <span
-                            className="material-symbols-outlined text-amber-500 text-sm"
-                            style={{ fontVariationSettings: "'FILL' 1" }}
-                          >
-                            toll
-                          </span>
+                          <MdToll className="text-sm text-amber-500" />
                           <span className="font-bold text-primary">
                             {s.payableAmount}
                           </span>
@@ -153,12 +147,7 @@ export default async function AdminSubmissionsPage() {
                   </div>
                   <div className="flex items-center gap-2 flex-wrap pl-12">
                     <div className="flex items-center gap-1 bg-amber-50 px-2 py-1 rounded-lg">
-                      <span
-                        className="material-symbols-outlined text-amber-500 text-sm"
-                        style={{ fontVariationSettings: "'FILL' 1" }}
-                      >
-                        toll
-                      </span>
+                      <MdToll className="text-sm text-amber-500" />
                       <span className="text-xs font-bold text-primary">
                         {s.payableAmount}
                       </span>
@@ -179,3 +168,5 @@ export default async function AdminSubmissionsPage() {
     </div>
   );
 }
+
+

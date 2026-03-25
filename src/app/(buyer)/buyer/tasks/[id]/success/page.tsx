@@ -1,4 +1,5 @@
 "use client";
+import { MdAddTask, MdArrowForward, MdBolt, MdCheckCircle, MdGroup, MdRateReview, MdShare } from 'react-icons/md';
 
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -22,12 +23,7 @@ export default function TaskSuccessPage() {
         <div className="mb-6 relative">
           <div className="absolute inset-0 bg-secondary/10 rounded-full blur-3xl scale-150" />
           <div className="relative w-20 h-20 bg-secondary text-white rounded-full flex items-center justify-center shadow-xl shadow-secondary/20">
-            <span
-              className="material-symbols-outlined text-5xl"
-              style={{ fontVariationSettings: "'FILL' 1" }}
-            >
-              check_circle
-            </span>
+            <MdCheckCircle className="text-5xl" />
           </div>
         </div>
         <h1 className="font-headline text-4xl md:text-5xl font-extrabold text-primary mb-3 tracking-tight">
@@ -108,8 +104,7 @@ export default function TaskSuccessPage() {
           </h3>
           <div className="space-y-6">
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
-                <span className="material-symbols-outlined text-xl">group</span>
+              <div className="shrink-0 w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">`n                    <MdGroup className="text-lg text-secondary" />
               </div>
               <div>
                 <p className="font-bold text-primary text-sm">
@@ -122,10 +117,7 @@ export default function TaskSuccessPage() {
               </div>
             </div>
             <div className="flex gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary/40">
-                <span className="material-symbols-outlined text-xl">
-                  rate_review
-                </span>
+              <div className="shrink-0 w-10 h-10 rounded-full bg-primary/5 flex items-center justify-center text-primary/40"> <MdRateReview className="text-lg text-secondary" />
               </div>
               <div>
                 <p className="font-bold text-primary text-sm">
@@ -147,15 +139,13 @@ export default function TaskSuccessPage() {
             className="group w-full bg-secondary text-white h-14 rounded-xl flex items-center justify-center gap-3 font-headline font-bold text-base hover:bg-secondary/90 hover:shadow-lg hover:shadow-secondary/20 transition-all"
           >
             View Live Task
-            <span className="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">
-              arrow_forward
-            </span>
+            <MdArrowForward className="text-sm transition-transform group-hover:translate-x-1" />
           </Link>
           <Link
             href="/buyer/tasks/new"
             className="w-full bg-primary/5 text-primary h-14 rounded-xl flex items-center justify-center gap-3 font-headline font-bold text-base hover:bg-primary/10 transition-all"
           >
-            <span className="material-symbols-outlined text-sm">add_task</span>
+            <MdAddTask className="text-sm" />
             Create Another Task
           </Link>
           <button
@@ -166,7 +156,7 @@ export default function TaskSuccessPage() {
             }}
             className="w-full text-secondary font-semibold py-3 flex items-center justify-center gap-2 hover:bg-secondary/5 rounded-xl transition-colors text-sm"
           >
-            <span className="material-symbols-outlined text-lg">share</span>
+            <MdShare className="text-lg" />
             Copy Task Link
           </button>
         </div>
@@ -179,9 +169,7 @@ export default function TaskSuccessPage() {
         </span>
         <div className="h-4 w-px bg-amber-300" />
         <div className="flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-sm text-amber-700">
-            bolt
-          </span>
+          <MdBolt className="text-sm text-amber-700" />
           <span className="text-xs font-semibold text-amber-800">
             Workers Notified
           </span>

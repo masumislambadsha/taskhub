@@ -1,4 +1,6 @@
 "use client";
+import iconMap from '@/lib/iconMap';
+import { MdExpandMore, MdHelp, MdSupportAgent } from 'react-icons/md';
 import { useState } from "react";
 import Link from "next/link";
 
@@ -179,13 +181,9 @@ export default function FaqPage() {
                   : "bg-white border-primary/5 hover:border-secondary/20 hover:shadow-md"
               }`}
             >
-              <span
-                className={`material-symbols-outlined text-2xl mb-2 block ${activeCategory === i ? "text-secondary" : "text-secondary"}`}
-              >
-                {c.icon}
-              </span>
+              {(() => { const Icon = iconMap[c.icon] ?? MdCategory; return <Icon className="text-xl text-secondary" />; })()}
               <p
-                className={`font-headline text-sm font-extrabold ${activeCategory === i ? "text-white" : "text-primary"}`}
+                className={`font-headline text-sm sm:text-lg font-extrabold ${activeCategory === i ? "text-white" : "text-primary"}`}
               >
                 {c.label}
               </p>
@@ -203,11 +201,9 @@ export default function FaqPage() {
       <section className="max-w-5xl mx-auto px-4 md:px-8 mt-10">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="material-symbols-outlined text-secondary text-base">
-              {cat.icon}
-            </span>
+            {(() => { const Icon = iconMap[cat.icon] ?? MdCategory; return <Icon className="text-base text-secondary" />; })()}
           </div>
-          <h2 className="font-headline font-bold text-primary">{cat.label}</h2>
+          <h2 className="font-headline font-bold text-primary text-lg">{cat.label}</h2>
           <span
             className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${cat.color}`}
           >
@@ -241,12 +237,7 @@ export default function FaqPage() {
                   </span>
                   <span className="font-bold text-primary text-sm">{f.q}</span>
                 </div>
-                <span
-                  className="material-symbols-outlined text-primary/30 shrink-0 transition-transform duration-300"
-                  style={{ transform: open === i ? "rotate(180deg)" : "none" }}
-                >
-                  expand_more
-                </span>
+                <MdExpandMore className="text-primary/30 shrink-0 group-open:rotate-180 transition-transform duration-300" />
               </button>
               {open === i && (
                 <div className="px-4 sm:px-7 pb-6 sm:pl-19 border-t border-primary/5">
@@ -277,16 +268,14 @@ export default function FaqPage() {
               href="/support"
               className="inline-flex items-center gap-2 bg-secondary text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-secondary/90 transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">
-                support_agent
-              </span>
+              <MdSupportAgent className="text-sm" />
               Contact Support
             </Link>
             <Link
               href="/how-it-works"
               className="inline-flex items-center gap-2 bg-white/10 text-white px-6 py-3 rounded-lg font-bold text-sm hover:bg-white/20 transition-colors"
             >
-              <span className="material-symbols-outlined text-sm">help</span>
+              <MdHelp className="text-sm" />
               How It Works
             </Link>
           </div>
@@ -295,3 +284,5 @@ export default function FaqPage() {
     </main>
   );
 }
+
+

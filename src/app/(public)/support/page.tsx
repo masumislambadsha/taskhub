@@ -1,4 +1,6 @@
 "use client";
+import iconMap from '@/lib/iconMap';
+import { MdArrowForward, MdCategory, MdCheckCircle, MdExpandMore, MdSchedule, MdSend, MdTipsAndUpdates } from 'react-icons/md';
 
 import { useState } from "react";
 import Link from "next/link";
@@ -140,9 +142,7 @@ export default function SupportPage() {
               className="bg-white rounded-2xl border border-primary/5 shadow-md p-5 flex items-center gap-4"
             >
               <div className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0">
-                <span className="material-symbols-outlined text-secondary text-xl">
-                  {c.icon}
-                </span>
+                {(() => { const Icon = iconMap[c.icon] ?? MdCategory; return <Icon className="text-xl text-secondary" />; })()}
               </div>
               <div>
                 <p className="font-bold text-primary text-sm">{c.label}</p>
@@ -171,9 +171,7 @@ export default function SupportPage() {
             >
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-xl bg-primary group-hover:bg-secondary transition-colors flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-secondary group-hover:text-white text-lg transition-colors">
-                    {c.icon}
-                  </span>
+                  {(() => { const Icon = iconMap[c.icon] ?? MdCategory; return <Icon className="text-xl group-hover:text-white text-secondary" />; })()}
                 </div>
                 <div>
                   <p className="font-bold text-primary text-sm">{c.label}</p>
@@ -203,9 +201,7 @@ export default function SupportPage() {
             className="text-[13px] sm:text-sm text-secondary font-semibold hover:underline flex items-center gap-1"
           >
             View all FAQs
-            <span className="material-symbols-outlined text-sm">
-              arrow_forward
-            </span>
+            <MdArrowForward className="text-base" />
           </Link>
         </div>
         <div className="space-y-3">
@@ -229,12 +225,7 @@ export default function SupportPage() {
                     {faq.q}
                   </span>
                 </div>
-                <span
-                  className="material-symbols-outlined text-primary/30 shrink-0 transition-transform duration-300"
-                  style={{ transform: open === i ? "rotate(180deg)" : "none" }}
-                >
-                  expand_more
-                </span>
+                <MdExpandMore className="text-primary/30 shrink-0 group-open:rotate-180 transition-transform duration-300" />
               </button>
               {open === i && (
                 <div className="px-7 pb-6 border-t border-primary/5">
@@ -264,9 +255,7 @@ export default function SupportPage() {
 
             {sent ? (
               <div className="bg-green-50 border border-green-200 rounded-2xl p-10 text-center">
-                <span className="material-symbols-outlined text-green-500 text-5xl mb-4 block">
-                  check_circle
-                </span>
+                <MdCheckCircle className="text-secondary text-3xl" />
                 <p className="font-bold text-primary mb-1">Message sent!</p>
                 <p className="text-sm text-primary/60">
                   We will get back to you within 24 hours on business days.
@@ -356,9 +345,7 @@ export default function SupportPage() {
                   type="submit"
                   className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-xs sm:text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
                 >
-                  <span className="material-symbols-outlined text-sm">
-                    send
-                  </span>
+                  <MdSend className="text-sm" />
                   Send Message
                 </button>
               </form>
@@ -368,9 +355,7 @@ export default function SupportPage() {
           {/* Sidebar */}
           <div className="md:col-span-2 space-y-5">
             <div className="bg-secondary/5 border border-secondary/20 rounded-2xl p-6">
-              <span className="material-symbols-outlined text-secondary text-2xl mb-3 block">
-                tips_and_updates
-              </span>
+              <MdTipsAndUpdates className="text-secondary text-2xl" />
               <p className="font-bold text-primary mb-2 text-lg">
                 Before you write
               </p>
@@ -383,9 +368,7 @@ export default function SupportPage() {
                 className="inline-flex items-center gap-1 mt-4 text-sm text-secondary font-semibold hover:underline"
               >
                 Browse FAQ
-                <span className="material-symbols-outlined text-sm">
-                  arrow_forward
-                </span>
+                <MdArrowForward className="text-base" />
               </Link>
             </div>
 
@@ -397,21 +380,15 @@ export default function SupportPage() {
                   href={l.href}
                   className="flex items-center gap-3 text-sm text-primary/60 hover:text-primary transition-colors group"
                 >
-                  <span className="material-symbols-outlined text-secondary text-base">
-                    {l.icon}
-                  </span>
+                  <MdCategory className="text-secondary text-xl" />
                   {l.label}
-                  <span className="material-symbols-outlined text-primary/20 text-sm ml-auto group-hover:text-secondary transition-colors">
-                    arrow_forward
-                  </span>
+                  <MdArrowForward className="text-base" />
                 </Link>
               ))}
             </div>
 
             <div className="bg-primary rounded-2xl p-6">
-              <span className="material-symbols-outlined text-secondary text-2xl mb-3 block">
-                schedule
-              </span>
+              <MdSchedule className="text-secondary text-2xl" />
               <p className="font-bold text-white text-sm mb-1">Response time</p>
               <p className="text-white/50 text-xs sm:text-sm leading-relaxed">
                 We typically respond within 24 hours on business days. Urgent
@@ -424,3 +401,6 @@ export default function SupportPage() {
     </main>
   );
 }
+
+
+
