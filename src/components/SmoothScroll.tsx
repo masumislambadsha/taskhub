@@ -19,7 +19,7 @@ export default function SmoothScroll({
       smoothWheel: true,
     });
 
-    // Hook lenis into GSAP ticker
+    
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((time) => lenis.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);

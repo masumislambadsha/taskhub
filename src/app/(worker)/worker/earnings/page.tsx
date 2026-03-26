@@ -89,7 +89,7 @@ export default async function WorkerEarningsPage() {
         </p>
       </div>
 
-      {/* Stat cards */}
+      
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-primary text-white p-4 sm:p-6 rounded-xl shadow-sm relative overflow-hidden flex flex-col justify-between min-h-40">
           <div className="absolute -right-8 -top-8 w-48 h-48 bg-secondary/20 rounded-full blur-3xl" />
@@ -163,7 +163,7 @@ export default async function WorkerEarningsPage() {
         </div>
       </div>
 
-      {/* Transaction history */}
+      
       <div>
         <div className="mb-5">
           <h2 className="font-headline text-xl font-bold text-primary">

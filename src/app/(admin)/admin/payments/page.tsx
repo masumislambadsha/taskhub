@@ -77,7 +77,7 @@ export default function AdminPaymentsPage() {
           </div>
         ) : (
           <>
-            {/* ── Desktop table ── */}
+            
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-background border-b border-primary/5">
@@ -144,7 +144,7 @@ export default function AdminPaymentsPage() {
               </table>
             </div>
 
-            {/* ── Mobile cards ── */}
+            
             <div className="md:hidden divide-y divide-primary/5">
               {payments.map((p) => (
                 <div

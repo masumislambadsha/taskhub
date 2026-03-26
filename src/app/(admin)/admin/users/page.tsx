@@ -140,7 +140,7 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      
       <div>
         <h1 className="font-headline text-2xl font-bold text-primary">
           Manage Users
@@ -150,7 +150,7 @@ export default function AdminUsersPage() {
         </p>
       </div>
 
-      {/* Filters */}
+      
       <div className="flex gap-3 flex-wrap">
         <Dropdown>
            <Button
@@ -232,7 +232,7 @@ export default function AdminUsersPage() {
         )}
       </div>
 
-      {/* List */}
+      
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         {isLoading ? (
           <SkeletonTable
@@ -252,7 +252,7 @@ export default function AdminUsersPage() {
                 key={u._id}
                 className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 sm:px-6 py-4 hover:bg-background/60 transition-colors"
               >
-                {/* Avatar + identity */}
+                
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 text-secondary font-bold text-sm">
                     {u.name?.[0]?.toUpperCase()}
@@ -270,12 +270,12 @@ export default function AdminUsersPage() {
                   </div>
                 </div>
 
-                {/* Meta row */}
+                
                 <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
-                  {/* Role selector */}
+                  
                   <RoleDropdown user={u} onRoleChange={handleRoleChange} />
 
-                  {/* Coins */}
+                  
                   <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1.5 rounded-lg">
                     <MdToll className="text-sm text-amber-500" />
                     <span className="text-xs font-bold text-primary">
@@ -283,10 +283,10 @@ export default function AdminUsersPage() {
                     </span>
                   </div>
 
-                  {/* Status badge */}
+                  
                   <Badge status={u.status} />
 
-                  {/* Actions */}
+                  
                   <div className="flex items-center gap-2 w-full sm:w-44 shrink-0">
                     <button
                       onClick={() => handleToggleStatus(u)}
@@ -312,7 +312,7 @@ export default function AdminUsersPage() {
         )}
       </div>
 
-      {/* Pagination */}
+      
       {pages > 1 && (
         <div className="flex justify-center gap-2 flex-wrap">
           <button

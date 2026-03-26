@@ -25,10 +25,10 @@ export default function DashboardShell({
   return (
     <div className="min-h-screen flex bg-background">
       <Sidebar role={role} />
-      {/* spacer to offset fixed sidebar on desktop */}
+      
       <div className="hidden lg:block w-64 shrink-0" />
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
+        
         <header className="h-16 bg- border-b border-primary/5 flex items-center justify-between px-4 md:px-6 sticky top-0 z-20 backdrop-blur-sm">
           <div className="lg:hidden">
             <HamburgerIcon

@@ -116,7 +116,7 @@ export default function AdminTasksPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      
       <div>
         <h1 className="font-headline text-2xl font-bold text-primary">
           Manage Tasks
@@ -126,7 +126,7 @@ export default function AdminTasksPage() {
         </p>
       </div>
 
-      {/* Filter */}
+      
       <div className="flex gap-3 flex-wrap">
         <Dropdown>
            <Button
@@ -178,7 +178,7 @@ export default function AdminTasksPage() {
         )}
       </div>
 
-      {/* List */}
+      
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="divide-y divide-primary/5">
@@ -204,9 +204,9 @@ export default function AdminTasksPage() {
               const isExpanded = expandedId === t._id;
               return (
                 <div key={t._id}>
-                  {/* Row */}
+                  
                   <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 sm:px-5 py-4 hover:bg-background/60 transition-colors">
-                    {/* Icon + title */}
+                    
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
                         <MdTaskAlt className="text-lg text-secondary" />
@@ -222,9 +222,9 @@ export default function AdminTasksPage() {
                       </div>
                     </div>
 
-                    {/* Meta + actions */}
+                    
                     <div className="flex items-center gap-2 sm:gap-5 flex-wrap sm:flex-nowrap">
-                      {/* Workers */}
+                      
                       <div className="flex items-center gap-1 bg-primary/5 px-2.5 py-1.5 rounded-lg">
                         <MdGroup className="text-sm" />
                         <span className="text-xs font-semibold text-primary">
@@ -232,7 +232,7 @@ export default function AdminTasksPage() {
                         </span>
                       </div>
 
-                      {/* Coins */}
+                      
                       <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1.5 rounded-lg">
                         <MdToll className="text-sm text-amber-500" />
                         <span className="text-xs font-bold text-primary">
@@ -242,7 +242,7 @@ export default function AdminTasksPage() {
 
                       <Badge status={t.status} />
 
-                      {/* Action buttons */}
+                      
                       <div className="flex items-center gap-2 w-full sm:w-auto">
                         <button
                           onClick={() =>
@@ -277,7 +277,7 @@ export default function AdminTasksPage() {
                     </div>
                   </div>
 
-                  {/* Expandable details panel */}
+                  
                   {isExpanded && (
                     <div className="px-4 sm:px-5 pb-5 bg-background/40 border-t border-primary/5">
                       <div className="pt-4 space-y-4">
@@ -379,7 +379,7 @@ export default function AdminTasksPage() {
         )}
       </div>
 
-      {/* Pagination */}
+      
       {pages > 1 && (
         <div className="flex justify-center gap-2 flex-wrap">
           <button

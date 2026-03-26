@@ -67,7 +67,7 @@ const TECH = [
 export default function AboutPage() {
   return (
     <main className="pb-24">
-      {/* Hero */}
+      
       <section className="relative overflow-hidden bg-primary py-16 sm:py-24 px-4 sm:px-8">
         <div className="pointer-events-none absolute -top-24 -right-24 w-96 h-96 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full bg-white/5" />
@@ -102,7 +102,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Stats bar */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-6 sm:-mt-8 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {STATS.map((s) => (
@@ -122,7 +122,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Mission */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-15 sm:mt-20 grid md:grid-cols-2 gap-12 items-center">
         <div>
           <span className="inline-block bg-secondary/10 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-4">
@@ -159,7 +159,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Values */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-16 sm:mt-20">
         <div className="text-center mb-10 sm:mb-12">
           <span className="inline-block bg-amber-100 text-amber-900 px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-4">
@@ -196,7 +196,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Timeline */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-16 sm:mt-24">
         <div className="text-center mb-10 sm:mb-12">
           <span className="inline-block bg-primary/10 text-primary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-4">
@@ -228,7 +228,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Tech Stack */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-16 sm:mt-24">
         <div className="bg-primary rounded-3xl p-5 sm:p-10 md:p-14">
           <div className="text-center mb-10">
@@ -258,7 +258,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* CTA */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-10 sm:mt-16">
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-secondary/10 rounded-2xl p-8 flex flex-col justify-between">

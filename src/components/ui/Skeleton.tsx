@@ -1,6 +1,6 @@
 "use client";
 
-// Base shimmer atom
+
 export function Bone({ className = "" }: { className?: string }) {
   return (
     <div
@@ -10,7 +10,7 @@ export function Bone({ className = "" }: { className?: string }) {
   );
 }
 
-// ── Reusable primitives ──────────────────────────────────────────────────────
+
 
 export function SkeletonText({ className = "" }: { className?: string }) {
   return <Bone className={`h-4 ${className}`} />;
@@ -29,7 +29,7 @@ export function SkeletonButton({ className = "" }: { className?: string }) {
   return <Bone className={`h-10 rounded-lg ${className}`} />;
 }
 
-// ── Stat card ────────────────────────────────────────────────────────────────
+
 export function SkeletonStatCard() {
   return (
     <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-5 space-y-3">
@@ -43,7 +43,7 @@ export function SkeletonStatCard() {
   );
 }
 
-// ── Table row ────────────────────────────────────────────────────────────────
+
 export function SkeletonTableRow({ cols = 5 }: { cols?: number }) {
   const widths = ["w-40", "w-28", "w-16", "w-20", "w-24", "w-20"];
   return (
@@ -57,7 +57,7 @@ export function SkeletonTableRow({ cols = 5 }: { cols?: number }) {
   );
 }
 
-// ── Full table (no wrapper card — embed inside your own container) ────────────
+
 export function SkeletonTable({
   rows = 6,
   cols = 5,
@@ -99,7 +99,7 @@ export function SkeletonTable({
   );
 }
 
-// ── Mobile card skeleton (matches the sm card layout used in table+card pages) ─
+
 export function SkeletonMobileCard() {
   return (
     <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 space-y-3">
@@ -122,7 +122,7 @@ export function SkeletonMobileCard() {
   );
 }
 
-// ── Table on md+, cards on sm (buyer/tasks, worker/submissions, buyer/submissions, buyer/payments) ─
+
 export function SkeletonTableWithCards({
   rows = 5,
   cols = 5,
@@ -134,20 +134,20 @@ export function SkeletonTableWithCards({
   cols?: number;
   headers?: string[];
   cardCount?: number;
-  /** use md: breakpoint instead of sm: (for pages that switch at md) */
+  
   mdBreakpoint?: boolean;
 }) {
   const hideCards = mdBreakpoint ? "md:hidden" : "sm:hidden";
   const hideTable = mdBreakpoint ? "hidden md:block" : "hidden sm:block";
   return (
     <>
-      {/* Mobile cards */}
+      
       <div className={`${hideCards} space-y-3`}>
         {Array.from({ length: cardCount }).map((_, i) => (
           <SkeletonMobileCard key={i} />
         ))}
       </div>
-      {/* Desktop table */}
+      
       <div className={hideTable}>
         <SkeletonTable rows={rows} cols={cols} headers={headers} />
       </div>
@@ -155,7 +155,7 @@ export function SkeletonTableWithCards({
   );
 }
 
-// ── Admin list item skeleton (avatar + text + badge + action buttons) ─────────
+
 export function SkeletonAdminListItem() {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-3 px-4 sm:px-5 py-4">
@@ -177,7 +177,7 @@ export function SkeletonAdminListItem() {
   );
 }
 
-// ── Admin list page (admin/tasks, admin/users — list layout, not a table) ────
+
 export function SkeletonAdminListPage({
   rows = 7,
   filterCount = 1,
@@ -205,7 +205,7 @@ export function SkeletonAdminListPage({
   );
 }
 
-// ── Admin withdrawals page (table on md+, cards on sm) ────────────────────────
+
 export function SkeletonAdminWithdrawalsPage({ rows = 5 }: { rows?: number }) {
   return (
     <div className="space-y-6">
@@ -214,7 +214,7 @@ export function SkeletonAdminWithdrawalsPage({ rows = 5 }: { rows?: number }) {
         <Bone className="h-4 w-64" />
       </div>
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
-        {/* Mobile cards */}
+        
         <div className="md:hidden divide-y divide-primary/5">
           {Array.from({ length: rows }).map((_, i) => (
             <div key={i} className="px-4 py-4 space-y-3">
@@ -238,7 +238,7 @@ export function SkeletonAdminWithdrawalsPage({ rows = 5 }: { rows?: number }) {
             </div>
           ))}
         </div>
-        {/* Desktop table */}
+        
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-background border-b border-primary/5">
@@ -303,7 +303,7 @@ export function SkeletonAdminWithdrawalsPage({ rows = 5 }: { rows?: number }) {
   );
 }
 
-// ── Task card ────────────────────────────────────────────────────────────────
+
 export function SkeletonTaskCard() {
   return (
     <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-6 flex flex-col gap-3">
@@ -323,7 +323,7 @@ export function SkeletonTaskCard() {
   );
 }
 
-// ── Task card grid ───────────────────────────────────────────────────────────
+
 export function SkeletonTaskGrid({ count = 6 }: { count?: number }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -334,7 +334,7 @@ export function SkeletonTaskGrid({ count = 6 }: { count?: number }) {
   );
 }
 
-// ── Bar chart ────────────────────────────────────────────────────────────────
+
 export function SkeletonBarChart() {
   const heights = [35, 55, 80, 45, 90, 60, 40];
   return (
@@ -357,7 +357,7 @@ export function SkeletonBarChart() {
   );
 }
 
-// ── List row (used in dashboard panels) ─────────────────────────────────────
+
 export function SkeletonListRow() {
   return (
     <div className="px-6 py-3.5 flex items-center justify-between gap-4">
@@ -373,7 +373,7 @@ export function SkeletonListRow() {
   );
 }
 
-// ── Panel with list rows ─────────────────────────────────────────────────────
+
 export function SkeletonListPanel({
   rows = 5,
   title,
@@ -400,7 +400,7 @@ export function SkeletonListPanel({
   );
 }
 
-// ── Quick links sidebar ──────────────────────────────────────────────────────
+
 export function SkeletonQuickLinks({ count = 4 }: { count?: number }) {
   return (
     <div className="bg-white rounded-xl border border-primary/5 shadow-sm divide-y divide-primary/5">
@@ -418,7 +418,7 @@ export function SkeletonQuickLinks({ count = 4 }: { count?: number }) {
   );
 }
 
-// ── Withdrawal balance banner ────────────────────────────────────────────────
+
 export function SkeletonBalanceBanner() {
   return (
     <div
@@ -435,7 +435,7 @@ export function SkeletonBalanceBanner() {
   );
 }
 
-// ── Leaderboard podium ───────────────────────────────────────────────────────
+
 export function SkeletonPodium() {
   return (
     <div className="grid grid-cols-3 gap-4 items-end">
@@ -457,7 +457,7 @@ export function SkeletonPodium() {
   );
 }
 
-// ── Leaderboard table row ────────────────────────────────────────────────────
+
 export function SkeletonLeaderboardRow() {
   return (
     <div className="flex items-center gap-4 px-6 py-4">
@@ -475,13 +475,13 @@ export function SkeletonLeaderboardRow() {
   );
 }
 
-// ── Page-level skeletons ─────────────────────────────────────────────────────
 
-/** Worker & Buyer dashboard skeleton */
+
+
 export function SkeletonDashboard() {
   return (
     <div className="space-y-8">
-      {/* header */}
+      
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="space-y-2">
           <Bone className="h-7 w-56" />
@@ -489,13 +489,13 @@ export function SkeletonDashboard() {
         </div>
         <Bone className="h-10 w-36 rounded-xl" />
       </div>
-      {/* stat cards */}
+      
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
           <SkeletonStatCard key={i} />
         ))}
       </div>
-      {/* middle row */}
+      
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white rounded-xl border border-primary/5 shadow-sm p-6 space-y-4">
           <div className="flex items-center justify-between">
@@ -530,7 +530,7 @@ export function SkeletonDashboard() {
           </div>
         </div>
       </div>
-      {/* bottom row */}
+      
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <SkeletonListPanel rows={5} />
@@ -544,7 +544,7 @@ export function SkeletonDashboard() {
   );
 }
 
-/** Admin dashboard skeleton */
+
 export function SkeletonAdminDashboard() {
   return (
     <div className="space-y-8">
@@ -565,7 +565,7 @@ export function SkeletonAdminDashboard() {
   );
 }
 
-/** Table page skeleton (submissions, payments, tasks — table on sm+, cards on xs) */
+
 export function SkeletonTablePage({
   rows = 6,
   cols = 5,
@@ -598,7 +598,7 @@ export function SkeletonTablePage({
   );
 }
 
-/** Worker tasks page skeleton */
+
 export function SkeletonWorkerTasksPage() {
   return (
     <div className="space-y-6">
@@ -606,7 +606,7 @@ export function SkeletonWorkerTasksPage() {
         <Bone className="h-7 w-36" />
         <Bone className="h-4 w-52" />
       </div>
-      {/* filter bar */}
+      
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 flex flex-wrap gap-3">
         <Bone className="flex-1 min-w-48 h-10 rounded-lg" />
         <Bone className="h-10 w-36 rounded-lg" />
@@ -618,7 +618,7 @@ export function SkeletonWorkerTasksPage() {
   );
 }
 
-/** Public tasks page skeleton */
+
 export function SkeletonPublicTasksPage() {
   return (
     <div className="max-w-7xl mx-auto px-8 py-16">
@@ -631,11 +631,11 @@ export function SkeletonPublicTasksPage() {
   );
 }
 
-/** Leaderboard page skeleton */
+
 export function SkeletonLeaderboard() {
   return (
     <main className="pb-24">
-      {/* hero */}
+      
       <div className="bg-primary/10 py-20 px-8">
         <div className="max-w-4xl mx-auto text-center space-y-4">
           <Bone className="h-4 w-24 mx-auto rounded-full" />
@@ -644,11 +644,11 @@ export function SkeletonLeaderboard() {
           <Bone className="h-4 w-96 mx-auto" />
         </div>
       </div>
-      {/* podium */}
+      
       <div className="max-w-3xl mx-auto px-8 -mt-6">
         <SkeletonPodium />
       </div>
-      {/* table */}
+      
       <div className="max-w-3xl mx-auto px-8 mt-12 space-y-4">
         <div className="flex items-center justify-between">
           <Bone className="h-5 w-32" />
@@ -664,7 +664,7 @@ export function SkeletonLeaderboard() {
   );
 }
 
-/** Withdrawal page skeleton */
+
 export function SkeletonWithdrawalPage() {
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
@@ -673,7 +673,7 @@ export function SkeletonWithdrawalPage() {
         <Bone className="h-4 w-56" />
       </div>
       <SkeletonBalanceBanner />
-      {/* form card */}
+      
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-6 space-y-5">
         <Bone className="h-5 w-40" />
         <div className="grid md:grid-cols-2 gap-4">
@@ -686,7 +686,7 @@ export function SkeletonWithdrawalPage() {
         </div>
         <Bone className="h-12 w-full rounded-lg" />
       </div>
-      {/* history list */}
+      
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-primary/5">
           <Bone className="h-5 w-40" />

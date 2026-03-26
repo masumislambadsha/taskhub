@@ -18,7 +18,7 @@ export default function TaskSuccessPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-10">
-      {/* Hero */}
+      
       <div className="flex flex-col items-center text-center pt-4 pb-2">
         <div className="mb-6 relative">
           <div className="absolute inset-0 bg-secondary/10 rounded-full blur-3xl scale-150" />
@@ -35,9 +35,9 @@ export default function TaskSuccessPage() {
         </p>
       </div>
 
-      {/* Bento summary */}
+      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {/* Main details */}
+        
         <div className="md:col-span-2 bg-white p-8 rounded-xl border border-primary/5 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-28 h-28 bg-secondary/5 rounded-bl-full -mr-6 -mt-6" />
           <div className="relative z-10">
@@ -69,7 +69,7 @@ export default function TaskSuccessPage() {
           </div>
         </div>
 
-        {/* Budget card */}
+        
         <div className="bg-primary text-white p-8 rounded-xl flex flex-col justify-between shadow-xl">
           <div>
             <span className="text-xs uppercase tracking-widest text-white/50 font-medium mb-6 block">
@@ -95,9 +95,9 @@ export default function TaskSuccessPage() {
         </div>
       </div>
 
-      {/* Next steps + actions */}
+      
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Next milestones */}
+        
         <div className="lg:col-span-3 bg-white p-8 rounded-xl border border-primary/5 shadow-sm">
           <h3 className="font-headline text-lg font-bold text-primary mb-6">
             Next Milestones
@@ -132,7 +132,7 @@ export default function TaskSuccessPage() {
           </div>
         </div>
 
-        {/* Action buttons */}
+        
         <div className="lg:col-span-2 flex flex-col gap-3">
           <Link
             href={`/buyer/tasks/${id}`}
@@ -162,7 +162,7 @@ export default function TaskSuccessPage() {
         </div>
       </div>
 
-      {/* Floating ribbon */}
+      
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-amber-50 border border-amber-200/60 px-6 py-2 rounded-full shadow-lg flex items-center gap-4 z-40">
         <span className="text-[10px] font-bold uppercase tracking-widest text-amber-800">
           Task Mode: Live

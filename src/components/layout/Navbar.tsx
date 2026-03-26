@@ -35,7 +35,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center">
             <Logo size={34} />
           </Link>
-          {/* Desktop nav links */}
+          
           <div className="hidden lg:flex gap-6 items-center">
             <Link
               href="/how-it-works"
@@ -70,7 +70,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Desktop right side */}
+        
         <div className="hidden lg:flex items-center gap-3">
           {session ? (
             <>
@@ -165,14 +165,14 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile: notification + hamburger */}
+        
         <div className="flex lg:hidden items-center gap-1 text-primary">
           {session && <NotificationBell />}
           <HamburgerIcon checked={mobileOpen} onChange={setMobileOpen} />
         </div>
       </nav>
 
-      {/* Mobile menu — full screen overlay */}
+      
       <AnimatePresence>
         {mobileOpen && (
           <motion.div

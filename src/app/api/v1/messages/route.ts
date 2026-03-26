@@ -5,7 +5,7 @@ import Message from "@/models/Message";
 import Task from "@/models/Task";
 import User from "@/models/User";
 
-// GET /api/v1/messages — list conversations for current user
+
 export async function GET() {
   const session = await auth();
   if (!session)
@@ -15,7 +15,7 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  // Get latest message per conversationId where user is sender or receiver
+  
   const conversations = await Message.aggregate([
     {
       $match: {
@@ -74,14 +74,14 @@ export async function GET() {
     { $sort: { lastMessageAt: -1 } },
   ]);
 
-  // Populate task titles + other user photos
+  
   const taskIds = [...new Set(conversations.map((c) => c.taskId.toString()))];
   const tasks = await Task.find({ _id: { $in: taskIds } })
     .select("title buyerId buyerName")
     .lean();
   const taskMap = Object.fromEntries(tasks.map((t) => [t._id.toString(), t]));
 
-  // Get photos for all other users
+  
   const otherUserIds = conversations.map((c) => {
     const isSender = c.senderId.toString() === userId;
     return isSender ? c.receiverId.toString() : c.senderId.toString();

@@ -2,6 +2,7 @@ import {
   MdAnalytics,
   MdApi,
   MdArrowForward,
+  MdAssignment,
   MdAssignmentTurnedIn,
   MdBolt,
   MdCategory,
@@ -192,7 +193,7 @@ export default async function HomePage() {
     <>
       <HomeAnimations />
 
-        {/* Hero */}
+
       <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-24 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center overflow-hidden">
         <div className="space-y-6 min-w-0">
           <h1
@@ -319,7 +320,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-      {/* Trusted By */}
+
       <section className="md:py-12 py-5 max-w-7xl px-4 md:px-8 mx-auto  border-y border-primary/5 overflow-hidden">
         <div className=" mb-6">
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary/40">
@@ -329,7 +330,7 @@ export default async function HomePage() {
         <MarqueeBrands />
       </section>
 
-      {/* How it works */}
+
       <section
         className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-32 overflow-hidden"
         id="how-it-works"
@@ -406,10 +407,10 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-      {/* Stats */}
+
       <StatsSection />
 
-      {/* Features for Workers */}
+
       <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-32 overflow-hidden">
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-center">
           <div data-gsap="feature-text" className="lg:w-1/2 w-full min-w-0">
@@ -521,7 +522,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-      {/* Features for Buyers */}
+
       <section className="bg-white py-12 md:py-32 overflow-hidden" id="buyers">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
           <div className="flex flex-col lg:flex-row-reverse gap-12 lg:gap-20 items-center">
@@ -599,7 +600,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-      {/* Coin Economy */}
+
       <section className="max-w-7xl mx-auto px-4 md:px-8 py-15 md:py-20">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div data-gsap="feature-text">
@@ -637,7 +638,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Top Workers */}
+
       <section className="max-w-7xl mx-auto px-4 md:px-8 py-15 md:py-20 border-t border-primary/5">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16">
           <div>
@@ -708,7 +709,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Testimonials */}
+
       <section className="max-w-7xl mx-auto px-4 md:px-8 py-15 md:py-32 overflow-hidden border-t border-primary/5">
         <div className="grid md:grid-cols-2 gap-24 items-center">
           <div data-gsap="testimonial-quote" className="relative">
@@ -779,7 +780,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Global Impact */}
+
       <section className="bg-accent/10 px-4 py-15 md:py-32">
         <div className="max-w-5xl mx-auto px3 md:px-8 text-center space-y-6 md:space-y-12">
           <h2
@@ -818,13 +819,13 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* FAQ */}
+
       <section
         className="max-w-7xl mx-auto px-4 md:px-8 py-15 md:py-32"
         id="faq"
       >
         <div className="grid lg:grid-cols-2 gap-16 items-start">
-          {/* Left: header + CTA */}
+
           <div className="lg:sticky lg:top-32 space-y-6">
             <span className="inline-block bg-secondary/10 text-secondary px-4 py-1 text-[10px] font-bold uppercase tracking-[0.2em] rounded">
               Got Questions?
@@ -843,7 +844,7 @@ export default async function HomePage() {
               <MdContactSupport className="text-sm" />
               Visit Support Hub
             </a>
-            {/* decorative */}
+
             <div className="hidden lg:block pt-8">
               <div className="grid grid-cols-2 gap-4">
                 {[
@@ -866,7 +867,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* Right: accordion */}
+
           <div className="space-y-3">
             {FAQ_ITEMS.map((item, i) => (
               <details
@@ -895,7 +896,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Final CTA */}
+
       <section className="max-w-7xl mx-auto px-4 md:px-8 pb-15 md:pb-32">
         <div
           data-gsap="cta-box"

@@ -10,9 +10,9 @@ export const COIN_PACKAGES: CoinPackage[] = [
 export const WORKER_INITIAL_COINS = 10;
 export const BUYER_INITIAL_COINS = 50;
 
-// Buyer buys 10 coins for $1
+
 export const COINS_PER_DOLLAR_BUY = 10;
-// Worker withdraws 20 coins for $1
+
 export const COINS_PER_DOLLAR_WITHDRAW = 20;
 export const MIN_WITHDRAWAL_COINS = 200;
 

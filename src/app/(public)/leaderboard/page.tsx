@@ -59,7 +59,7 @@ export default async function LeaderboardPage() {
 
   return (
     <main className="pb-13 md:pb-24">
-      {/* Hero */}
+      
       <section className="relative overflow-hidden bg-primary py-20 px-4 sm:px-8">
         <div className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/5" />
@@ -79,11 +79,11 @@ export default async function LeaderboardPage() {
         </div>
       </section>
 
-      {/* Podium — top 3 */}
+      
       {topWorkers.length >= 3 && (
         <section className="max-w-3xl mx-auto px-4 md:px-8 -mt-6 relative z-10 overflow-hidden">
           <div className="grid grid-cols-3 gap-2 sm:gap-4 items-end">
-            {/* 2nd place */}
+            
             <div className="bg-white rounded-2xl border border-primary/5 shadow-md p-3 sm:p-6 text-center min-w-0">
               <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">🥈</div>
               <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden ring-4 ring-slate-200">
@@ -113,7 +113,7 @@ export default async function LeaderboardPage() {
               </p>
             </div>
 
-            {/* 1st place */}
+            
             <div className="bg-primary rounded-2xl shadow-xl p-4 sm:p-7 text-center -mt-6 min-w-0">
               <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">🥇</div>
               <div className="w-14 h-14 sm:w-[72px] sm:h-[72px] rounded-full bg-secondary/20 flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden ring-4 ring-secondary/40">
@@ -146,7 +146,7 @@ export default async function LeaderboardPage() {
               </span>
             </div>
 
-            {/* 3rd place */}
+            
             <div className="bg-white rounded-2xl border border-primary/5 shadow-md p-3 sm:p-6 text-center min-w-0">
               <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">🥉</div>
               <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-2 sm:mb-3 overflow-hidden ring-4 ring-amber-100">
@@ -179,7 +179,7 @@ export default async function LeaderboardPage() {
         </section>
       )}
 
-      {/* Full rankings table */}
+      
       <section className="max-w-3xl mx-auto px-4 md:px-8 mt-12">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-headline font-bold text-primary">
@@ -190,7 +190,7 @@ export default async function LeaderboardPage() {
           </span>
         </div>
         <div className="bg-white rounded-2xl border border-primary/5 shadow-sm overflow-hidden">
-          {/* Table header */}
+          
           <div className="grid grid-cols-[2rem_1fr_auto] gap-4 px-6 py-3 border-b border-primary/5 bg-primary/2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-primary/30">
               #
@@ -208,7 +208,7 @@ export default async function LeaderboardPage() {
                 key={String(w._id)}
                 className={`flex items-center gap-4 px-6 py-4 hover:bg-slate-50 transition-colors ${i < 3 ? "bg-secondary/3" : ""}`}
               >
-                {/* Rank */}
+                
                 <div className="w-8 shrink-0 text-center">
                   {i < 3 ? (
                     <span className="text-lg">{rankStyles[i].label}</span>
@@ -219,7 +219,7 @@ export default async function LeaderboardPage() {
                   )}
                 </div>
 
-                {/* Avatar */}
+                
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0 ${i < 3 ? "ring-2 " + rankStyles[i].ring : "bg-secondary/10"}`}
                 >
@@ -236,7 +236,7 @@ export default async function LeaderboardPage() {
                   )}
                 </div>
 
-                {/* Name */}
+                
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-primary text-sm truncate">
                     {w.workerName}
@@ -246,7 +246,7 @@ export default async function LeaderboardPage() {
                   </p>
                 </div>
 
-                {/* Coins */}
+                
                 <div className="text-right shrink-0">
                   <p className="font-headline font-extrabold text-secondary text-sm">
                     {w.totalCoins.toLocaleString()} coins
@@ -270,7 +270,7 @@ export default async function LeaderboardPage() {
         </div>
       </section>
 
-      {/* CTA */}
+      
       <section className="max-w-3xl mx-auto px-4 md:px-8 mt-12">
         <div className="bg-primary rounded-3xl p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>

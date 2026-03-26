@@ -115,7 +115,7 @@ export default async function AdminActivityPage({
 
   return (
     <div className="space-y-8">
-      {/* Header */}
+      
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="font-headline text-2xl font-bold text-primary">
@@ -128,7 +128,7 @@ export default async function AdminActivityPage({
         <ActivityFilter />
       </div>
 
-      {/* Stats */}
+      
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: "New Users", value: recentUsers.length, icon: "person_add" },
@@ -159,7 +159,7 @@ export default async function AdminActivityPage({
         ))}
       </div>
 
-      {/* Log */}
+      
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         <div className="px-4 sm:px-6 py-4 border-b border-primary/5">
           <h2 className="font-bold text-primary">Recent Activity</h2>
@@ -189,7 +189,7 @@ export default async function AdminActivityPage({
                 <p className="text-xs text-primary/50 mt-0.5 truncate">
                   {log.detail}
                 </p>
-                {/* Time shown below detail on mobile, hidden on sm+ */}
+                
                 <p className="text-xs text-primary/30 mt-1 sm:hidden">
                   {format(log.time, "MMM d, h:mm a")}
                 </p>

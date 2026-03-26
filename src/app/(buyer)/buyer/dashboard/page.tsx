@@ -60,7 +60,7 @@ export default async function BuyerDashboard() {
       ? Math.round((approvedCount / totalSubmissions) * 100)
       : 0;
 
-  // Last 7 days — tasks created per day
+  
   const sevenDaysAgo = startOfDay(subDays(new Date(), 6));
   const dailyTasks = await Task.aggregate([
     { $match: { buyerId, createdAt: { $gte: sevenDaysAgo } } },
@@ -88,7 +88,7 @@ export default async function BuyerDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
+      
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-headline text-2xl font-bold text-primary">
@@ -107,7 +107,7 @@ export default async function BuyerDashboard() {
         </Link>
       </div>
 
-      {/* Stat Cards */}
+      
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Tasks" value={totalTasks} icon="task" />
         <StatCard
@@ -128,9 +128,9 @@ export default async function BuyerDashboard() {
         />
       </div>
 
-      {/* Middle row */}
+      
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Task activity chart */}
+        
         <div className="lg:col-span-2 bg-white rounded-xl border border-primary/5 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -172,7 +172,7 @@ export default async function BuyerDashboard() {
           </div>
         </div>
 
-        {/* Task & submission breakdown */}
+        
         <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-6 flex flex-col gap-5">
           <h2 className="font-bold text-primary">Overview</h2>
 
@@ -226,9 +226,9 @@ export default async function BuyerDashboard() {
         </div>
       </div>
 
-      {/* Bottom row */}
+      
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Submissions to review */}
+        
         <div className="lg:col-span-2 bg-white rounded-xl border border-primary/5 shadow-sm">
           <div className="px-6 py-4 border-b border-primary/5 flex items-center justify-between">
             <h2 className="font-bold text-primary">Submissions to Review</h2>
@@ -285,7 +285,7 @@ export default async function BuyerDashboard() {
           )}
         </div>
 
-        {/* Quick links */}
+        
         <div className="bg-white rounded-xl border border-primary/5 shadow-sm divide-y divide-primary/5">
           {[
             {

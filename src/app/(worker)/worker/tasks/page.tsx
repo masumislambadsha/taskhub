@@ -61,7 +61,7 @@ export default function WorkerTasksPage() {
         </p>
       </div>
 
-      {/* Filters */}
+      
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 flex flex-col sm:flex-row  gap-3">
         <Input
           value={search}

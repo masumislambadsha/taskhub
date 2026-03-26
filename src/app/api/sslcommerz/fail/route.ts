@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
   const formData = await req.formData();
   const data = Object.fromEntries(formData) as Record<string, string>;
 
-  // Mark payment as failed
+  
   try {
     const { connectDB } = await import("@/lib/db");
     const Payment = (await import("@/models/Payment")).default;

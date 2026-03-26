@@ -7,8 +7,8 @@ export async function sendPasswordResetEmail(
   resetUrl: string,
 ): Promise<void> {
   const { error } = await resend.emails.send({
-    // Use your verified domain in production, e.g. "TaskHub <noreply@yourdomain.com>"
-    // For testing with Resend's sandbox, only the account owner's email can receive emails.
+    
+    
     from: "TaskHub <onboarding@resend.dev>",
     to: email,
     subject: "Reset your TaskHub password",

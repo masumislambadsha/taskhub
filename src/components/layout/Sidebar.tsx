@@ -96,12 +96,12 @@ export default function Sidebar({ role }: SidebarProps) {
 
   return (
     <>
-      {/* Desktop sidebar */}
+      
       <aside className="hidden lg:flex fixed top-0 left-0 h-full w-64 bg-primary z-40 flex-col">
         <SidebarContent navItems={navItems} pathname={pathname} close={close} />
       </aside>
 
-      {/* Mobile sidebar */}
+      
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
