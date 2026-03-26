@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -10,7 +10,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import { MdVisibility, MdVisibilityOff } from "react-icons/md";
 
-export default function LoginPage() {
+function LoginForm() {
   const params = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -25,22 +25,25 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginFormData) {
     setLoading(true);
-    const res = await signIn("credentials", { ...data, redirect: false });
-    setLoading(false);
-    if (res?.error) {
-      toast.error("Invalid credentials or account suspended");
-    } else {
-      const me = await fetch("/api/auth/me").then((r) => r.json());
-      console.log("[login] /api/auth/me response:", me);
-      const role = me?.role;
-      const dest =
-        role === "admin"
-          ? "/admin/dashboard"
-          : role === "buyer"
-            ? "/buyer/dashboard"
-            : "/worker/dashboard";
-      console.log("[login] redirecting to:", dest);
-      window.location.href = dest;
+    try {
+      const res = await signIn("credentials", { ...data, redirect: false });
+      if (res?.error) {
+        toast.error("Invalid credentials or account suspended");
+      } else {
+        const me = await fetch("/api/auth/me").then((r) => r.json());
+        const role = me?.role;
+        const dest =
+          role === "admin"
+            ? "/admin/dashboard"
+            : role === "buyer"
+              ? "/buyer/dashboard"
+              : "/worker/dashboard";
+        window.location.href = dest;
+      }
+    } catch (err) {
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -173,5 +176,13 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

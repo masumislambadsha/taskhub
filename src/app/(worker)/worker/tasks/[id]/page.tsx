@@ -280,7 +280,6 @@ export default function TaskDetailPage() {
               />
               {imagePreview ? (
                 <div className="relative rounded-lg overflow-hidden border border-primary/20 bg-background">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={imagePreview}
                     alt="Proof preview"

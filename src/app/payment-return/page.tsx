@@ -28,7 +28,7 @@ export default function PaymentReturnPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-3 text-primary/60">
-        <LuLoaderCircle className="animate-spin text-4xl text-secondary" />
+        <AiOutlineLoading3Quarters className="animate-spin text-3xl text-secondary" />
         <p className="text-sm">Confirming your payment...</p>
       </div>
     </div>

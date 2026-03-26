@@ -1,8 +1,8 @@
-import { MdAccountBalanceWallet, MdAddCircle, MdAddPhotoAlternate, MdArrowBack, MdArrowForward, MdAssignment, MdChevronLeft, MdChevronRight, MdClose, MdEdit, MdGroup, MdPayments, MdReceiptLong, MdTaskAlt, MdToll } from 'react-icons/md';
+import { MdToll } from 'react-icons/md';
 import Link from "next/link";
+import Image from "next/image";
 import { connectDB } from "@/lib/db";
 import Task from "@/models/Task";
-import Badge from "@/components/ui/Badge";
 import { format } from "date-fns";
 import CountUp from "@/components/ui/CountUp";
 import { auth } from "@/lib/auth";
@@ -19,6 +19,7 @@ export default async function PublicTasksPage() {
     completionDate: Date | string;
     category?: string;
     status: string;
+    imageUrl?: string;
   }[] = [];
   try {
     await connectDB();
@@ -44,26 +45,41 @@ export default async function PublicTasksPage() {
         {tasks.map((task) => (
           <div
             key={String(task._id)}
-            className="bg-white rounded-xl border border-primary/5 shadow-sm p-6 flex flex-col gap-4"
+            className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6 flex flex-col gap-4 hover:border-secondary/30 transition-colors"
           >
+            {task.imageUrl && (
+              <div className="relative w-full h-40 rounded-lg overflow-hidden shrink-0">
+                <Image
+                  src={task.imageUrl}
+                  alt={task.title}
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
+              </div>
+            )}
             <div className="flex items-start justify-between gap-2">
-              <h3 className="font-bold text-primary leading-snug">
+              <h3 className="font-bold text-primary leading-snug line-clamp-2">
                 {task.title}
               </h3>
-              {task.category && <Badge status={task.category} />}
+              {task.category && (
+                 <span className="text-xs bg-secondary/10 text-secondary px-2 py-0.5 rounded-full whitespace-nowrap">
+                   {task.category}
+                 </span>
+              )}
             </div>
-            <div className="text-sm text-primary/60">by {task.buyerName}</div>
+            <div className="text-xs text-primary/50">by {task.buyerName}</div>
             <div className="flex items-center justify-between text-sm">
               <span className="flex items-center gap-1 font-bold text-secondary">
                 <MdToll className="text-sm text-amber-500" />
                 <CountUp value={task.payableAmount} /> coins
               </span>
-              <span className="text-primary/50">
+              <span className="text-xs text-primary/50">
                 <CountUp value={task.requiredWorkers - task.filledWorkers} />{" "}
                 slots left
               </span>
             </div>
-            <div className="text-xs text-primary/40">
+            <div className="text-[10px] text-primary/30 uppercase font-bold tracking-wider">
               Deadline: {format(new Date(task.completionDate), "MMM d, yyyy")}
             </div>
             <Link
