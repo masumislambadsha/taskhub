@@ -49,15 +49,15 @@ export function resolveDateRange(
           end: new Date(new Date(to).getTime() + 86400000),
         };
       }
-      // fallthrough to default
+      
       break;
   }
 
-  // default: last 30 days
+  
   return { start: new Date(today.getTime() - 30 * 86400000), end: tomorrow };
 }
 
-/** How many months to show in the bar chart based on preset */
+
 export function chartMonths(preset: string): number {
   if (preset === "12m" || preset === "ytd") return 12;
   if (preset === "90d") return 3;

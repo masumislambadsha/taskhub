@@ -113,7 +113,7 @@ export default function SupportPage() {
 
   return (
     <main className="pb-15 sm:pb-24">
-      {/* Hero */}
+      
       <section className="relative overflow-hidden bg-primary py-16 sm:py-20 px-4 sm:px-8">
         <div className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/5" />
@@ -133,7 +133,7 @@ export default function SupportPage() {
         </div>
       </section>
 
-      {/* Info bar */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 -mt-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {CONTACT_INFO.map((c) => (
@@ -153,7 +153,7 @@ export default function SupportPage() {
         </div>
       </section>
 
-      {/* Categories */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-14">
         <div className="mb-6">
           <span className="text-[10px] font-bold uppercase tracking-widest text-secondary">
@@ -185,7 +185,7 @@ export default function SupportPage() {
         </div>
       </section>
 
-      {/* FAQ accordion */}
+      
       <section className="max-w-5xl mx-auto px-4 md:px-8 mt-14">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -239,10 +239,10 @@ export default function SupportPage() {
         </div>
       </section>
 
-      {/* Contact form + sidebar */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-14">
         <div className="grid md:grid-cols-5 gap-8">
-          {/* Form */}
+          
           <div className="md:col-span-3">
             <div className="mb-6">
               <span className="text-[10px] font-bold uppercase tracking-widest text-secondary">
@@ -352,7 +352,7 @@ export default function SupportPage() {
             )}
           </div>
 
-          {/* Sidebar */}
+          
           <div className="md:col-span-2 space-y-5">
             <div className="bg-secondary/5 border border-secondary/20 rounded-2xl p-6">
               <MdTipsAndUpdates className="text-secondary text-2xl" />

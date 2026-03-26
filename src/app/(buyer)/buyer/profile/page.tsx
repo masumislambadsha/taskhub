@@ -91,9 +91,9 @@ export default function BuyerProfilePage() {
 
   return (
     <div className="space-y-8">
-      {/* Profile card */}
+      
       <div className="bg-white rounded-2xl border border-primary/5 shadow-sm overflow-hidden">
-        {/* Banner */}
+        
         <div className="h-24 bg-primary relative">
           <div className="absolute -bottom-10 left-6 sm:left-8">
             {displayImage ? (
@@ -110,7 +110,7 @@ export default function BuyerProfilePage() {
           </div>
         </div>
 
-        {/* Identity */}
+        
         <div className="pt-14 pb-6 px-6 sm:px-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
@@ -140,7 +140,7 @@ export default function BuyerProfilePage() {
         </div>
       </div>
 
-      {/* Stats row */}
+      
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-2xl border border-primary/5 shadow-sm p-5">
           <MdTaskAlt className="text-5xl text-primary/15 mb-3 block" />
@@ -171,7 +171,7 @@ export default function BuyerProfilePage() {
         </div>
       </div>
 
-      {/* Edit form */}
+      
       {editing && (
         <div className="bg-white rounded-2xl border border-primary/5 shadow-sm p-6 sm:p-8">
           <h2 className="font-headline text-lg font-extrabold text-primary mb-6">
@@ -264,7 +264,7 @@ export default function BuyerProfilePage() {
         </div>
       )}
 
-      {/* Quick actions */}
+      
       <div className="grid sm:grid-cols-2 gap-4">
         <Link
           href="/buyer/coins"

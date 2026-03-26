@@ -35,9 +35,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Redirect to public page — SSLCommerz POSTs from their server so the
-    // browser has no session cookie on this response. The public page then
-    // bounces the user (with their cookies) into /buyer/coins.
+    
+    
+    
     return NextResponse.redirect(
       `${BASE}/payment-return?status=success&paymentId=${tran_id}`,
     );

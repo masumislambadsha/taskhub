@@ -173,7 +173,7 @@ function GatewayLogo({ gateway }: { gateway: string }) {
       </span>
     );
   }
-  // eslint-disable-next-line @next/next/no-img-element
+  
   return (
     <img
       src="/sslcommerz-logo.png"

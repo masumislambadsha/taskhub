@@ -62,7 +62,7 @@ export default async function WorkerDashboard() {
   const coins = session!.user.coins;
   const approvalRate = total > 0 ? Math.round((approved / total) * 100) : 0;
 
-  // Last 7 days earnings per day
+  
   const sevenDaysAgo = startOfDay(subDays(new Date(), 6));
   const dailyEarnings = await Submission.aggregate([
     {
@@ -81,7 +81,7 @@ export default async function WorkerDashboard() {
     { $sort: { _id: 1 } },
   ]);
 
-  // Build a full 7-day map
+  
   const earningsMap: Record<string, number> = {};
   for (let i = 6; i >= 0; i--) {
     const key = format(subDays(new Date(), i), "yyyy-MM-dd");
@@ -100,7 +100,7 @@ export default async function WorkerDashboard() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
+      
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="font-headline text-2xl font-bold text-primary">
@@ -119,7 +119,7 @@ export default async function WorkerDashboard() {
         </Link>
       </div>
 
-      {/* Stat Cards */}
+      
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Submissions" value={total} icon="assignment" />
         <StatCard label="Approved" value={approved} icon="check_circle" />
@@ -133,9 +133,9 @@ export default async function WorkerDashboard() {
         />
       </div>
 
-      {/* Middle row */}
+      
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Earnings chart */}
+        
         <div className="lg:col-span-2 bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6 overflow-hidden">
           <div className="flex items-center justify-between mb-6">
             <div>
@@ -177,7 +177,7 @@ export default async function WorkerDashboard() {
           </div>
         </div>
 
-        {/* Performance summary */}
+        
         <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6 flex flex-col gap-5">
           <h2 className="font-bold text-primary">Performance</h2>
 
@@ -231,9 +231,9 @@ export default async function WorkerDashboard() {
         </div>
       </div>
 
-      {/* Bottom row */}
+      
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Recent submissions */}
+        
         <div className="lg:col-span-2 bg-white rounded-xl border border-primary/5 shadow-sm  max-w-[290px] md:max-w-full ">
           <div className="px-4 sm:px-6 py-4 border-b border-primary/5 flex items-center justify-between">
             <h2 className="font-bold text-primary">Recent Submissions</h2>
@@ -283,9 +283,9 @@ export default async function WorkerDashboard() {
           )}
         </div>
 
-        {/* Sidebar actions */}
+        
         <div className="space-y-4">
-          {/* Withdrawal CTA */}
+          
           {canWithdraw ? (
             <div className="bg-linear-to-br from-primary to-secondary text-white rounded-xl p-5">
               <p className="text-xs text-white/70 uppercase tracking-wider font-bold">
@@ -327,7 +327,7 @@ export default async function WorkerDashboard() {
             </div>
           )}
 
-          {/* Quick links */}
+          
           <div className="bg-white rounded-xl border border-primary/5 shadow-sm divide-y divide-primary/5 sm:divide-y-0 sm:grid sm:grid-cols-2 lg:grid-cols-1 lg:divide-y lg:divide-primary/5">
             {[
               {

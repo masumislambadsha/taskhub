@@ -86,7 +86,7 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Recent Users */}
+        
         <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
           <div className="px-4 sm:px-6 py-4 border-b border-primary/5 flex items-center justify-between">
             <h2 className="font-bold text-primary">Recent Users</h2>
@@ -104,18 +104,18 @@ export default async function AdminDashboard() {
                 key={String(u._id)}
                 className="px-4 sm:px-6 py-3 flex items-center gap-3"
               >
-                {/* Avatar */}
+                
                 <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center shrink-0 text-secondary font-bold text-sm">
                   {u.name?.[0]?.toUpperCase()}
                 </div>
-                {/* Info */}
+                
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-primary text-sm truncate">
                     {u.name}
                   </p>
                   <p className="text-xs text-primary/40 truncate">{u.email}</p>
                 </div>
-                {/* Meta */}
+                
                 <div className="flex flex-col items-end gap-1 shrink-0">
                   <Badge status={u.role} />
                   <span className="text-[10px] text-primary/30">
@@ -127,7 +127,7 @@ export default async function AdminDashboard() {
           </div>
         </div>
 
-        {/* Pending Withdrawals */}
+        
         <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
           <div className="px-4 sm:px-6 py-4 border-b border-primary/5 flex items-center justify-between">
             <h2 className="font-bold text-primary">Pending Withdrawals</h2>
@@ -151,11 +151,11 @@ export default async function AdminDashboard() {
                   key={String(w._id)}
                   className="px-4 sm:px-6 py-3 flex items-center gap-3"
                 >
-                  {/* Icon */}
+                  
                   <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
                     <MdPayments className="text-base text-secondary" />
                   </div>
-                  {/* Info */}
+                  
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-primary text-sm truncate">
                       {w.workerName}
@@ -164,7 +164,7 @@ export default async function AdminDashboard() {
                       {w.coinRequested} coins · ${w.amount}
                     </p>
                   </div>
-                  {/* Status */}
+                  
                   <div className="shrink-0">
                     <Badge status={w.status} />
                   </div>

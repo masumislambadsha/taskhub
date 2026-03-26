@@ -33,7 +33,7 @@ export default async function AdminSubmissionsPage() {
         </p>
       </div>
 
-      {/* Stats */}
+      
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total" value={all} icon="assignment" />
         <StatCard label="Pending Review" value={pending} icon="pending" />
@@ -41,7 +41,7 @@ export default async function AdminSubmissionsPage() {
         <StatCard label="Rejected" value={rejected} icon="cancel" accent />
       </div>
 
-      {/* List */}
+      
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-primary/5 flex items-center justify-between">
           <h2 className="font-bold text-primary">Recent Submissions</h2>
@@ -57,7 +57,7 @@ export default async function AdminSubmissionsPage() {
           </div>
         ) : (
           <>
-            {/* ── Desktop table ── */}
+            
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-background border-b border-primary/5">
@@ -124,7 +124,7 @@ export default async function AdminSubmissionsPage() {
               </table>
             </div>
 
-            {/* ── Mobile cards ── */}
+            
             <div className="md:hidden divide-y divide-primary/5">
               {submissions.map((s) => (
                 <div

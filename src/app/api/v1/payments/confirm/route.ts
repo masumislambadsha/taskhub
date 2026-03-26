@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/db";
 import Payment from "@/models/Payment";
 import User from "@/models/User";
 
-// Used for sandbox (bKash/SSLCommerz) and success redirect confirmation
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session)

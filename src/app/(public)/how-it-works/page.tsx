@@ -92,7 +92,7 @@ const PAYMENT_METHODS = [
 export default function HowItWorksPage() {
   return (
     <main className="pb-24 overflow-hidden">
-      {/* Hero */}
+      
       <section className="relative overflow-hidden bg-primary py-15 md:py-24 px-4 md:px-8">
         <div className="pointer-events-none absolute -top-24 -right-24 w-96 h-96 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-16 -left-16 w-64 h-64 rounded-full bg-white/5" />
@@ -127,7 +127,7 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* Coin facts */}
+      
       <section className="max-w-5xl mx-auto px-4 md:px-8 -mt-8 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {COIN_FACTS.map((f) => (
@@ -145,7 +145,7 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* For Buyers */}
+      
       <section className="max-w-5xl mx-auto px-4 md:px-8 mt-10 sm:mt-20">
         <div className="flex items-center gap-4 mb-8 sm:mb-10">
           <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-primary flex items-center justify-center shrink-0">
@@ -183,12 +183,12 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* Divider */}
+      
       <div className="max-w-5xl mx-auto px-4 md:px-8 mt-12 mb-12 sm:mt-16 sm:mb-16">
         <div className="h-px bg-primary/5" />
       </div>
 
-      {/* For Workers */}
+      
       <section className="max-w-5xl mx-auto px-4 md:px-8">
         <div className="flex items-center gap-4 mb-8 sm:mb-10">
           <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-secondary flex items-center justify-center shrink-0">
@@ -226,7 +226,7 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* Coin economy explainer */}
+      
       <section className="max-w-5xl mx-auto px-4 md:px-8 py-15 md:py-32">
         <div className="bg-primary rounded-3xl p-6 sm:p-10 md:p-14">
           <div className="text-center mb-8 sm:mb-10">
@@ -278,7 +278,7 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* Payment methods */}
+      
       <section className="max-w-5xl mx-auto px-4 md:px-8 pb-15 md:pb-32">
         <div className="text-center mb-8">
           <span className="inline-block bg-secondary/10 text-secondary px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded mb-4">
@@ -302,7 +302,7 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* CTA */}
+      
       <section className="max-w-5xl mx-auto px-4 md:px-8 pb-15 md:pb-32">
         <div className="grid md:grid-cols-2 gap-5 sm:gap-6">
           <div className="bg-secondary/10 rounded-2xl p-6 sm:p-8 flex flex-col justify-between">

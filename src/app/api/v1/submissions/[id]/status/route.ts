@@ -17,7 +17,7 @@ export async function PATCH(
 
   await connectDB();
   const { id } = await params;
-  const { action, reason } = await req.json(); // "approve" | "reject"
+  const { action, reason } = await req.json(); 
 
   const submission = await Submission.findOne({
     _id: id,

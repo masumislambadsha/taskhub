@@ -40,7 +40,7 @@ export default function WorkerProfileClient({
 
   const [currentName, setCurrentName] = useState(name);
 
-  // Sync internal name if prop changes (e.g. on router.refresh)
+  
   useEffect(() => {
     setCurrentName(name);
   }, [name]);

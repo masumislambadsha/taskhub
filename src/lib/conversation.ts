@@ -1,7 +1,4 @@
-/**
- * Generates a deterministic conversationId for a task between two users.
- * Always produces the same ID regardless of argument order.
- */
+
 export function getConversationId(
   taskId: string,
   userId1: string,

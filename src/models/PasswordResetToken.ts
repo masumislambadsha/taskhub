@@ -12,7 +12,7 @@ const PasswordResetTokenSchema = new Schema<IPasswordResetToken>({
   expiresAt: { type: Date, required: true },
 });
 
-// Auto-delete expired tokens
+
 PasswordResetTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 const PasswordResetToken: Model<IPasswordResetToken> =

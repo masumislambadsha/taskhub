@@ -8,7 +8,7 @@ interface Props {
   params: Promise<{ conversationId: string }>;
 }
 
-// GET /api/v1/messages/[conversationId] — fetch message history
+
 export async function GET(_req: Request, { params }: Props) {
   const session = await auth();
   if (!session)
@@ -19,7 +19,7 @@ export async function GET(_req: Request, { params }: Props) {
 
   const userId = session.user.id;
 
-  // Verify user belongs to this conversation
+  
   const sample = await Message.findOne({ conversationId }).lean();
   if (
     sample &&
@@ -33,7 +33,7 @@ export async function GET(_req: Request, { params }: Props) {
     .sort("createdAt")
     .lean();
 
-  // Mark unread messages as read
+  
   await Message.updateMany(
     {
       conversationId,

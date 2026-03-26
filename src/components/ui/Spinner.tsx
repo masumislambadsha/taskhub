@@ -14,13 +14,13 @@ interface SpinnerProps {
 
 const sizes: Record<SpinnerSize, number> = { sm: 32, md: 52, lg: 72, xl: 108 };
 
-// brand palette
-const P = "#004030"; // primary deep green
-const S = "#4A9782"; // secondary teal
-const A = "#DCD0A8"; // accent warm sand
-const BG = "#FFF9E5"; // cream
 
-// ── DNA: glowing double helix (kept from before) ─────────────────────────────
+const P = "#004030"; 
+const S = "#4A9782"; 
+const A = "#DCD0A8"; 
+const BG = "#FFF9E5"; 
+
+
 function DNASpinner({ size }: { size: number }) {
   const nodes = 8;
   const nodeSize = size * 0.1;
@@ -99,8 +99,8 @@ function DNASpinner({ size }: { size: number }) {
   );
 }
 
-// ── COIN: TaskHub coin flipping in 3D ────────────────────────────────────────
-// Represents the coin economy at the heart of the platform.
+
+
 function CoinSpinner({ size }: { size: number }) {
   const r = size * 0.42;
   const thickness = size * 0.08;
@@ -119,7 +119,7 @@ function CoinSpinner({ size }: { size: number }) {
         animate={{ rotateY: [0, 360] }}
         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
       >
-        {/* front face */}
+        
         <div
           style={{
             position: "absolute",
@@ -146,7 +146,7 @@ function CoinSpinner({ size }: { size: number }) {
             T
           </span>
         </div>
-        {/* back face */}
+        
         <div
           style={{
             position: "absolute",
@@ -173,7 +173,7 @@ function CoinSpinner({ size }: { size: number }) {
           </span>
         </div>
       </motion.div>
-      {/* shadow on ground */}
+      
       <motion.div
         style={{
           position: "absolute",
@@ -191,8 +191,8 @@ function CoinSpinner({ size }: { size: number }) {
   );
 }
 
-// ── TASK: animated checklist — tasks being ticked off ────────────────────────
-// Represents the core action: workers completing tasks.
+
+
 function TaskSpinner({ size }: { size: number }) {
   const items = 4;
   const rowH = size / (items + 1);
@@ -216,7 +216,7 @@ function TaskSpinner({ size }: { size: number }) {
             ease: "easeOut",
           }}
         >
-          {/* checkbox */}
+          
           <motion.div
             style={{
               width: checkSize,
@@ -237,7 +237,7 @@ function TaskSpinner({ size }: { size: number }) {
               delay: i * 0.45 + 0.3,
             }}
           >
-            {/* checkmark path */}
+            
             <motion.svg
               viewBox="0 0 12 12"
               style={{ position: "absolute", inset: 2 }}
@@ -260,7 +260,7 @@ function TaskSpinner({ size }: { size: number }) {
               />
             </motion.svg>
           </motion.div>
-          {/* task line */}
+          
           <div
             style={{
               flex: 1,
@@ -294,8 +294,8 @@ function TaskSpinner({ size }: { size: number }) {
   );
 }
 
-// ── EARNINGS: coins raining into a wallet ────────────────────────────────────
-// Represents workers earning and withdrawing coins.
+
+
 function EarningsSpinner({ size }: { size: number }) {
   const coinCount = 6;
   const walletW = size * 0.7;
@@ -307,7 +307,7 @@ function EarningsSpinner({ size }: { size: number }) {
       style={{ width: size, height: size }}
       className="relative flex items-end justify-center"
     >
-      {/* falling coins */}
+      
       {Array.from({ length: coinCount }).map((_, i) => {
         const xOffset = (i / (coinCount - 1) - 0.5) * walletW * 0.7;
         return (
@@ -347,7 +347,7 @@ function EarningsSpinner({ size }: { size: number }) {
         );
       })}
 
-      {/* wallet body */}
+      
       <div
         style={{
           width: walletW,
@@ -359,7 +359,7 @@ function EarningsSpinner({ size }: { size: number }) {
           boxShadow: `0 ${size * 0.04}px ${size * 0.12}px rgba(0,64,48,0.3)`,
         }}
       >
-        {/* wallet slot */}
+        
         <div
           style={{
             position: "absolute",
@@ -372,7 +372,7 @@ function EarningsSpinner({ size }: { size: number }) {
             borderRadius: "0 0 99px 99px",
           }}
         />
-        {/* wallet clasp */}
+        
         <div
           style={{
             position: "absolute",
@@ -397,7 +397,7 @@ function EarningsSpinner({ size }: { size: number }) {
             }}
           />
         </div>
-        {/* fill level animating */}
+        
         <motion.div
           style={{
             position: "absolute",
@@ -419,15 +419,15 @@ function EarningsSpinner({ size }: { size: number }) {
   );
 }
 
-// ── HUB: buyer → task → worker → coin cycle ──────────────────────────────────
-// Represents the full TaskHub marketplace loop in one visual.
+
+
 function HubSpinner({ size }: { size: number }) {
-  const r = size * 0.36; // orbit radius
-  const nodeR = size * 0.1; // node circle radius
+  const r = size * 0.36; 
+  const nodeR = size * 0.1; 
   const cx = size / 2;
   const cy = size / 2;
 
-  // 4 nodes: Buyer (top), Task (right), Worker (bottom), Coin (left)
+  
   const nodes = [
     { label: "B", color: P, angle: -90, title: "Buyer" },
     { label: "✓", color: S, angle: 0, title: "Task" },
@@ -439,7 +439,7 @@ function HubSpinner({ size }: { size: number }) {
 
   return (
     <div style={{ width: size, height: size }} className="relative">
-      {/* orbit ring */}
+      
       <svg
         style={{ position: "absolute", inset: 0 }}
         width={size}
@@ -454,7 +454,7 @@ function HubSpinner({ size }: { size: number }) {
           strokeWidth={1.5}
           strokeDasharray="4 6"
         />
-        {/* animated arc highlight */}
+        
         <motion.circle
           cx={cx}
           cy={cy}
@@ -470,7 +470,7 @@ function HubSpinner({ size }: { size: number }) {
         />
       </svg>
 
-      {/* orbiting dot */}
+      
       <motion.div
         style={{
           position: "absolute",
@@ -495,7 +495,7 @@ function HubSpinner({ size }: { size: number }) {
         transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
       />
 
-      {/* nodes */}
+      
       {nodes.map((n, i) => {
         const x = cx + r * Math.cos(toRad(n.angle));
         const y = cy + r * Math.sin(toRad(n.angle));
@@ -532,7 +532,7 @@ function HubSpinner({ size }: { size: number }) {
         );
       })}
 
-      {/* center hub dot */}
+      
       <motion.div
         style={{
           position: "absolute",
@@ -551,7 +551,7 @@ function HubSpinner({ size }: { size: number }) {
   );
 }
 
-// ── Main export ──────────────────────────────────────────────────────────────
+
 export default function Spinner({
   variant = "hub",
   size = "md",

@@ -106,7 +106,7 @@ export default function BuyerTasksPage() {
         />
       ) : (
         <>
-          {/* Mobile cards */}
+          
           <div className="sm:hidden space-y-3">
             {tasks.map((t) => (
               <div
@@ -160,7 +160,7 @@ export default function BuyerTasksPage() {
             ))}
           </div>
 
-          {/* Desktop table */}
+          
           <div className="hidden sm:block bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

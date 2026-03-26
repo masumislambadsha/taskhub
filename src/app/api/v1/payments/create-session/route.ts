@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: stripeSession.url });
   }
 
-  // bKash
+  
   if (gateway === "bkash") {
     const payment = await Payment.create({
       userId: session.user.id,
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // SSLCommerz
+  
   if (gateway === "sslcommerz") {
     const payment = await Payment.create({
       userId: session.user.id,

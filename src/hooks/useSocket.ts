@@ -13,7 +13,7 @@ const SOCKET_URL =
 let socketInstance: Socket | null = null;
 
 function getSocket(userId: string, userName: string): Socket {
-  // Reconnect if disconnected or user changed
+  
   if (socketInstance && socketInstance.auth) {
     const auth = socketInstance.auth as { userId?: string };
     if (auth.userId !== userId) {

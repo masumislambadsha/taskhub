@@ -40,7 +40,7 @@ export default function AdminCategoriesPage() {
   const [totalTasks, setTotalTasks] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Modal state
+  
   const [showModal, setShowModal] = useState(false);
   const [editTarget, setEditTarget] = useState<Category | null>(null);
   const [formName, setFormName] = useState("");
@@ -140,7 +140,7 @@ export default function AdminCategoriesPage() {
         </button>
       </div>
 
-      {/* Stats */}
+      
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 sm:p-6 border border-primary/5 shadow-sm">
           <MdCategory className="text-secondary text-2xl" />
@@ -173,7 +173,7 @@ export default function AdminCategoriesPage() {
         </div>
       </div>
 
-      {/* Category List */}
+      
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
         <div className="px-4 sm:px-6 py-4 border-b border-primary/5 flex items-center justify-between">
           <h2 className="font-bold text-primary">All Categories</h2>
@@ -244,7 +244,7 @@ export default function AdminCategoriesPage() {
         )}
       </div>
 
-      {/* Modal */}
+      
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5">

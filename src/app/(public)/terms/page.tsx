@@ -85,7 +85,7 @@ const HIGHLIGHTS = [
 export default function TermsPage() {
   return (
     <main className="pb-24">
-      {/* Hero */}
+      
       <section className="relative overflow-hidden bg-primary py-16 sm:py-20 px-4 sm:px-8">
         <div className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/5" />
@@ -109,7 +109,7 @@ export default function TermsPage() {
         </div>
       </section>
 
-      {/* Key facts bar */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-6 sm:-mt-6 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {HIGHLIGHTS.map((h) => (
@@ -129,7 +129,7 @@ export default function TermsPage() {
         </div>
       </section>
 
-      {/* Intro callout */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-12">
         <div className="bg-secondary/5 border border-secondary/20 rounded-2xl p-4 py-5 sm:p-7 flex gap-5 items-start">
           <MdInfo className="text-secondary text-3xl shrink-0 mt-0.5" />
@@ -147,7 +147,7 @@ export default function TermsPage() {
         </div>
       </section>
 
-      {/* Sections */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-10 sm:mt-14">
         <div className="space-y-4 sm:space-y-5">
           {SECTIONS.map((s) => (
@@ -178,7 +178,7 @@ export default function TermsPage() {
         </div>
       </section>
 
-      {/* CTA */}
+      
       <section className="max-w-5xl mx-auto px-4 sm:px-8 mt-12 sm:mt-16">
         <div className="bg-primary rounded-3xl p-7 sm:p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
           <div>

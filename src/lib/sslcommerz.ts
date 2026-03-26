@@ -1,4 +1,4 @@
-/** Shared SSLCommerz helpers */
+
 
 export async function initSSLCommerz(
   amountBDT: string,

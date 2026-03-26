@@ -56,9 +56,9 @@ export default function NewTaskPage() {
     watch,
     setValue,
     formState: { errors },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
   } = useForm<TaskFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    
     resolver: zodResolver(taskSchema) as any,
     defaultValues: { requiredWorkers: 1, payableAmount: 10 },
   });
@@ -156,7 +156,7 @@ export default function NewTaskPage() {
       </div>
 
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6">
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+        
         <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-primary mb-1.5">
@@ -395,7 +395,7 @@ export default function NewTaskPage() {
             />
             {imagePreview ? (
               <div className="relative rounded-lg overflow-hidden border border-primary/20 bg-background">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                
                 <img
                   src={imagePreview}
                   alt="Task preview"
@@ -442,7 +442,7 @@ export default function NewTaskPage() {
             )}
           </div>
 
-          {/* Cost summary */}
+          
           <div
             className={`rounded-lg p-4 border ${hasEnough ? "bg-secondary/5 border-secondary/20" : "bg-red-50 border-red-200"}`}
           >

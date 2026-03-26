@@ -59,7 +59,7 @@ export default function RevenueLineChart({ data }: Props) {
           </linearGradient>
         </defs>
 
-        {/* Grid lines */}
+        
         {yTicks.map((t, i) => (
           <g key={i}>
             <line
@@ -85,10 +85,10 @@ export default function RevenueLineChart({ data }: Props) {
           </g>
         ))}
 
-        {/* Area fill */}
+        
         <path d={areaPath} fill="url(#revGrad)" />
 
-        {/* Line */}
+        
         <path
           d={linePath}
           fill="none"
@@ -98,7 +98,7 @@ export default function RevenueLineChart({ data }: Props) {
           strokeLinecap="round"
         />
 
-        {/* X labels */}
+        
         {data.map((d, i) => (
           <text
             key={i}
@@ -113,7 +113,7 @@ export default function RevenueLineChart({ data }: Props) {
           </text>
         ))}
 
-        {/* Hover zones + dots */}
+        
         {data.map((d, i) => (
           <g key={i}>
             <rect
@@ -150,7 +150,7 @@ export default function RevenueLineChart({ data }: Props) {
         ))}
       </svg>
 
-      {/* Tooltip */}
+      
       {hovered !== null && (
         <div
           className="absolute pointer-events-none bg-primary text-white text-xs rounded-lg px-3 py-2 shadow-lg z-10 -translate-x-1/2"

@@ -200,7 +200,7 @@ export default function MessagesUI({
   const myId = session?.user?.id;
   const myPhoto = session?.user?.image ?? undefined;
 
-  // ─── Conversation list ────────────────────────────────────────────────────
+  
   const ConvList = (
     <aside className="flex flex-col h-full">
       <div className="p-4 border-b border-primary/5">
@@ -270,7 +270,7 @@ export default function MessagesUI({
     </aside>
   );
 
-  // ─── Chat panel ───────────────────────────────────────────────────────────
+  
   const ChatPanel = activeConv ? (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="h-14 sm:h-16 px-4 sm:px-6 border-b border-primary/5 flex items-center gap-3 shrink-0">

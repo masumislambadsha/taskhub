@@ -128,7 +128,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
         ? "100.0"
         : "0.0";
 
-  // Monthly task bar chart
+  
   const monthlyTaskData = await Promise.all(
     Array.from({ length: numMonths }, (_, i) => {
       const d = new Date(
@@ -154,7 +154,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
     return MONTHS[d.getMonth()];
   });
 
-  // Revenue line chart — daily buckets (last 14 days) or monthly
+  
   const revLineMonths = Math.min(numMonths, 12);
   const revenueLineData = await Promise.all(
     Array.from({ length: revLineMonths }, async (_, i) => {
@@ -182,7 +182,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
     }),
   );
 
-  // Category split
+  
   const categoryStats = await Task.aggregate([
     { $match: { createdAt: { $gte: start, $lt: end } } },
     { $group: { _id: "$category", count: { $sum: 1 } } },
@@ -191,7 +191,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
   ]);
   const totalCatTasks = categoryStats.reduce((s, c) => s + c.count, 0) || 1;
 
-  // Top performing tasks
+  
   const topTasks = await Submission.aggregate([
     { $match: { status: "approved", createdAt: { $gte: start, $lt: end } } },
     {
@@ -205,7 +205,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
     { $limit: 5 },
   ]);
 
-  // Top workers by earnings
+  
   const topWorkers = await Submission.aggregate([
     { $match: { status: "approved", createdAt: { $gte: start, $lt: end } } },
     {
@@ -221,7 +221,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
     { $limit: 5 },
   ]);
 
-  // Gateway breakdown
+  
   const gatewayStats = await Payment.aggregate([
     { $match: { status: "success", createdAt: { $gte: start, $lt: end } } },
     {
@@ -235,7 +235,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
   ]);
   const totalGatewayRev = gatewayStats.reduce((s, g) => s + g.total, 0) || 1;
 
-  // Recent payments
+  
   const recentPayments = await Payment.find({ status: "success" })
     .sort("-createdAt")
     .limit(6)
@@ -243,7 +243,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
+      
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
           <span className="text-[10px] uppercase tracking-widest text-primary/50 font-bold block mb-1">
@@ -258,7 +258,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
         </Suspense>
       </div>
 
-      {/* KPI Cards */}
+      
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         {[
           {
@@ -335,7 +335,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
         ))}
       </div>
 
-      {/* Revenue Line Chart + Platform Health */}
+      
       <div className="grid lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-primary/5">
           <div className="flex justify-between items-start mb-6">
@@ -431,7 +431,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {/* Task Volume Bar + Category Split */}
+      
       <div className="grid lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-primary/5 flex flex-col justify-between">
           <div className="flex justify-between items-start mb-10">
@@ -563,9 +563,9 @@ export default async function AdminStatsPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {/* Submission Funnel + Gateway Breakdown */}
+      
       <div className="grid lg:grid-cols-12 gap-6">
-        {/* Submission Funnel */}
+        
         <div className="lg:col-span-5 bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-primary/5">
           <h4 className="font-headline text-xl font-bold text-primary mb-1">
             Submission Funnel
@@ -632,7 +632,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
           </div>
         </div>
 
-        {/* Gateway Breakdown */}
+        
         <div className="lg:col-span-7 bg-white p-4 sm:p-8 rounded-xl shadow-sm border border-primary/5">
           <h4 className="font-headline text-xl font-bold text-primary mb-1">
             Payment Gateways
@@ -688,9 +688,9 @@ export default async function AdminStatsPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {/* Top Workers + Recent Payments */}
+      
       <div className="grid lg:grid-cols-12 gap-6">
-        {/* Top Workers */}
+        
         <div className="lg:col-span-6 bg-white rounded-xl shadow-sm border border-primary/5 overflow-hidden">
           <div className="p-4 sm:p-8 border-b border-primary/5">
             <h4 className="font-headline text-xl font-bold text-primary">
@@ -740,7 +740,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
           </div>
         </div>
 
-        {/* Recent Payments */}
+        
         <div className="lg:col-span-6 bg-white rounded-xl shadow-sm border border-primary/5 overflow-hidden">
           <div className="p-4 sm:p-8 border-b border-primary/5">
             <h4 className="font-headline text-xl font-bold text-primary">
@@ -794,7 +794,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
         </div>
       </div>
 
-      {/* Top Performing Tasks Table */}
+      
       <div className="bg-white rounded-xl shadow-sm border border-primary/5 overflow-hidden">
         <div className="p-8 border-b border-primary/5">
           <h4 className="font-headline text-xl font-bold text-primary">

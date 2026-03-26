@@ -59,7 +59,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        // For Google sign-in, user.id is a Google UUID — resolve the real MongoDB _id
+        
         if (user.id && !user.id.match(/^[0-9a-fA-F]{24}$/) && user.email) {
           await connectDB();
           const dbUser = await User.findOne({
@@ -76,7 +76,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.coins = session.coins;
         token.role = session.role;
       }
-      // Refresh from DB on each request
+      
       if (token.id) {
         await connectDB();
         const dbUser = await User.findById(token.id).lean();

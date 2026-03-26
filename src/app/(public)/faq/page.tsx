@@ -139,7 +139,7 @@ export default function FaqPage() {
 
   return (
     <main className="pb-15 md:pb-24">
-      {/* Hero */}
+      
       <section className="relative overflow-hidden bg-primary py-15 md:py-20 px-4 md:px-8">
         <div className="pointer-events-none absolute -top-20 -right-20 w-80 h-80 rounded-full bg-secondary/10" />
         <div className="pointer-events-none absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/5" />
@@ -165,7 +165,7 @@ export default function FaqPage() {
         </div>
       </section>
 
-      {/* Category cards */}
+      
       <section className="max-w-5xl mx-auto px-4 md:px-8 -mt-6 relative z-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {FAQ_CATEGORIES.map((c, i) => (
@@ -197,7 +197,7 @@ export default function FaqPage() {
         </div>
       </section>
 
-      {/* Questions */}
+      
       <section className="max-w-5xl mx-auto px-4 md:px-8 mt-10">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
@@ -251,7 +251,7 @@ export default function FaqPage() {
         </div>
       </section>
 
-      {/* CTA */}
+      
       <section className="max-w-5xl mx-auto px-4 md:px-8 mt-16">
         <div className="bg-primary rounded-3xl p-7 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8">
           <div>

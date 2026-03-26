@@ -107,7 +107,7 @@ export default function AdminWithdrawalsPage() {
           />
         ) : (
           <>
-            {/* ── Desktop table ── */}
+            
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-background border-b border-primary/5">
@@ -194,7 +194,7 @@ export default function AdminWithdrawalsPage() {
               </table>
             </div>
 
-            {/* ── Mobile cards ── */}
+            
             <div className="md:hidden divide-y divide-primary/5">
               {withdrawals.map((w) => (
                 <div
@@ -264,7 +264,7 @@ export default function AdminWithdrawalsPage() {
         )}
       </div>
 
-      {/* Pagination */}
+      
       {pages > 1 && (
         <div className="flex justify-center gap-2 flex-wrap">
           <button

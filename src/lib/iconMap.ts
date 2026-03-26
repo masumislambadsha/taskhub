@@ -74,7 +74,7 @@ import {
 } from "react-icons/md";
 
 const iconMap: Record<string, IconType> = {
-  // categories
+  
   category: MdCategory,
   share: MdShare,
   videocam: MdVideocam,
@@ -90,7 +90,7 @@ const iconMap: Record<string, IconType> = {
   headphones: MdHeadphones,
   school: MdSchool,
   analytics: MdAnalytics,
-  // payments / coins
+  
   payments: MdPayments,
   toll: MdToll,
   savings: MdSavings,
@@ -101,19 +101,19 @@ const iconMap: Record<string, IconType> = {
   account_balance: MdAccountBalance,
   shopping_cart: MdShoppingCart,
   swap_horiz: MdSwapHoriz,
-  // tasks / work
+  
   post_add: MdPostAdd,
   rate_review: MdRateReview,
   task_alt: MdTaskAlt,
   assignment_turned_in: MdAssignmentTurnedIn,
   add_task: MdAddTask,
-  // users
+  
   group: MdGroup,
   person_add: MdPersonAdd,
   manage_accounts: MdManageAccounts,
   person_check: MdHowToReg,
   person: MdPerson,
-  // legal / privacy
+  
   gpp_bad: MdGppBad,
   block: MdBlock,
   shield: MdShield,
@@ -131,7 +131,7 @@ const iconMap: Record<string, IconType> = {
   history: MdHistory,
   database: MdStorage,
   settings_suggest: MdSettingsSuggest,
-  // misc
+  
   schedule: MdSchedule,
   language: MdLanguage,
   verified_user: MdVerifiedUser,

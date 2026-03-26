@@ -91,7 +91,7 @@ export default async function WorkerProfilePage() {
 
   return (
     <div className="space-y-16">
-      {/* Hero */}
+      
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
         <WorkerProfileClient
           name={session!.user.name ?? ""}
@@ -165,7 +165,7 @@ export default async function WorkerProfilePage() {
         </div>
       </section>
 
-      {/* Mastery Badges */}
+      
       <section>
         <h2 className="font-headline text-2xl font-extrabold text-primary tracking-tight mb-8">
           Mastery Badges
@@ -196,7 +196,7 @@ export default async function WorkerProfilePage() {
         </div>
       </section>
 
-      {/* Recent Commissions */}
+      
       <section>
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-headline text-xl font-bold text-primary">
@@ -224,12 +224,12 @@ export default async function WorkerProfilePage() {
                   key={String(s._id)}
                   className="flex items-center gap-4 px-5 py-4 hover:bg-background/60 transition-colors"
                 >
-                  {/* Icon */}
+                  
                   <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
                     <MdAssignmentTurnedIn className="text-secondary text-lg" />
                   </div>
 
-                  {/* Title + buyer */}
+                  
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-primary truncate">
                       {s.taskTitle}
@@ -243,7 +243,7 @@ export default async function WorkerProfilePage() {
                     </p>
                   </div>
 
-                  {/* Coins */}
+                  
                   <div className="text-right shrink-0">
                     <div className="flex items-center gap-1 justify-end">
                       <MdToll className="text-sm text-amber-500" />

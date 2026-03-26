@@ -46,7 +46,7 @@ export async function connectDB() {
 
   if (!cached.promise) {
     cached.promise = connectWithRetry().catch((err) => {
-      // Clear the cached promise on failure so next call retries fresh
+      
       cached.promise = null;
       throw err;
     });

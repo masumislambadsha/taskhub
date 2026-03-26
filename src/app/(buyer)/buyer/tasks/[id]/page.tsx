@@ -39,7 +39,7 @@ export default async function BuyerTaskDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
+      
       <div className="flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -72,7 +72,7 @@ export default async function BuyerTaskDetailPage({ params }: Props) {
         </Link>
       </div>
 
-      {/* Stats */}
+      
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: "Total Submissions", value: totalSubs, icon: "assignment" },
@@ -105,7 +105,7 @@ export default async function BuyerTaskDetailPage({ params }: Props) {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        {/* Task Details */}
+        
         <div className="lg:col-span-1 space-y-4">
           {task.imageUrl && (
             <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
@@ -162,7 +162,7 @@ export default async function BuyerTaskDetailPage({ params }: Props) {
           )}
         </div>
 
-        {/* Submissions */}
+        
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-primary/5 flex items-center justify-between">

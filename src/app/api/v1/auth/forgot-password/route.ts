@@ -14,16 +14,16 @@ export async function POST(req: NextRequest) {
   await connectDB();
   const user = await User.findOne({ email: email.toLowerCase() });
 
-  // Always return success to avoid user enumeration
+  
   if (!user) {
     return NextResponse.json({ ok: true });
   }
 
-  // Delete any existing token for this email
+  
   await PasswordResetToken.deleteMany({ email: email.toLowerCase() });
 
   const token = crypto.randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); 
 
   await PasswordResetToken.create({
     email: email.toLowerCase(),

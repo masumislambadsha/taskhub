@@ -8,19 +8,19 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function useGsapAnimations() {
   useEffect(() => {
-    // Global performance boost
+    
     gsap.config({ force3D: true, nullTargetWarn: false });
     gsap.ticker.lagSmoothing(0);
 
     const ctx = gsap.context(() => {
-      // Force GPU layer on hero visual
+      
       gsap.set("[data-gsap='hero-visual']", {
         willChange: "transform",
         force3D: true,
         transformPerspective: 1000,
       });
 
-      // ── Hero ──────────────────────────────────────────────
+      
       const heroTl = gsap.timeline({ delay: 0.1 });
 
       heroTl
@@ -61,7 +61,7 @@ export function useGsapAnimations() {
           "-=1",
         );
 
-      // ✅ Floating animation moved to wrapper (SMOOTH)
+      
       gsap.to("[data-gsap='hero-visual-wrapper']", {
         yPercent: 4,
         duration: 2.5,
@@ -70,7 +70,7 @@ export function useGsapAnimations() {
         repeat: -1,
       });
 
-      // ── Trusted By ────────────────────────────────────────
+      
       gsap.from("[data-gsap='trusted-by']", {
         scrollTrigger: {
           trigger: "[data-gsap='trusted-by']",
@@ -95,7 +95,7 @@ export function useGsapAnimations() {
           });
         });
 
-      // ── How it works ──────────────────────────────────────
+      
       gsap.from("[data-gsap='fade-up']", {
         scrollTrigger: {
           trigger: "[data-gsap='fade-up']",
@@ -119,7 +119,7 @@ export function useGsapAnimations() {
           });
         });
 
-      // ── Stats ─────────────────────────────────────────────
+      
       gsap.utils.toArray<HTMLElement>("[data-gsap='stat']").forEach((el, i) => {
         gsap.from(el, {
           scrollTrigger: { trigger: el, start: "top 90%" },
@@ -131,7 +131,7 @@ export function useGsapAnimations() {
         });
       });
 
-      // ── Features ──────────────────────────────────────────
+      
       gsap.utils
         .toArray<HTMLElement>("[data-gsap='feature-text']")
         .forEach((el) => {
@@ -169,7 +169,7 @@ export function useGsapAnimations() {
           });
         });
 
-      // ── Coin packages ─────────────────────────────────────
+      
       gsap.utils
         .toArray<HTMLElement>("[data-gsap='coin-card']")
         .forEach((el, i) => {
@@ -183,7 +183,7 @@ export function useGsapAnimations() {
           });
         });
 
-      // ── Worker cards ──────────────────────────────────────
+      
       gsap.utils
         .toArray<HTMLElement>("[data-gsap='worker-card']")
         .forEach((el, i) => {
@@ -197,7 +197,7 @@ export function useGsapAnimations() {
           });
         });
 
-      // ── Testimonials ──────────────────────────────────────
+      
       gsap.from("[data-gsap='testimonial-quote']", {
         scrollTrigger: {
           trigger: "[data-gsap='testimonial-quote']",
@@ -222,7 +222,7 @@ export function useGsapAnimations() {
           });
         });
 
-      // ── Impact ────────────────────────────────────────────
+      
       gsap.from("[data-gsap='impact-heading']", {
         scrollTrigger: {
           trigger: "[data-gsap='impact-heading']",
@@ -247,7 +247,7 @@ export function useGsapAnimations() {
           });
         });
 
-      // ── FAQ ───────────────────────────────────────────────
+      
       gsap.utils
         .toArray<HTMLElement>("[data-gsap='faq-item']")
         .forEach((el, i) => {
@@ -261,7 +261,7 @@ export function useGsapAnimations() {
           });
         });
 
-      // ── CTA ───────────────────────────────────────────────
+      
       gsap.from("[data-gsap='cta-box']", {
         scrollTrigger: {
           trigger: "[data-gsap='cta-box']",
@@ -273,7 +273,7 @@ export function useGsapAnimations() {
         ease: "power3.out",
       });
 
-      // ── Stagger cards ─────────────────────────────────────
+      
       gsap.utils
         .toArray<HTMLElement>("[data-gsap='stagger-cards']")
         .forEach((container) => {

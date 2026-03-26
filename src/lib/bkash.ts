@@ -1,4 +1,4 @@
-/** Shared bKash helpers — called directly, no internal HTTP */
+
 
 export async function getBkashToken(): Promise<string> {
   const res = await fetch(

@@ -16,7 +16,7 @@ export default function Logo({
 
   return (
     <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      {/* Icon mark */}
+      
       <svg
         width={size}
         height={size}
@@ -24,9 +24,9 @@ export default function Logo({
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        {/* Hexagon background */}
+        
         <path d="M20 2L36 11V29L20 38L4 29V11L20 2Z" fill="#004030" />
-        {/* T letter */}
+        
         <rect x="11" y="12" width="18" height="3.5" rx="1.75" fill="#FFF9E5" />
         <rect
           x="18.25"
@@ -36,7 +36,7 @@ export default function Logo({
           rx="1.75"
           fill="#FFF9E5"
         />
-        {/* Accent dot */}
+        
         <circle cx="28" cy="28" r="4" fill={accentColor} />
         <path
           d="M26.5 28L27.5 29L29.5 27"

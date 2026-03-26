@@ -81,7 +81,7 @@ export default function WorkerSubmissionsPage() {
         />
       ) : (
         <>
-          {/* Mobile cards */}
+          
           <div className="sm:hidden space-y-3">
             {submissions.map((s) => (
               <div
@@ -109,7 +109,7 @@ export default function WorkerSubmissionsPage() {
             ))}
           </div>
 
-          {/* Desktop table */}
+          
           <div className="hidden sm:block bg-white rounded-xl border border-primary/5 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
