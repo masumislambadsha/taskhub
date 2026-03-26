@@ -128,7 +128,14 @@ export default function NewTaskPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+<div
+  className="max-w-2xl mx-auto space-y-6"
+  onWheel={(e) => {
+    e.stopPropagation();
+    const main = document.querySelector("main");
+    if (main) main.scrollTop += e.deltaY;
+  }}
+>
       <div className="flex items-center gap-3">
         <Link
           href="/buyer/tasks"
@@ -171,12 +178,15 @@ export default function NewTaskPage() {
             <label className="block text-sm font-medium text-primary mb-1.5">
               Description
             </label>
-            <textarea
-              {...register("details")}
-              rows={4}
-              className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary resize-none "
-              placeholder="Describe the task in detail…"
-            />
+<textarea
+  {...register("details")}
+  rows={4}
+  className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary resize-none"
+  placeholder="Describe the task in detail…"
+  onWheel={(e) => {
+    e.currentTarget.blur();
+  }}
+/>
             {errors.details && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.details.message}
@@ -188,12 +198,15 @@ export default function NewTaskPage() {
             <label className="block text-sm font-medium text-primary mb-1.5">
               Submission Instructions
             </label>
-            <textarea
-              {...register("submissionInfo")}
-              rows={3}
-              className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary resize-none"
-              placeholder="What should workers submit as proof?"
-            />
+<textarea
+  {...register("submissionInfo")}
+  rows={3}
+  className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary resize-none"
+  placeholder="What should workers submit as proof?"
+  onWheel={(e) => {
+    e.currentTarget.blur();
+  }}
+/>
             {errors.submissionInfo && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.submissionInfo.message}

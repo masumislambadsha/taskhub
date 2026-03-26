@@ -2,7 +2,6 @@ import {
   MdAnalytics,
   MdApi,
   MdArrowForward,
-  MdAssignment,
   MdAssignmentTurnedIn,
   MdBolt,
   MdCategory,
@@ -193,7 +192,7 @@ export default async function HomePage() {
     <>
       <HomeAnimations />
 
-      {/* Hero */}
+        {/* Hero */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-24 grid lg:grid-cols-2 gap-10 lg:gap-16 items-center overflow-hidden">
         <div className="space-y-6 min-w-0">
           <h1
@@ -558,7 +557,7 @@ export default async function HomePage() {
             </div>
             <div data-gsap="feature-visual" className="lg:w-1/2 w-full min-w-0">
               <div className="bg-primary rounded-2xl p-5 sm:p-10 shadow-2xl overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-br from-white/5 to-transparent" />
                 <div className="relative space-y-4 sm:space-y-6">
                   <div className="flex justify-between items-center text-white/50 text-xs font-bold uppercase tracking-widest gap-2">
                     <span>Real-time Operations</span>

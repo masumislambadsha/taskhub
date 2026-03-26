@@ -1,6 +1,6 @@
 "use client";
 import iconMap from '@/lib/iconMap';
-import { MdExpandMore, MdHelp, MdSupportAgent } from 'react-icons/md';
+import { MdCategory, MdExpandMore, MdHelp, MdSupportAgent } from 'react-icons/md';
 import { useState } from "react";
 import Link from "next/link";
 

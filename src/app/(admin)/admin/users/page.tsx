@@ -10,7 +10,7 @@ import {
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { IUser } from "@/types";
+import { IUser, UserRole } from "@/types";
 import Badge from "@/components/ui/Badge";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -355,18 +355,14 @@ function RoleDropdown({
   user: IUser;
   onRoleChange: (u: IUser, role: string, el: HTMLSelectElement) => void;
 }) {
-  const [currentRole, setCurrentRole] = useState(user.role);
-  const ROLES = ["worker", "buyer", "admin"];
+  const [currentRole, setCurrentRole] = useState<UserRole>(user.role);
+  const ROLES: UserRole[] = ["worker", "buyer", "admin"];
   return (
     <Dropdown>
       <Button
         variant="outline"
         className="text-xs border border-primary/15 rounded-lg px-2.5 py-1.5 bg-background text-primary capitalize"
       >
-         {/* <Button
-          variant="outline"
-          className="bg-white border-primary/10 text-primary/60 h-10 px-4 min-w-[160px] justify-between font-medium shadow-sm"
-        > */}
         {currentRole}
       </Button>
       <DropdownPopover className="min-w-[120px] bg-transparent backdrop-blur-sm">
@@ -374,7 +370,7 @@ function RoleDropdown({
           selectedKeys={new Set([currentRole])}
           selectionMode="single"
           onSelectionChange={(keys: Selection) => {
-            const newRole = Array.from(keys)[0] as string;
+            const newRole = Array.from(keys)[0] as UserRole;
             const fakeEl = { value: currentRole } as HTMLSelectElement;
             onRoleChange(user, newRole, fakeEl);
             setCurrentRole(newRole);

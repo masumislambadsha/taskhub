@@ -1,8 +1,7 @@
 "use client";
 
-import { MdAddAPhoto, MdArrowBack, MdBusinessCenter, MdCategory, MdEdit, MdUpload, MdWork, MdVisibility, MdVisibilityOff } from 'react-icons/md';
-
-import { useState, useRef } from "react";
+import { MdAddAPhoto, MdArrowBack, MdCategory, MdEdit, MdUpload, MdVisibility, MdVisibilityOff } from 'react-icons/md';
+import { useState, useRef, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -44,7 +43,7 @@ const Divider = ({ label = "or" }: { label?: string }) => (
   </div>
 );
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [step, setStep] = useState(params.get("role") ? 2 : 1);
@@ -138,6 +137,7 @@ export default function RegisterPage() {
             {(["worker", "buyer"] as const).map((r) => (
               <button
                 key={r}
+                type="button"
                 onClick={() => {
                   setValue("role", r);
                   setStep(2);
@@ -158,6 +158,7 @@ export default function RegisterPage() {
           <Divider label="or sign up with" />
 
           <button
+            type="button"
             onClick={handleGoogle}
             className="w-full flex items-center justify-center gap-3 border border-primary/20 py-3 rounded-lg font-medium text-primary hover:bg-primary/5 transition-colors"
           >
@@ -183,6 +184,7 @@ export default function RegisterPage() {
     <div className="w-full max-w-md">
       <div className="bg-white rounded-2xl shadow-xl border border-primary/5 p-4 sm:p-8">
         <button
+          type="button"
           onClick={() => setStep(1)}
           className="flex items-center gap-1 text-sm text-primary/50 hover:text-primary mb-6"
         >
@@ -199,6 +201,7 @@ export default function RegisterPage() {
         </p>
 
         <button
+          type="button"
           onClick={handleGoogle}
           className="w-full flex items-center justify-center gap-3 border border-primary/20 py-3 rounded-lg font-medium text-primary hover:bg-primary/5 transition-colors mb-2"
         >
@@ -209,7 +212,6 @@ export default function RegisterPage() {
         <Divider label="or fill in your details" />
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {/* Profile photo */}
           <div>
             <label className="block text-sm font-medium text-primary mb-2">
               Profile Photo <span className="text-primary/40">(optional)</span>
@@ -221,6 +223,7 @@ export default function RegisterPage() {
               >
                 {preview ? (
                   <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={preview}
                       alt="preview"
@@ -384,5 +387,13 @@ export default function RegisterPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
   );
 }
