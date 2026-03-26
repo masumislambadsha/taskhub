@@ -200,7 +200,7 @@ export default function MessagesUI({
   const myId = session?.user?.id;
   const myPhoto = session?.user?.image ?? undefined;
 
-  
+
   const ConvList = (
     <aside className="flex flex-col h-full">
       <div className="p-4 border-b border-primary/5">
@@ -215,7 +215,7 @@ export default function MessagesUI({
       </div>
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
-          <div className="p-8 text-center">
+          <div className="p-8 text-center flex flex-col items-center justify-center">
             <MdChatBubbleOutline className="text-primary/20 text-4xl block mb-2" />
             <p className="text-sm text-primary/40">No conversations yet</p>
             <p className="text-xs text-primary/30 mt-1">{emptyHint}</p>
@@ -270,7 +270,7 @@ export default function MessagesUI({
     </aside>
   );
 
-  
+
   const ChatPanel = activeConv ? (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="h-14 sm:h-16 px-4 sm:px-6 border-b border-primary/5 flex items-center gap-3 shrink-0">
@@ -389,7 +389,7 @@ export default function MessagesUI({
     </div>
   ) : (
     <div className="flex-1 flex items-center justify-center h-full">
-      <div className="text-center">
+      <div className="text-center flex flex-col items-center justify-center">
         <MdForum className="text-primary/10 text-6xl block mb-3" />
         <p className="text-primary/40 font-medium">Select a conversation</p>
         <p className="text-xs text-primary/30 mt-1">{selectHint}</p>
