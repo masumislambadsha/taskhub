@@ -20,10 +20,10 @@ export default function AdminCategories() {
   const queryClient = useQueryClient();
   const [newCategory, setNewCategory] = useState("");
 
-  const { data, isLoading, refetch } = useQuery<{ data: ICategory[] }>({
+  const { data, isLoading, refetch } = useQuery<ICategory[]>({
     queryKey: ["admin", "categories"],
     queryFn: async () => {
-      const { data } = await api.get<{ data: ICategory[] }>("/api/v1/admin/categories");
+      const { data } = await api.get<ICategory[]>("/api/v1/admin/categories");
       return data;
     },
   });
@@ -51,7 +51,7 @@ export default function AdminCategories() {
     onError: (err: any) => Alert.alert("Error", err?.response?.data?.error || "Failed to delete"),
   });
 
-  const categories = data?.categories ?? [];
+  const categories = Array.isArray(data) ? data : [];
 
   const renderCategory = ({ item }: { item: ICategory }) => (
     <Card style={styles.categoryCard}>

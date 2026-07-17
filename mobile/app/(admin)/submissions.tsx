@@ -17,8 +17,8 @@ interface ISubmission {
   createdAt: string;
 }
 
-interface PaginatedResponse<T> {
-  data: T[];
+interface PaginatedResponse {
+  submissions: ISubmission[];
   total: number;
   page: number;
   pages: number;
@@ -40,12 +40,12 @@ export default function AdminSubmissions() {
 
   const statusParam = STATUS_MAP[activeTab];
 
-  const { data, isLoading, isFetching, isRefetching, refetch } = useQuery<PaginatedResponse<ISubmission>>({
+  const { data, isLoading, isFetching, isRefetching, refetch } = useQuery<PaginatedResponse>({
     queryKey: ["admin", "submissions", page, activeTab],
     queryFn: async () => {
       const params: Record<string, unknown> = { page, limit: 20 };
       if (statusParam) params.status = statusParam;
-      const { data } = await api.get<PaginatedResponse<ISubmission>>("/api/v1/submissions", { params });
+      const { data } = await api.get<PaginatedResponse>("/api/v1/submissions", { params });
       return data;
     },
   });

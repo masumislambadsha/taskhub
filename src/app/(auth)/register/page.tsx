@@ -223,7 +223,7 @@ function RegisterForm() {
               >
                 {preview ? (
                   <>
-                    
+
                     <img
                       src={preview}
                       alt="preview"

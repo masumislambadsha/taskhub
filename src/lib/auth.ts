@@ -59,7 +59,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async jwt({ token, user, trigger, session }) {
       if (user) {
-        
         if (user.id && !user.id.match(/^[0-9a-fA-F]{24}$/) && user.email) {
           await connectDB();
           const dbUser = await User.findOne({
@@ -76,7 +75,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.coins = session.coins;
         token.role = session.role;
       }
-      
       if (token.id) {
         await connectDB();
         const dbUser = await User.findById(token.id).lean();

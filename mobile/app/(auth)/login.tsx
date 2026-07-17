@@ -70,6 +70,10 @@ export default function Login() {
               style={styles.fullWidth}
             />
 
+            <TouchableOpacity onPress={() => router.push("/(auth)/forgot-password")} style={styles.forgotRow}>
+              <Text style={styles.forgotText}>Forgot password?</Text>
+            </TouchableOpacity>
+
             <View style={styles.divider}>
               <View style={styles.dividerLine} />
               <Text style={styles.dividerText}>or continue with</Text>
@@ -79,7 +83,7 @@ export default function Login() {
             <Button
               title="Continue with Google"
               variant="outline"
-              onPress={() => {}}
+              onPress={() => Alert.alert("Coming Soon", "Google sign-in is not yet available on mobile.")}
               style={styles.fullWidth}
             />
           </View>
@@ -104,6 +108,8 @@ const styles = StyleSheet.create({
   divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
   dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(0,64,48,0.1)' },
   dividerText: { marginHorizontal: 12, fontSize: 13, color: 'rgba(0,64,48,0.6)', opacity: 0.7 },
+  forgotRow: { alignItems: 'center', marginTop: 12 },
+  forgotText: { fontSize: 13, color: '#4A9782', fontWeight: '600' },
   footer: { marginTop: 24, alignItems: 'center', paddingBottom: 24 },
   footerText: { fontSize: 14, color: 'rgba(0,64,48,0.6)' },
   signupLink: { color: '#004030', fontWeight: '600' },

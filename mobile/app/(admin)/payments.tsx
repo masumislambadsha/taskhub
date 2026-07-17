@@ -17,8 +17,8 @@ interface IPayment {
   createdAt: string;
 }
 
-interface PaginatedResponse<T> {
-  data: T[];
+interface PaginatedResponse {
+  payments: IPayment[];
   total: number;
   page: number;
   pages: number;
@@ -27,10 +27,10 @@ interface PaginatedResponse<T> {
 export default function AdminPayments() {
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, isFetching, isRefetching, refetch } = useQuery<PaginatedResponse<IPayment>>({
+  const { data, isLoading, isFetching, isRefetching, refetch } = useQuery<PaginatedResponse>({
     queryKey: ["admin", "payments", page],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<IPayment>>("/api/v1/admin/payments", { params: { page, limit: 20 } });
+      const { data } = await api.get<PaginatedResponse>("/api/v1/admin/payments", { params: { page, limit: 20 } });
       return data;
     },
   });

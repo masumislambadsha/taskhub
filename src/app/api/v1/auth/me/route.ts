@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { decode } from "next-auth/jwt";
 
 function getJwtSalt(): string {
   const url = process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -6,15 +7,14 @@ function getJwtSalt(): string {
 }
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get("authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const token = authHeader.slice(7);
-  const { decode } = await import("next-auth/jwt");
-
   try {
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const token = authHeader.slice(7);
+
     const decoded = await decode({
       token,
       salt: getJwtSalt(),
@@ -32,7 +32,8 @@ export async function GET(req: NextRequest) {
       coins: decoded.coins,
       picture: decoded.picture,
     });
-  } catch {
+  } catch (error) {
+    console.error("Token decode error:", error);
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
 }
