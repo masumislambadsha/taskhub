@@ -22,12 +22,16 @@ export default function Login() {
       return data;
     },
     onSuccess: async (data) => {
-      await setToken(data.token);
-      await setUserData(JSON.stringify(data.user));
-      const role = data.user.role;
-      if (role === "worker") router.replace("/(worker)/(tabs)/dashboard");
-      else if (role === "buyer") router.replace("/(buyer)/(tabs)/dashboard");
-      else router.replace("/(admin)/(tabs)/dashboard");
+      try {
+        await setToken(data.token);
+        await setUserData(JSON.stringify(data.user));
+        const role = data.user.role;
+        if (role === "worker") router.replace("/(worker)/dashboard");
+        else if (role === "buyer") router.replace("/(buyer)/dashboard");
+        else router.replace("/(admin)/dashboard");
+      } catch (e: any) {
+        Alert.alert("Error", e?.message || "Failed to save session");
+      }
     },
     onError: (err: any) => {
       const msg = err?.response?.data?.error || "Login failed";

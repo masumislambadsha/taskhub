@@ -5,36 +5,53 @@ const KEYS = {
   USER: "user_data",
 };
 
-export async function getToken(): Promise<string | null> {
+async function storeGet(key: string): Promise<string | null> {
   try {
-    return await SecureStore.getItemAsync(KEYS.TOKEN);
+    return await SecureStore.getItemAsync(key);
   } catch {
+    if (typeof localStorage !== "undefined") return localStorage.getItem(key);
     return null;
   }
+}
+
+async function storeSet(key: string, value: string): Promise<void> {
+  try {
+    await SecureStore.setItemAsync(key, value);
+  } catch {
+    if (typeof localStorage !== "undefined") localStorage.setItem(key, value);
+  }
+}
+
+async function storeDelete(key: string): Promise<void> {
+  try {
+    await SecureStore.deleteItemAsync(key);
+  } catch {
+    if (typeof localStorage !== "undefined") localStorage.removeItem(key);
+  }
+}
+
+export async function getToken(): Promise<string | null> {
+  return storeGet(KEYS.TOKEN);
 }
 
 export async function setToken(token: string): Promise<void> {
-  await SecureStore.setItemAsync(KEYS.TOKEN, token);
+  await storeSet(KEYS.TOKEN, token);
 }
 
 export async function removeToken(): Promise<void> {
-  await SecureStore.deleteItemAsync(KEYS.TOKEN);
+  await storeDelete(KEYS.TOKEN);
 }
 
 export async function getUserData(): Promise<string | null> {
-  try {
-    return await SecureStore.getItemAsync(KEYS.USER);
-  } catch {
-    return null;
-  }
+  return storeGet(KEYS.USER);
 }
 
 export async function setUserData(user: string): Promise<void> {
-  await SecureStore.setItemAsync(KEYS.USER, user);
+  await storeSet(KEYS.USER, user);
 }
 
 export async function removeUserData(): Promise<void> {
-  await SecureStore.deleteItemAsync(KEYS.USER);
+  await storeDelete(KEYS.USER);
 }
 
 export async function clearAll(): Promise<void> {
