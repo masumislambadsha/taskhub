@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import api from "../../src/lib/api";
-import { COLORS, TASK_CATEGORIES } from "../../src/lib/constants";
+import { TASK_CATEGORIES } from "../../src/lib/constants";
 import Input from "../../src/components/ui/Input";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
@@ -86,7 +86,7 @@ export default function BrowseTasks() {
           <Text style={styles.taskBuyer}>by {item.buyerName}</Text>
           <View style={styles.taskMeta}>
             <View style={styles.payoutRow}>
-              <Ionicons name="wallet-outline" size={14} color={COLORS.primary} />
+              <Ionicons name="wallet-outline" size={14} color="#004030" />
               <Text style={styles.payoutText}>{item.payableAmount} coins</Text>
             </View>
             <Text style={styles.deadline}>Due {new Date(item.completionDate).toLocaleDateString()}</Text>
@@ -142,7 +142,7 @@ export default function BrowseTasks() {
         keyExtractor={(item) => item._id}
         renderItem={renderTask}
         contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#004030" />}
         ListEmptyComponent={<EmptyState title="No tasks found" message="Try adjusting your search or filter" />}
         ListFooterComponent={
           data && data.page < data.pages ? (
@@ -157,28 +157,28 @@ export default function BrowseTasks() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.background, padding: 24 },
-  errorText: { fontSize: 16, color: COLORS.textSecondary, textAlign: "center" },
+  container: { flex: 1, backgroundColor: '#FFF9E5' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFF9E5', padding: 24 },
+  errorText: { fontSize: 16, color: '#004030', textAlign: 'center' },
   headerBar: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 4 },
-  headerTitle: { fontSize: 24, fontWeight: "700", color: COLORS.text },
-  headerSubtitle: { fontSize: 14, color: COLORS.textSecondary, marginTop: 2 },
+  headerTitle: { fontSize: 24, fontWeight: '700', color: '#00281D' },
+  headerSubtitle: { fontSize: 14, color: '#004030', marginTop: 2 },
   searchContainer: { paddingHorizontal: 16, paddingBottom: 8 },
   chipsScroll: { maxHeight: 44, marginBottom: 8 },
-  chipsContent: { paddingHorizontal: 16, gap: 8, alignItems: "center" },
-  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5, borderColor: COLORS.border, backgroundColor: COLORS.surface },
-  chipActive: { borderColor: COLORS.primary, backgroundColor: "#EFF6FF" },
-  chipText: { fontSize: 13, fontWeight: "600", color: COLORS.textSecondary },
-  chipTextActive: { color: COLORS.primary },
+  chipsContent: { paddingHorizontal: 16, gap: 8, alignItems: 'center' },
+  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5, borderColor: '#004030', backgroundColor: '#FFFFFF' },
+  chipActive: { borderColor: '#004030', backgroundColor: '#EFF6FF' },
+  chipText: { fontSize: 13, fontWeight: '600', color: '#004030' },
+  chipTextActive: { color: '#004030' },
   list: { padding: 16, paddingTop: 4 },
   taskCard: { marginBottom: 12 },
-  taskHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
-  taskTitle: { fontSize: 16, fontWeight: "600", color: COLORS.text, flex: 1, marginRight: 8 },
-  taskBuyer: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 8 },
-  taskMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
-  payoutRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-  payoutText: { fontSize: 14, fontWeight: "700", color: COLORS.text },
-  deadline: { fontSize: 13, color: COLORS.textSecondary },
-  remaining: { fontSize: 12, color: COLORS.textSecondary },
-  loadMore: { paddingVertical: 16, alignItems: "center" },
+  taskHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  taskTitle: { fontSize: 16, fontWeight: '600', color: '#00281D', flex: 1, marginRight: 8 },
+  taskBuyer: { fontSize: 13, color: '#004030', marginBottom: 8 },
+  taskMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  payoutRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  payoutText: { fontSize: 14, fontWeight: '700', color: '#00281D' },
+  deadline: { fontSize: 13, color: '#004030' },
+  remaining: { fontSize: 12, color: '#004030' },
+  loadMore: { paddingVertical: 16, alignItems: 'center' },
 });

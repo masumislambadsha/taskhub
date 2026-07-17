@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
+import { View, Text, FlatList, RefreshControl, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { COLORS } from "../../src/lib/constants";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
@@ -48,11 +47,11 @@ export default function AdminPayments() {
           variant={item.status === "success" ? "approved" : item.status === "failed" ? "rejected" : "pending"}
         />
       </View>
-      <View style={styles.paymentBody}>
-        <Text style={styles.paymentCoins}>{item.coinsPurchased} coins</Text>
-        <Text style={styles.paymentAmount}>${item.amount.toFixed(2)}</Text>
+      <View style={styles.amountRow}>
+        <Text style={styles.coinsText}>{item.coinsPurchased} coins</Text>
+        <Text style={styles.usdText}>${item.amount.toFixed(2)}</Text>
       </View>
-      <Text style={styles.paymentMeta}>{item.gateway.toUpperCase()} · {new Date(item.createdAt).toLocaleDateString()}</Text>
+      <Text style={styles.gatewayInfo}>{item.gateway.toUpperCase()} · {new Date(item.createdAt).toLocaleDateString()}</Text>
     </Card>
   );
 
@@ -68,26 +67,58 @@ export default function AdminPayments() {
         data={payments}
         keyExtractor={(item) => item._id}
         renderItem={renderPayment}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => { setPage(1); refetch(); }} />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         ListEmptyComponent={<EmptyState title="No payments found" message="Payment records will appear here" />}
-        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footerLoader}><Spinner size="small" /></View> : null}
+        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="small" /></View> : null}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  list: { padding: 16, paddingBottom: 32 },
-  paymentCard: { marginBottom: 12 },
-  paymentHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  userEmail: { fontSize: 14, fontWeight: "600", color: COLORS.text, flex: 1, marginRight: 8 },
-  paymentBody: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-  paymentCoins: { fontSize: 16, fontWeight: "700", color: COLORS.primary },
-  paymentAmount: { fontSize: 16, fontWeight: "700", color: COLORS.success },
-  paymentMeta: { fontSize: 12, color: COLORS.textSecondary, marginTop: 6 },
-  footerLoader: { paddingVertical: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  paymentCard: {
+    marginBottom: 12,
+  },
+  paymentHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  userEmail: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00281D',
+    flex: 1,
+    marginRight: 8,
+  },
+  amountRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  coinsText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#004030',
+  },
+  usdText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#10B981',
+  },
+  gatewayInfo: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 6,
+  },
+  footer: {
+    paddingVertical: 16,
+  },
 });

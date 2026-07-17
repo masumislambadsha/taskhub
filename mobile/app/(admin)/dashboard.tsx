@@ -1,8 +1,7 @@
-import { ScrollView, View, Text, StyleSheet, RefreshControl, TouchableOpacity } from "react-native";
+import { ScrollView, View, Text, RefreshControl, TouchableOpacity, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import api from "../../src/lib/api";
-import { COLORS } from "../../src/lib/constants";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
@@ -37,10 +36,10 @@ export default function AdminDashboard() {
 
   if (isError) {
     return (
-      <View style={styles.center}>
+      <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Failed to load dashboard</Text>
         <TouchableOpacity onPress={() => refetch()}>
-          <Text style={styles.retry}>Tap to retry</Text>
+          <Text style={styles.retryText}>Tap to retry</Text>
         </TouchableOpacity>
       </View>
     );
@@ -51,34 +50,34 @@ export default function AdminDashboard() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={COLORS.primary} />}
+      contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor="#004030" />}
     >
       <View style={styles.headerSection}>
-        <Text style={styles.heading}>Admin Dashboard</Text>
-        <Text style={styles.subheading}>Platform overview and key metrics</Text>
+        <Text style={styles.title}>Admin Dashboard</Text>
+        <Text style={styles.subtitle}>Platform overview and key metrics</Text>
       </View>
 
-      <View style={styles.grid}>
-        <Card style={styles.kpiCard}>
-          <Ionicons name="people-outline" size={24} color={COLORS.primary} />
-          <Text style={styles.kpiValue}>{s.totalWorkers}</Text>
-          <Text style={styles.kpiLabel}>Total Workers</Text>
+      <View style={styles.statsRow}>
+        <Card style={styles.statCard}>
+          <Ionicons name="people-outline" size={24} color="#004030" />
+          <Text style={styles.statValue}>{s.totalWorkers}</Text>
+          <Text style={styles.statLabel}>Total Workers</Text>
         </Card>
-        <Card style={styles.kpiCard}>
-          <Ionicons name="cart-outline" size={24} color={COLORS.secondary} />
-          <Text style={styles.kpiValue}>{s.totalBuyers}</Text>
-          <Text style={styles.kpiLabel}>Total Buyers</Text>
+        <Card style={styles.statCard}>
+          <Ionicons name="cart-outline" size={24} color="#4A9782" />
+          <Text style={styles.statValue}>{s.totalBuyers}</Text>
+          <Text style={styles.statLabel}>Total Buyers</Text>
         </Card>
-        <Card style={styles.kpiCard}>
-          <Ionicons name="cash-outline" size={24} color={COLORS.warning} />
-          <Text style={styles.kpiValue}>{s.totalCoins.toLocaleString()}</Text>
-          <Text style={styles.kpiLabel}>Coins in System</Text>
+        <Card style={styles.statCard}>
+          <Ionicons name="cash-outline" size={24} color="#F59E0B" />
+          <Text style={styles.statValue}>{s.totalCoins.toLocaleString()}</Text>
+          <Text style={styles.statLabel}>Coins in System</Text>
         </Card>
-        <Card variant="accent" style={styles.kpiCardAccent}>
-          <Ionicons name="trending-up-outline" size={24} color={COLORS.white} />
-          <Text style={styles.kpiValueAccent}>${s.totalPayments.toFixed(2)}</Text>
-          <Text style={styles.kpiLabelAccent}>Total Revenue</Text>
+        <Card variant="accent" style={styles.statCard}>
+          <Ionicons name="trending-up-outline" size={24} color="#FFFFFF" />
+          <Text style={styles.statValueWhite}>${s.totalPayments.toFixed(2)}</Text>
+          <Text style={styles.statLabelWhite}>Total Revenue</Text>
         </Card>
       </View>
 
@@ -105,39 +104,136 @@ export default function AdminDashboard() {
         <EmptyState title="No users yet" message="Users will appear here once they register" />
       )}
 
-      <Card variant="accent" style={styles.pendingCard}>
-        <Text style={styles.pendingTitle}>Pending Withdrawals</Text>
-        <Text style={styles.pendingValue}>{s.pendingWithdrawals}</Text>
+      <Card variant="accent" style={styles.withdrawalCard}>
+        <Text style={styles.withdrawalLabel}>Pending Withdrawals</Text>
+        <Text style={styles.withdrawalValue}>{s.pendingWithdrawals}</Text>
       </Card>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  content: { padding: 16, paddingBottom: 32 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.background, padding: 24 },
-  errorText: { fontSize: 16, color: COLORS.textSecondary, textAlign: "center" },
-  retry: { fontSize: 16, color: COLORS.primary, marginTop: 8, fontWeight: "600", textAlign: "center" },
-  headerSection: { marginBottom: 24 },
-  heading: { fontSize: 24, fontWeight: "800", color: COLORS.primary },
-  subheading: { fontSize: 14, color: COLORS.textSecondary, opacity: 0.6, marginTop: 4 },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginBottom: 24 },
-  kpiCard: { width: "47%", alignItems: "center", paddingVertical: 20 },
-  kpiValue: { fontSize: 28, fontWeight: "800", color: COLORS.primary, marginTop: 8 },
-  kpiLabel: { fontSize: 12, fontWeight: "500", color: COLORS.textSecondary, opacity: 0.6, marginTop: 4, textAlign: "center" },
-  kpiCardAccent: { width: "47%", alignItems: "center", paddingVertical: 20 },
-  kpiValueAccent: { fontSize: 28, fontWeight: "800", color: COLORS.white, marginTop: 8 },
-  kpiLabelAccent: { fontSize: 12, fontWeight: "500", color: COLORS.white, opacity: 0.8, marginTop: 4, textAlign: "center" },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: COLORS.primary, marginBottom: 12 },
-  userCard: { marginBottom: 8 },
-  userRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  userInfo: { flex: 1 },
-  userName: { fontSize: 15, fontWeight: "600", color: COLORS.text },
-  userEmail: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
-  userMeta: { alignItems: "flex-end", gap: 4 },
-  userCoins: { fontSize: 12, color: COLORS.textSecondary },
-  pendingCard: { marginTop: 24, alignItems: "center", paddingVertical: 24 },
-  pendingTitle: { fontSize: 14, color: COLORS.white, opacity: 0.8 },
-  pendingValue: { fontSize: 32, fontWeight: "800", color: COLORS.white, marginTop: 4 },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  errorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF9E5',
+    padding: 24,
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'rgba(0,64,48,0.6)',
+    textAlign: 'center',
+  },
+  retryText: {
+    fontSize: 16,
+    color: '#004030',
+    marginTop: 8,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  headerSection: {
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#004030',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 4,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 24,
+  },
+  statCard: {
+    width: '47%',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  statValue: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#004030',
+    marginTop: 8,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  statValueWhite: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: 8,
+  },
+  statLabelWhite: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#004030',
+    marginBottom: 12,
+  },
+  userCard: {
+    marginBottom: 8,
+  },
+  userRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00281D',
+  },
+  userEmail: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 2,
+  },
+  userMeta: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  userCoins: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+  },
+  withdrawalCard: {
+    marginTop: 24,
+    alignItems: 'center',
+    paddingVertical: 24,
+  },
+  withdrawalLabel: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.8)',
+  },
+  withdrawalValue: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: 4,
+  },
 });

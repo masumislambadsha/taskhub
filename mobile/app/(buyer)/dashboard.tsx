@@ -1,10 +1,9 @@
 import { useState, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, RefreshControl, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, RefreshControl, TouchableOpacity, StyleSheet } from "react-native";
 import { useFocusEffect, router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import api from "../../src/lib/api";
-import { COLORS } from "../../src/lib/constants";
 import { getUserData } from "../../src/lib/storage";
 import Card from "../../src/components/ui/Card";
 import Button from "../../src/components/ui/Button";
@@ -88,10 +87,10 @@ export default function Dashboard() {
 
   if (isError) {
     return (
-      <View style={styles.center}>
+      <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Failed to load dashboard</Text>
         <TouchableOpacity onPress={onRefresh}>
-          <Text style={styles.retry}>Tap to retry</Text>
+          <Text style={styles.retryText}>Tap to retry</Text>
         </TouchableOpacity>
       </View>
     );
@@ -99,75 +98,75 @@ export default function Dashboard() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
+      style={styles.scrollView}
+      contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#004030" />}
     >
-      <View style={styles.headerRow}>
-        <Text style={styles.greeting}>Welcome back, {firstName}</Text>
+      <View style={styles.greetingSection}>
+        <Text style={styles.greetingText}>Welcome back, {firstName}</Text>
         <Text style={styles.dateText}>{dateStr}</Text>
       </View>
 
       <Button
         title="Create Task"
         onPress={() => router.push("/(buyer)/tasks")}
-        style={styles.createBtn}
+        style={styles.createTaskBtn}
       />
 
-      <View style={styles.kpiGrid}>
-        <Card style={styles.kpiCard}>
-          <Ionicons name="list-outline" size={24} color={COLORS.primary} />
-          <Text style={styles.kpiValue}>{totalTasks}</Text>
-          <Text style={styles.kpiLabel}>Total Tasks</Text>
+      <View style={styles.statsRow}>
+        <Card style={styles.statCard}>
+          <Ionicons name="list-outline" size={24} color="#004030" />
+          <Text style={styles.statValue}>{totalTasks}</Text>
+          <Text style={styles.statLabel}>Total Tasks</Text>
         </Card>
-        <Card style={styles.kpiCard}>
-          <Ionicons name="time-outline" size={24} color={COLORS.warning} />
-          <Text style={styles.kpiValue}>{pendingReviews}</Text>
-          <Text style={styles.kpiLabel}>Pending Reviews</Text>
+        <Card style={styles.statCard}>
+          <Ionicons name="time-outline" size={24} color="#F59E0B" />
+          <Text style={styles.statValue}>{pendingReviews}</Text>
+          <Text style={styles.statLabel}>Pending Reviews</Text>
         </Card>
-        <Card style={styles.kpiCard}>
-          <Ionicons name="cash-outline" size={24} color={COLORS.secondary} />
-          <Text style={styles.kpiValue}>{coins}</Text>
-          <Text style={styles.kpiLabel}>Coins Balance</Text>
+        <Card style={styles.statCard}>
+          <Ionicons name="cash-outline" size={24} color="#4A9782" />
+          <Text style={styles.statValue}>{coins}</Text>
+          <Text style={styles.statLabel}>Coins Balance</Text>
         </Card>
-        <Card variant="accent" style={styles.kpiCardAccent}>
-          <Ionicons name="trending-down-outline" size={24} color={COLORS.white} />
-          <Text style={styles.kpiValueAccent}>{coinsSpent}</Text>
-          <Text style={styles.kpiLabelAccent}>Coins Spent</Text>
+        <Card variant="accent" style={styles.statCard}>
+          <Ionicons name="trending-down-outline" size={24} color="#FFFFFF" />
+          <Text style={styles.statValueWhite}>{coinsSpent}</Text>
+          <Text style={styles.statLabelWhite}>Coins Spent</Text>
         </Card>
       </View>
 
-      <Card style={styles.chartCard}>
+      <Card style={styles.activityCard}>
         <Text style={styles.sectionTitle}>Task Activity (7 days)</Text>
-        <View style={styles.barChart}>
+        <View style={styles.chartContainer}>
           {[30, 55, 25, 70, 45, 85, 60].map((h, i) => (
-            <View key={i} style={styles.barWrapper}>
-              <View style={[styles.bar, { height: h }]} />
+            <View key={i} style={styles.chartBarWrapper}>
+              <View style={[styles.chartBar, { height: h }]} />
             </View>
           ))}
         </View>
         <Text style={styles.chartLabel}>Mon Tue Wed Thu Fri Sat Sun</Text>
       </Card>
 
-      <View style={styles.overviewRow}>
-        <Card style={styles.overviewCard}>
+      <View style={styles.rateRow}>
+        <Card style={styles.rateCard}>
           <Text style={styles.sectionTitle}>Approval Rate</Text>
-          <View style={styles.progressWrap}>
-            <View style={styles.progressBg}>
-              <View style={[styles.progressFill, { width: `${approvalRate}%` }]} />
+          <View style={styles.approvalRow}>
+            <View style={styles.approvalBarBg}>
+              <View style={[styles.approvalBarFill, { width: `${approvalRate}%` }]} />
             </View>
-            <Text style={styles.progressText}>{approvalRate}%</Text>
+            <Text style={styles.approvalPct}>{approvalRate}%</Text>
           </View>
         </Card>
-        <Card style={styles.miniStatsCard}>
+        <Card style={styles.rateCard}>
           <Text style={styles.sectionTitle}>Mini Stats</Text>
-          <View style={styles.miniStatRow}>
-            <Text style={styles.miniStat}><Text style={styles.miniStatVal}>{openTasks}</Text> Open</Text>
-            <Text style={styles.miniStat}><Text style={styles.miniStatVal}>{closedTasks}</Text> Closed</Text>
+          <View style={styles.miniStatsRow}>
+            <Text style={styles.miniStatText}><Text style={styles.miniStatBold}>{openTasks}</Text> Open</Text>
+            <Text style={styles.miniStatText}><Text style={styles.miniStatBold}>{closedTasks}</Text> Closed</Text>
           </View>
-          <View style={styles.miniStatRow}>
-            <Text style={styles.miniStat}><Text style={[styles.miniStatVal, { color: COLORS.success }]}>{approvedSubs}</Text> Approved</Text>
-            <Text style={styles.miniStat}><Text style={[styles.miniStatVal, { color: COLORS.danger }]}>{rejectedSubs}</Text> Rejected</Text>
+          <View style={styles.miniStatsRow}>
+            <Text style={styles.miniStatText}><Text style={styles.miniStatGreen}>{approvedSubs}</Text> Approved</Text>
+            <Text style={styles.miniStatText}><Text style={styles.miniStatRed}>{rejectedSubs}</Text> Rejected</Text>
           </View>
         </Card>
       </View>
@@ -176,10 +175,10 @@ export default function Dashboard() {
       {pendingSubmissions.length > 0 ? (
         pendingSubmissions.slice(0, 5).map((s) => (
           <Card key={s._id} style={styles.reviewCard}>
-            <View style={styles.reviewRow}>
+            <View style={styles.reviewCardInner}>
               <View>
-                <Text style={styles.reviewWorker}>{s.workerName}</Text>
-                <Text style={styles.reviewTask}>{s.taskTitle}</Text>
+                <Text style={styles.reviewWorkerName}>{s.workerName}</Text>
+                <Text style={styles.reviewTaskTitle}>{s.taskTitle}</Text>
               </View>
               <Badge label="pending" variant="pending" />
             </View>
@@ -190,22 +189,22 @@ export default function Dashboard() {
       )}
 
       <Text style={styles.sectionTitle}>Quick Links</Text>
-      <View style={styles.quickLinks}>
-        <TouchableOpacity style={styles.quickLinkCard} onPress={() => router.push("/(buyer)/tasks")}>
-          <Ionicons name="list-outline" size={28} color={COLORS.primary} />
-          <Text style={styles.quickLabel}>My Tasks</Text>
+      <View style={styles.quickLinksRow}>
+        <TouchableOpacity style={styles.quickLinkBtn} onPress={() => router.push("/(buyer)/tasks")}>
+          <Ionicons name="list-outline" size={28} color="#004030" />
+          <Text style={styles.quickLinkText}>My Tasks</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.quickLinkCard} onPress={() => router.push("/(buyer)/submissions")}>
-          <Ionicons name="document-text-outline" size={28} color={COLORS.secondary} />
-          <Text style={styles.quickLabel}>Submissions</Text>
+        <TouchableOpacity style={styles.quickLinkBtn} onPress={() => router.push("/(buyer)/submissions")}>
+          <Ionicons name="document-text-outline" size={28} color="#4A9782" />
+          <Text style={styles.quickLinkText}>Submissions</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.quickLinkCard} onPress={() => router.push("/(buyer)/coins")}>
-          <Ionicons name="diamond-outline" size={28} color={COLORS.warning} />
-          <Text style={styles.quickLabel}>Buy Coins</Text>
+        <TouchableOpacity style={styles.quickLinkBtn} onPress={() => router.push("/(buyer)/coins")}>
+          <Ionicons name="diamond-outline" size={28} color="#F59E0B" />
+          <Text style={styles.quickLinkText}>Buy Coins</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.quickLinkCard} onPress={() => router.push("/(buyer)/payments")}>
-          <Ionicons name="receipt-outline" size={28} color={COLORS.danger} />
-          <Text style={styles.quickLabel}>Payments</Text>
+        <TouchableOpacity style={styles.quickLinkBtn} onPress={() => router.push("/(buyer)/payments")}>
+          <Ionicons name="receipt-outline" size={28} color="#EF4444" />
+          <Text style={styles.quickLinkText}>Payments</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -213,43 +212,204 @@ export default function Dashboard() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  content: { padding: 16, paddingBottom: 32 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.background, padding: 24 },
-  errorText: { fontSize: 16, color: COLORS.textSecondary, textAlign: "center" },
-  retry: { fontSize: 16, color: COLORS.primary, marginTop: 8, fontWeight: "600", textAlign: "center" },
-  headerRow: { marginBottom: 20 },
-  greeting: { fontSize: 24, fontWeight: "800", color: COLORS.primary },
-  dateText: { fontSize: 14, color: COLORS.textSecondary, opacity: 0.6, marginTop: 4 },
-  createBtn: { marginBottom: 20 },
-  kpiGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginBottom: 20 },
-  kpiCard: { width: "47%", alignItems: "center", paddingVertical: 20 },
-  kpiValue: { fontSize: 28, fontWeight: "800", color: COLORS.primary, marginTop: 8 },
-  kpiLabel: { fontSize: 12, fontWeight: "500", color: COLORS.textSecondary, opacity: 0.6, marginTop: 4, textAlign: "center" },
-  kpiCardAccent: { width: "47%", alignItems: "center", paddingVertical: 20 },
-  kpiValueAccent: { fontSize: 28, fontWeight: "800", color: COLORS.white, marginTop: 8 },
-  kpiLabelAccent: { fontSize: 12, fontWeight: "500", color: COLORS.white, opacity: 0.8, marginTop: 4, textAlign: "center" },
-  chartCard: { marginBottom: 20, paddingVertical: 16 },
-  barChart: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", height: 100, marginTop: 12, paddingHorizontal: 4 },
-  barWrapper: { alignItems: "center", flex: 1 },
-  bar: { width: 8, borderRadius: 4, backgroundColor: COLORS.primary, minHeight: 4 },
-  chartLabel: { fontSize: 10, color: COLORS.textSecondary, opacity: 0.6, textAlign: "center", marginTop: 6 },
-  overviewRow: { flexDirection: "row", gap: 12, marginBottom: 24 },
-  overviewCard: { flex: 1, paddingVertical: 16 },
-  progressWrap: { flexDirection: "row", alignItems: "center", marginTop: 12, gap: 8 },
-  progressBg: { flex: 1, height: 12, borderRadius: 6, backgroundColor: "#0040301A" },
-  progressFill: { height: 12, borderRadius: 6, backgroundColor: COLORS.primary },
-  progressText: { fontSize: 18, fontWeight: "800", color: COLORS.primary },
-  miniStatsCard: { flex: 1, paddingVertical: 16 },
-  miniStatRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-  miniStat: { fontSize: 13, color: COLORS.textSecondary },
-  miniStatVal: { fontWeight: "700", color: COLORS.primary },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: COLORS.primary, marginBottom: 12 },
-  reviewCard: { marginBottom: 8 },
-  reviewRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  reviewWorker: { fontSize: 14, fontWeight: "600", color: COLORS.text },
-  reviewTask: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
-  quickLinks: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  quickLinkCard: { width: "47%", backgroundColor: COLORS.surface, borderRadius: 12, borderWidth: 1, borderColor: "#0040300D", padding: 20, alignItems: "center" },
-  quickLabel: { fontSize: 13, fontWeight: "600", color: COLORS.text, marginTop: 8 },
+  errorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF9E5',
+    padding: 24,
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'rgba(0,64,48,0.6)',
+    textAlign: 'center',
+  },
+  retryText: {
+    fontSize: 16,
+    color: '#004030',
+    marginTop: 8,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  greetingSection: {
+    marginBottom: 20,
+  },
+  greetingText: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#004030',
+  },
+  dateText: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 4,
+  },
+  createTaskBtn: {
+    marginBottom: 20,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 20,
+  },
+  statCard: {
+    width: '47%',
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  statValue: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#004030',
+    marginTop: 8,
+  },
+  statLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  statValueWhite: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: 8,
+  },
+  statLabelWhite: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  activityCard: {
+    marginBottom: 20,
+    paddingVertical: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#004030',
+    marginBottom: 12,
+  },
+  chartContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    height: 100,
+    marginTop: 12,
+    paddingHorizontal: 4,
+  },
+  chartBarWrapper: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  chartBar: {
+    width: 8,
+    borderRadius: 8,
+    backgroundColor: '#004030',
+    minHeight: 4,
+  },
+  chartLabel: {
+    fontSize: 10,
+    color: 'rgba(0,64,48,0.6)',
+    textAlign: 'center',
+    marginTop: 6,
+  },
+  rateRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 24,
+  },
+  rateCard: {
+    flex: 1,
+    paddingVertical: 16,
+  },
+  approvalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    gap: 8,
+  },
+  approvalBarBg: {
+    flex: 1,
+    height: 12,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0,64,48,0.1)',
+  },
+  approvalBarFill: {
+    height: 12,
+    borderRadius: 8,
+    backgroundColor: '#004030',
+  },
+  approvalPct: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#004030',
+  },
+  miniStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  miniStatText: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+  },
+  miniStatBold: {
+    fontWeight: '700',
+    color: '#004030',
+  },
+  miniStatGreen: {
+    fontWeight: '700',
+    color: '#10B981',
+  },
+  miniStatRed: {
+    fontWeight: '700',
+    color: '#EF4444',
+  },
+  reviewCard: {
+    marginBottom: 8,
+  },
+  reviewCardInner: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  reviewWorkerName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#00281D',
+  },
+  reviewTaskTitle: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 2,
+  },
+  quickLinksRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  quickLinkBtn: {
+    width: '47%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0,64,48,0.05)',
+    padding: 20,
+    alignItems: 'center',
+  },
+  quickLinkText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#00281D',
+    marginTop: 8,
+  },
 });

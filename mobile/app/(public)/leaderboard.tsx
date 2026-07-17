@@ -2,7 +2,6 @@ import { useCallback, useMemo } from "react";
 import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { COLORS } from "../../src/lib/constants";
 import Card from "../../src/components/ui/Card";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
@@ -94,7 +93,7 @@ export default function Leaderboard() {
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
         contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={() => refetch()} tintColor={COLORS.primary} />}
+        refreshControl={<RefreshControl refreshing={false} onRefresh={() => refetch()} tintColor="#004030" />}
         ListEmptyComponent={<EmptyState title="No data yet" message="Leaderboard will populate as workers complete tasks" />}
       />
     </View>
@@ -102,26 +101,26 @@ export default function Leaderboard() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.background, padding: 24 },
-  errorText: { fontSize: 16, color: COLORS.textSecondary, textAlign: "center" },
+  container: { flex: 1, backgroundColor: '#FFF9E5' },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FFF9E5', padding: 24 },
+  errorText: { fontSize: 16, color: '#004030', textAlign: 'center' },
   headerBar: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
-  headerTitle: { fontSize: 24, fontWeight: "700", color: COLORS.text },
-  headerSubtitle: { fontSize: 14, color: COLORS.textSecondary, marginTop: 2 },
+  headerTitle: { fontSize: 24, fontWeight: '700', color: '#00281D' },
+  headerSubtitle: { fontSize: 14, color: '#004030', marginTop: 2 },
   list: { padding: 16, paddingTop: 4 },
   rankCard: { marginBottom: 10 },
-  rankCardTop: { borderColor: COLORS.accent, borderWidth: 1.5 },
-  rankRow: { flexDirection: "row", alignItems: "center" },
-  rankBadge: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#0040300D", justifyContent: "center", alignItems: "center", marginRight: 12 },
+  rankCardTop: { borderColor: '#DCD0A8', borderWidth: 1.5 },
+  rankRow: { flexDirection: 'row', alignItems: 'center' },
+  rankBadge: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#0040300D", justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   rankIcon: { fontSize: 20 },
-  rankNumber: { fontSize: 16, fontWeight: "700", color: COLORS.textSecondary },
+  rankNumber: { fontSize: 16, fontWeight: '700', color: '#004030' },
   rankInfo: { flex: 1 },
-  rankName: { fontSize: 15, fontWeight: "700", color: COLORS.text },
-  rankEmail: { fontSize: 11, color: COLORS.textSecondary, marginTop: 1 },
-  rankStats: { alignItems: "center", marginRight: 16 },
-  rankCoins: { fontSize: 18, fontWeight: "800", color: COLORS.primary },
-  rankCoinsLabel: { fontSize: 10, color: COLORS.textSecondary },
-  rateContainer: { alignItems: "center" },
-  rateValue: { fontSize: 16, fontWeight: "700", color: COLORS.text },
-  rateLabel: { fontSize: 10, color: COLORS.textSecondary },
+  rankName: { fontSize: 15, fontWeight: '700', color: '#00281D' },
+  rankEmail: { fontSize: 11, color: '#004030', marginTop: 1 },
+  rankStats: { alignItems: 'center', marginRight: 16 },
+  rankCoins: { fontSize: 18, fontWeight: '800', color: '#004030' },
+  rankCoinsLabel: { fontSize: 10, color: '#004030' },
+  rateContainer: { alignItems: 'center' },
+  rateValue: { fontSize: 16, fontWeight: '700', color: '#00281D' },
+  rateLabel: { fontSize: 10, color: '#004030' },
 });

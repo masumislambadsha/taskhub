@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Alert } from "react-native";
+import { View, Text, ScrollView, RefreshControl, Alert, StyleSheet } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { COLORS, MIN_WITHDRAWAL_COINS, COINS_PER_DOLLAR_WITHDRAW } from "../../src/lib/constants";
+import { MIN_WITHDRAWAL_COINS, COINS_PER_DOLLAR_WITHDRAW } from "../../src/lib/constants";
 import { getUserData } from "../../src/lib/storage";
 import Card from "../../src/components/ui/Card";
 import Input from "../../src/components/ui/Input";
@@ -81,14 +81,14 @@ export default function Withdrawals() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
+      style={styles.scrollView}
+      contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#004030" />}
     >
-      <Card variant="accent" style={styles.balanceCard}>
-        <Text style={styles.balanceLabel}>Your Balance</Text>
-        <Text style={styles.balanceAmount}>{userCoins}</Text>
-        <Text style={styles.minText}>Minimum {MIN_WITHDRAWAL_COINS} coins to withdraw</Text>
+      <Card variant="accent" style={styles.accentCard}>
+        <Text style={styles.accentLabel}>Your Balance</Text>
+        <Text style={styles.accentValue}>{userCoins}</Text>
+        <Text style={styles.accentSubtext}>Minimum {MIN_WITHDRAWAL_COINS} coins to withdraw</Text>
       </Card>
 
       <Card style={styles.formCard}>
@@ -114,7 +114,7 @@ export default function Withdrawals() {
           onChangeText={setCoins}
           keyboardType="numeric"
         />
-        {coinNum > 0 && <Text style={styles.usdText}>≈ ${usdAmount} USD</Text>}
+        {coinNum > 0 && <Text style={styles.hintText}>≈ ${usdAmount} USD</Text>}
         {coinNum > 0 && coinNum < MIN_WITHDRAWAL_COINS && (
           <Text style={styles.errorHint}>Minimum {MIN_WITHDRAWAL_COINS} coins required</Text>
         )}
@@ -135,7 +135,7 @@ export default function Withdrawals() {
             <View style={styles.withdrawalHeader}>
               <View style={styles.withdrawalInfo}>
                 <Text style={styles.withdrawalAmount}>{w.coinRequested} coins (${w.amount})</Text>
-                <Text style={styles.withdrawalAccount}>{w.paymentSystem} - {w.accountNumber}</Text>
+                <Text style={styles.withdrawalMethod}>{w.paymentSystem} - {w.accountNumber}</Text>
               </View>
               <Badge label={w.status} variant={w.status as "pending" | "approved" | "rejected"} />
             </View>
@@ -155,23 +155,92 @@ export default function Withdrawals() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  content: { padding: 16, paddingBottom: 32 },
-  balanceCard: { alignItems: "center", paddingVertical: 24, marginBottom: 16 },
-  balanceLabel: { fontSize: 14, color: COLORS.white, opacity: 0.8, marginBottom: 8 },
-  balanceAmount: { fontSize: 36, fontWeight: "800", color: COLORS.white },
-  minText: { fontSize: 13, color: COLORS.white, opacity: 0.7, marginTop: 8 },
-  formCard: { marginBottom: 16 },
-  formTitle: { fontSize: 18, fontWeight: "700", color: COLORS.primary, marginBottom: 16 },
-  usdText: { fontSize: 14, color: COLORS.textSecondary, marginTop: -8, marginBottom: 8, textAlign: "right" },
-  errorHint: { fontSize: 13, color: COLORS.danger, marginTop: -8, marginBottom: 8 },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: COLORS.primary, marginBottom: 12 },
-  withdrawalCard: { marginBottom: 12 },
-  withdrawalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 },
-  withdrawalInfo: { flex: 1, marginRight: 8 },
-  withdrawalAmount: { fontSize: 16, fontWeight: "600", color: COLORS.text },
-  withdrawalAccount: { fontSize: 13, color: COLORS.textSecondary, marginTop: 2 },
-  withdrawalDate: { fontSize: 12, color: COLORS.textSecondary },
-  errorContainer: { alignItems: "center", padding: 24 },
-  errorText: { fontSize: 16, color: COLORS.textSecondary, textAlign: "center" },
+  scrollView: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  accentCard: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    marginBottom: 16,
+  },
+  accentLabel: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.8)',
+    marginBottom: 8,
+  },
+  accentValue: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  accentSubtext: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 8,
+  },
+  formCard: {
+    marginBottom: 16,
+  },
+  formTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#004030',
+    marginBottom: 16,
+  },
+  hintText: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: -8,
+    marginBottom: 8,
+    textAlign: 'right',
+  },
+  errorHint: {
+    fontSize: 14,
+    color: '#EF4444',
+    marginTop: -8,
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#004030',
+    marginBottom: 12,
+  },
+  withdrawalCard: {
+    marginBottom: 12,
+  },
+  withdrawalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
+  },
+  withdrawalInfo: {
+    flex: 1,
+    marginRight: 8,
+  },
+  withdrawalAmount: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00281D',
+  },
+  withdrawalMethod: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 2,
+  },
+  withdrawalDate: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+  },
+  errorContainer: {
+    alignItems: 'center',
+    padding: 24,
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'rgba(0,64,48,0.6)',
+    textAlign: 'center',
+  },
 });

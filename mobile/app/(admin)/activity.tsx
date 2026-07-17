@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
+import { View, Text, FlatList, RefreshControl, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import api from "../../src/lib/api";
-import { COLORS } from "../../src/lib/constants";
 import Card from "../../src/components/ui/Card";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
@@ -44,13 +43,13 @@ export default function AdminActivity() {
   const renderActivity = ({ item }: { item: IActivity }) => (
     <Card style={styles.activityCard}>
       <View style={styles.activityRow}>
-        <Ionicons name={getIcon(item.action)} size={20} color={COLORS.primary} style={styles.activityIcon} />
+        <Ionicons name={getIcon(item.action)} size={20} color="#004030" style={{ marginRight: 12, marginTop: 2 }} />
         <View style={styles.activityContent}>
-          <Text style={styles.activityAction}>{item.action}</Text>
-          <Text style={styles.activityDetails}>{item.details}</Text>
+          <Text style={styles.actionText}>{item.action}</Text>
+          <Text style={styles.detailsText}>{item.details}</Text>
           <View style={styles.activityMeta}>
-            <Text style={styles.activityActor}>{item.actorName}</Text>
-            <Text style={styles.activityTime}>{formatTime(item.createdAt)}</Text>
+            <Text style={styles.metaText}>{item.actorName}</Text>
+            <Text style={styles.metaText}>{formatTime(item.createdAt)}</Text>
           </View>
         </View>
       </View>
@@ -69,12 +68,12 @@ export default function AdminActivity() {
         data={activities}
         keyExtractor={(item) => item._id}
         renderItem={renderActivity}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => { setPage(1); refetch(); }} />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         ListEmptyComponent={<EmptyState title="No activity yet" message="Platform activity will appear here" />}
-        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footerLoader}><Spinner size="small" /></View> : null}
+        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="small" /></View> : null}
       />
     </View>
   );
@@ -92,16 +91,41 @@ function formatTime(dateStr: string) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  list: { padding: 16, paddingBottom: 32 },
-  activityCard: { marginBottom: 8 },
-  activityRow: { flexDirection: "row", alignItems: "flex-start" },
-  activityIcon: { marginRight: 12, marginTop: 2 },
-  activityContent: { flex: 1 },
-  activityAction: { fontSize: 15, fontWeight: "600", color: COLORS.text },
-  activityDetails: { fontSize: 13, color: COLORS.textSecondary, marginTop: 2 },
-  activityMeta: { flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
-  activityActor: { fontSize: 12, color: COLORS.textSecondary, opacity: 0.7 },
-  activityTime: { fontSize: 12, color: COLORS.textSecondary, opacity: 0.7 },
-  footerLoader: { paddingVertical: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  activityCard: {
+    marginBottom: 8,
+  },
+  activityRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  activityContent: {
+    flex: 1,
+  },
+  actionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00281D',
+  },
+  detailsText: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 2,
+  },
+  activityMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 6,
+  },
+  metaText: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+    opacity: 0.7,
+  },
+  footer: {
+    paddingVertical: 16,
+  },
 });

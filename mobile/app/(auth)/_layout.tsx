@@ -1,6 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
 import { Stack } from "expo-router";
-import { COLORS } from "../../src/lib/constants";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AuthLayout() {
@@ -17,17 +16,7 @@ export default function AuthLayout() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  header: {
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-  },
-  logo: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: COLORS.primary,
-  },
+  container: { flex: 1, backgroundColor: '#FFF9E5' },
+  header: { paddingHorizontal: 24, paddingVertical: 12 },
+  logo: { fontSize: 20, fontWeight: '800', color: '#004030' },
 });

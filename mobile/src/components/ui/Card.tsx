@@ -1,5 +1,4 @@
-import { View, StyleSheet, ViewStyle } from "react-native";
-import { COLORS } from "../../lib/constants";
+import { View, ViewStyle, StyleSheet } from "react-native";
 
 interface Props {
   children: React.ReactNode;
@@ -7,57 +6,47 @@ interface Props {
   variant?: "default" | "accent" | "auth" | "feature";
 }
 
-export default function Card({ children, style, variant = "default" }: Props) {
-  const v = variantStyles[variant] || variantStyles.default;
-  return <View style={[styles.base, v, style]}>{children}</View>;
-}
-
 const styles = StyleSheet.create({
-  base: { borderRadius: 12 },
-});
-
-const variantStyles = StyleSheet.create({
   default: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#0040300D",
+    borderColor: 'rgba(0,64,48,0.05)',
     padding: 16,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 2,
+    elevation: 1,
   },
   accent: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#004030',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: '#004030',
     padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
   },
   auth: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "#0040300D",
+    borderColor: 'rgba(0,64,48,0.05)',
     padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
   },
   feature: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#0040300D",
+    borderColor: 'rgba(0,64,48,0.05)',
     padding: 20,
   },
 });
+
+export default function Card({ children, style, variant = "default" }: Props) {
+  return <View style={[styles[variant], style]}>{children}</View>;
+}

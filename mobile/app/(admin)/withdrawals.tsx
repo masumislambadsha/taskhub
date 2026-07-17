@@ -1,8 +1,7 @@
 import { useState, useCallback } from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl, Alert, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, RefreshControl, Alert, TouchableOpacity, StyleSheet } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { COLORS } from "../../src/lib/constants";
 import { IWithdrawal, PaginatedResponse } from "../../src/types";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
@@ -93,16 +92,16 @@ export default function AdminWithdrawals() {
     ({ item }: { item: IWithdrawal }) => (
       <TouchableOpacity onPress={() => handleWithdrawalPress(item)} activeOpacity={0.7}>
         <Card style={styles.withdrawalCard}>
-          <View style={styles.cardHeader}>
+          <View style={styles.withdrawalHeader}>
             <Text style={styles.workerName}>{item.workerName}</Text>
             <Badge label={item.status} variant={item.status as "pending" | "approved" | "rejected"} />
           </View>
           <View style={styles.amountRow}>
-            <Text style={styles.coins}>{item.coinRequested} coins</Text>
-            <Text style={styles.amount}>${item.amount.toFixed(2)}</Text>
+            <Text style={styles.coinsText}>{item.coinRequested} coins</Text>
+            <Text style={styles.usdText}>${item.amount.toFixed(2)}</Text>
           </View>
           <Text style={styles.accountInfo}>{item.paymentSystem} · {item.accountNumber}</Text>
-          <Text style={styles.dateText}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+          <Text style={styles.dateInfo}>{new Date(item.createdAt).toLocaleDateString()}</Text>
         </Card>
       </TouchableOpacity>
     ),
@@ -124,7 +123,7 @@ export default function AdminWithdrawals() {
             style={[styles.filterTab, filter === tab && styles.filterTabActive]}
             onPress={() => { setFilter(tab); setPage(1); }}
           >
-            <Text style={[styles.filterText, filter === tab && styles.filterTextActive]}>
+            <Text style={[styles.filterTabText, filter === tab && styles.filterTabTextActive]}>
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </Text>
           </TouchableOpacity>
@@ -135,32 +134,91 @@ export default function AdminWithdrawals() {
         data={withdrawals}
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => { setPage(1); refetch(); }} />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         ListEmptyComponent={<EmptyState title={`No ${filter === "all" ? "" : filter} withdrawals`} message={filter === "pending" ? "No pending withdrawal requests" : `No ${filter} withdrawals found`} />}
-        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footerLoader}><Spinner size="small" /></View> : null}
+        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="small" /></View> : null}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  filterRow: { flexDirection: "row", paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4, gap: 8 },
-  filterTab: { flex: 1, paddingVertical: 10, borderRadius: 10, backgroundColor: COLORS.surface, alignItems: "center", borderWidth: 1, borderColor: "#0040300D" },
-  filterTabActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  filterText: { fontSize: 13, fontWeight: "600", color: COLORS.textSecondary },
-  filterTextActive: { color: "#FFFFFF" },
-  list: { padding: 16, paddingBottom: 32 },
-  withdrawalCard: { marginBottom: 12 },
-  cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  workerName: { fontSize: 16, fontWeight: "700", color: COLORS.text, flex: 1, marginRight: 8 },
-  amountRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-  coins: { fontSize: 14, fontWeight: "600", color: COLORS.primary },
-  amount: { fontSize: 16, fontWeight: "700", color: COLORS.success },
-  accountInfo: { fontSize: 13, color: COLORS.textSecondary, marginTop: 6 },
-  dateText: { fontSize: 11, color: COLORS.textSecondary, marginTop: 6 },
-  footerLoader: { paddingVertical: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+    gap: 8,
+  },
+  filterTab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,64,48,0.05)',
+  },
+  filterTabActive: {
+    backgroundColor: '#004030',
+    borderColor: '#004030',
+  },
+  filterTabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(0,64,48,0.6)',
+  },
+  filterTabTextActive: {
+    color: '#FFFFFF',
+  },
+  withdrawalCard: {
+    marginBottom: 12,
+  },
+  withdrawalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  workerName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#00281D',
+    flex: 1,
+    marginRight: 8,
+  },
+  amountRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  coinsText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#004030',
+  },
+  usdText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#10B981',
+  },
+  accountInfo: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 6,
+  },
+  dateInfo: {
+    fontSize: 11,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 6,
+  },
+  footer: {
+    paddingVertical: 16,
+  },
 });
