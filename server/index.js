@@ -1,4 +1,5 @@
-require("dotenv").config();
+import dotenv from "dotenv";
+dotenv.config();
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");

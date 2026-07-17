@@ -620,3 +620,67 @@ POST  /api/v1/uploads/imgbb                  Proxy image upload to imgBB API
 | `/admin/stats`       | Advanced analytics — KPI cards, revenue chart, task volume, category split, submission funnel, gateway breakdown, top workers, recent payments |
 | `/admin/categories`  | Category management                                                                                                                            |
 | `/admin/activity`    | Platform activity log                                                                                                                          |
+
+## Assignment Submission Notes
+
+This project was originally built as a broader multi-role platform, but the dashboard, earnings, payments, withdrawals, and analytics areas directly cover the core ideas requested in the Finance Dashboard UI assignment. Instead of limiting the experience to a single page, the finance-related UI is distributed across role-specific dashboards for workers, buyers, and admins.
+
+### Repository And Live Links
+
+- Repository: [https://github.com/masumislambadsha/taskhub](https://github.com/masumislambadsha/taskhub)
+- Live Deployment: [https://task-hub-io.vercel.app](https://task-hub-io.vercel.app)
+
+### Demo Credentials
+
+- Worker: `user-woker@taskhub.com` / `pass-121212`
+- Buyer: `buyer@taskhub.com` / `pass-121212`
+- Admin: `admin@taskhub.com` / `pass-121212`
+
+### How This Project Meets The Assignment Requirements
+
+#### 1. Dashboard Overview
+
+- Summary cards are implemented across the worker, buyer, and admin dashboards.
+- Time-based visualizations are present through weekly earnings, 7-day task activity, and revenue trend views.
+- Categorical and comparison views are present through category split, payment gateway breakdown, platform health, and performance summaries.
+
+#### 2. Transactions Section
+
+- The finance-related transaction experience is split across role dashboards.
+- Workers can review earnings and withdrawal history.
+- Buyers can review payment history for coin purchases.
+- Admins can review and manage platform payments.
+- These sections include core transaction details such as date, amount, status, payment method, and role-specific transaction context.
+- Filtering, sorting, and search patterns are used throughout the dashboard experience, especially in task browsing, activity views, and management tables.
+
+#### 3. Basic Role-Based UI
+
+- The interface changes based on authenticated role: worker, buyer, and admin.
+- Workers mainly view earnings, submissions, and withdrawals.
+- Buyers manage spending, tasks, and submissions.
+- Admins can manage users, tasks, payments, withdrawals, and platform analytics.
+
+#### 4. Insights Section
+
+- The project includes insight-oriented dashboard content such as revenue growth, approval and completion rates, top workers, top performing tasks, category distribution, payment gateway split, pending withdrawals, and platform health indicators.
+
+#### 5. State Management
+
+- TanStack Query is used for async/server data fetching and caching.
+- Redux Toolkit is used for shared UI state management.
+- NextAuth session state drives role-based access and conditional dashboard behavior.
+
+#### 6. UI And UX Expectations
+
+- The application is responsive across mobile, tablet, and desktop layouts.
+- Loading states, empty states, badges, cards, tables, and charts are implemented throughout the dashboard experience.
+- The interface focuses on readability, clear hierarchy, and practical user flows for finance-related actions.
+
+### Local Setup
+
+1. Run `npm install`
+2. Add the required environment variables in `.env`
+3. Run `npm run dev`
+4. Open [http://localhost:3000](http://localhost:3000)
+
+---
