@@ -26,7 +26,7 @@ export default function AdminWithdrawals() {
     },
   });
 
-  const withdrawals = data?.data ?? [];
+  const withdrawals = data?.withdrawals ?? [];
   const totalPages = data?.pages ?? 1;
 
   const approveMutation = useMutation({

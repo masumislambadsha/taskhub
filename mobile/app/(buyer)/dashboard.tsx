@@ -58,8 +58,8 @@ export default function Dashboard() {
     },
   });
 
-  const tasks = tasksQuery.data?.data ?? [];
-  const submissions = submissionsQuery.data?.data ?? [];
+const tasks = tasksQuery.data?.tasks ?? [];
+const submissions = submissionsQuery.data?.submissions ?? [];
 
   const totalTasks = tasks.length;
   const pendingReviews = submissions.filter((s) => s.status === "pending").length;

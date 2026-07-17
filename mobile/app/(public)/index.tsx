@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import {
   StyleSheet,
   ScrollView,
@@ -10,11 +10,15 @@ import {
 } from "react-native";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import type { ComponentProps } from "react";
 import { COIN_PACKAGES } from "../../src/lib/constants";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+void SCREEN_WIDTH; // used for layout calculations
 
-const HOW_WORKERS = [
+type IoniconsName = ComponentProps<typeof Ionicons>["name"];
+
+const HOW_WORKERS: { icon: IoniconsName; title: string; desc: string }[] = [
   {
     icon: "search",
     title: "Browse Curated Tasks",
@@ -32,7 +36,7 @@ const HOW_WORKERS = [
   },
 ];
 
-const HOW_BUYERS = [
+const HOW_BUYERS: { icon: IoniconsName; title: string; desc: string }[] = [
   {
     icon: "add-circle",
     title: "Define Your Scope",
@@ -50,7 +54,7 @@ const HOW_BUYERS = [
   },
 ];
 
-const WORKER_FEATURES = [
+const WORKER_FEATURES: { icon: IoniconsName; title: string; desc: string }[] = [
   {
     icon: "shield-checkmark",
     title: "Secure Payments",
@@ -68,7 +72,7 @@ const WORKER_FEATURES = [
   },
 ];
 
-const BUYER_FEATURES = [
+const BUYER_FEATURES: { icon: IoniconsName; title: string; desc: string }[] = [
   {
     icon: "speedometer",
     title: "Unmatched Speed",
@@ -330,8 +334,9 @@ export default function LandingPage() {
             Precision Engineering for Every Workflow
           </Text>
           <Text style={styles.howSubtitle}>
-            Whether you're looking to complete micro-tasks or scale your
-            operations, TaskHub provides the infrastructure.
+            {
+              "Whether you're looking to complete micro-tasks or scale your operations, TaskHub provides the infrastructure."
+            }
           </Text>
         </View>
         <View style={styles.howColumns}>
@@ -343,7 +348,7 @@ export default function LandingPage() {
             {HOW_WORKERS.map((item) => (
               <View key={item.title} style={styles.howCardWhite}>
                 <View style={styles.howIconContainer}>
-                  <Ionicons name={item.icon as any} size={20} color="#4A9782" />
+                  <Ionicons name={item.icon} size={20} color="#4A9782" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.howCardTitle}>{item.title}</Text>
@@ -360,7 +365,7 @@ export default function LandingPage() {
             {HOW_BUYERS.map((item) => (
               <View key={item.title} style={styles.howCardDark}>
                 <View style={styles.howIconContainerDark}>
-                  <Ionicons name={item.icon as any} size={20} color="#4A9782" />
+                  <Ionicons name={item.icon} size={20} color="#4A9782" />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.howCardTitleLight}>{item.title}</Text>
@@ -402,7 +407,7 @@ export default function LandingPage() {
             {WORKER_FEATURES.map((f) => (
               <View key={f.title} style={styles.featureRow}>
                 <Ionicons
-                  name={f.icon as any}
+                  name={f.icon}
                   size={20}
                   color="#4A9782"
                   style={{ marginTop: 2 }}
@@ -546,7 +551,7 @@ export default function LandingPage() {
             {BUYER_FEATURES.map((f) => (
               <View key={f.title} style={styles.featureRow}>
                 <Ionicons
-                  name={f.icon as any}
+                  name={f.icon}
                   size={20}
                   color="#004030"
                   style={{ marginTop: 2 }}
@@ -713,8 +718,9 @@ export default function LandingPage() {
             <Text style={styles.quoteMark}>"</Text>
             <Text style={styles.communityTitle}>Community Voice</Text>
             <Text style={styles.featuredQuote}>
-              "TaskHub transformed our data annotation process. We scaled from
-              100 to 10,000 labels a day without sacrificing quality."
+              {
+                '"TaskHub transformed our data annotation process. We scaled from 100 to 10,000 labels a day without sacrificing quality."'
+              }
             </Text>
             <View style={styles.quoteAuthor}>
               <View style={styles.quoteAuthorAvatar}>
@@ -854,20 +860,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF9E5",
   },
   heroContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
+    paddingHorizontal: 20,
+    paddingTop: 28,
     paddingBottom: 8,
     maxWidth: 1200,
     width: "100%",
     alignSelf: "center",
   },
   heroContent: {
-    marginBottom: 32,
+    marginBottom: 36,
   },
   heroTitle: {
-    fontSize: 30,
-    lineHeight: 38,
-    fontWeight: "800",
+    fontSize: 36,
+    lineHeight: 44,
+    fontWeight: "700",
     color: "#004030",
     letterSpacing: -0.5,
   },
@@ -876,7 +882,7 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 26,
     color: "rgba(0,64,48,0.7)",
     marginTop: 16,
     fontWeight: "300",
@@ -909,6 +915,7 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderWidth: 2,
     borderColor: "#4A9782",
+    backgroundColor: "#FFF9E5",
     paddingHorizontal: 24,
     paddingVertical: 16,
     borderRadius: 8,

@@ -90,7 +90,7 @@ export default function Submissions() {
       </View>
 
       <FlatList
-        data={data?.data ?? []}
+        data={data?.submissions ?? []}
         keyExtractor={(item) => item._id}
         renderItem={renderSubmission}
         contentContainerStyle={{ padding: 16, paddingTop: 4 }}

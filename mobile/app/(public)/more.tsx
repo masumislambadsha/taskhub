@@ -4,7 +4,7 @@ import Spinner from "../../src/components/ui/Spinner";
 
 export default function MorePlaceholder() {
   useEffect(() => {
-    router.replace("/(public)/browse-tasks");
+    router.replace("/(public)/");
   }, []);
   return <Spinner message="Loading..." />;
 }

@@ -51,7 +51,7 @@ export default function AdminCategories() {
     onError: (err: any) => Alert.alert("Error", err?.response?.data?.error || "Failed to delete"),
   });
 
-  const categories = data?.data ?? [];
+  const categories = data?.categories ?? [];
 
   const renderCategory = ({ item }: { item: ICategory }) => (
     <Card style={styles.categoryCard}>

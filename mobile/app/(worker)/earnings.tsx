@@ -40,7 +40,7 @@ export default function Earnings() {
     },
   });
 
-  const submissions = data?.data ?? [];
+  const submissions = data?.submissions ?? [];
   const lifetimeEarnings = submissions.reduce((sum, s) => sum + (s.payableAmount || 0), 0);
   const pendingCoins = submissions.filter((s) => s.status === "pending").reduce((sum, s) => sum + (s.payableAmount || 0), 0);
   const approvedSubs = submissions.filter((s) => s.status === "approved");

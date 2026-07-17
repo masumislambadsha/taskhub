@@ -47,7 +47,7 @@ export default function Profile() {
   });
 
   const user = meQuery.data || localUser;
-  const totalEarnings = submissionsQuery.data?.data?.reduce((sum, s) => sum + (s.payableAmount || 0), 0) ?? 0;
+  const totalEarnings = submissionsQuery.data?.submissions?.reduce((sum, s) => sum + (s.payableAmount || 0), 0) ?? 0;
   const tasksCompleted = submissionsQuery.data?.total ?? 0;
 
   const logout = useCallback(() => {

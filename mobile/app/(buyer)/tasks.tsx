@@ -155,7 +155,7 @@ export default function Tasks() {
       </View>
 
       <FlatList
-        data={data?.data || []}
+        data={data?.tasks || []}
         keyExtractor={(item) => item._id}
         renderItem={renderTask}
         contentContainerStyle={{ padding: 16, paddingTop: 8, paddingBottom: 32 }}

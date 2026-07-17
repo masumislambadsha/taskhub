@@ -50,7 +50,7 @@ export default function AdminSubmissions() {
     },
   });
 
-  const submissions = data?.data ?? [];
+  const submissions = data?.submissions ?? [];
   const totalPages = data?.pages ?? 1;
 
   const loadMore = () => {

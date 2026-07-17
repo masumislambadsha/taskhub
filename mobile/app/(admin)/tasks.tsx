@@ -27,7 +27,7 @@ export default function AdminTasks() {
     },
   });
 
-  const tasks = data?.data ?? [];
+  const tasks = data?.tasks ?? [];
   const totalPages = data?.pages ?? 1;
 
   const blockTaskMutation = useMutation({

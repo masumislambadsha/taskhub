@@ -1,51 +1,54 @@
 import { useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-} from "react-native";
-import { Tabs } from "expo-router";
+import { View, Text, Modal, TouchableOpacity, StyleSheet } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Tabs, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 const MORE_ITEMS = [
-  { label: "How it Works", icon: "information-circle-outline" as const },
-  { label: "FAQ", icon: "help-circle-outline" as const },
-  { label: "About", icon: "information-outline" as const },
-  { label: "Privacy", icon: "shield-checkmark-outline" as const },
-  { label: "Terms", icon: "document-text-outline" as const },
+  { label: "How it Works", icon: "information-circle-outline" as const, route: "/(public)/" as const },
+  { label: "FAQ", icon: "help-circle-outline" as const, route: "/(public)/faq" as const },
+  { label: "About", icon: "information-outline" as const, route: "/(public)/about" as const },
+  { label: "Privacy", icon: "shield-checkmark-outline" as const, route: "/(public)/privacy" as const },
+  { label: "Terms", icon: "document-text-outline" as const, route: "/(public)/terms" as const },
 ];
 
 export default function PublicLayout() {
   const [showMore, setShowMore] = useState(false);
 
-  const handleMoreItem = useCallback((label: string) => {
+  const handleMoreItem = useCallback((route: string) => {
     setShowMore(false);
+    router.push(route);
   }, []);
 
   return (
     <>
       {/* Top Header */}
-      <SafeAreaView style={styles.headerSafeArea}>
+      <SafeAreaView style={styles.headerSafeArea} edges={["top"]}>
         <View style={styles.header}>
+          {/* Logo matching web app */}
           <View style={styles.headerLogo}>
-            <View style={styles.logoIcon}>
-              <Text style={styles.logoIconText}>T</Text>
+            {/* Hexagon icon built with Views */}
+            <View style={styles.logoHex}>
+              <View style={styles.logoTBar} />
+              <View style={styles.logoTStem} />
+              <View style={styles.logoCheckDot}>
+                <Text style={styles.logoCheckText}>✓</Text>
+              </View>
             </View>
             <Text style={styles.logoText}>
               Task<Text style={styles.logoTextHighlight}>Hub</Text>
             </Text>
           </View>
+          {/* Bordered hamburger icon matching web */}
           <TouchableOpacity
             onPress={() => setShowMore(true)}
             style={styles.menuBtn}
             activeOpacity={0.7}
           >
             <View style={styles.menuLine} />
-            <View style={[styles.menuLine, { width: 16 }]} />
-            <View style={styles.menuLine} />
+            <View
+              style={[styles.menuLine, { width: 16, alignSelf: "flex-end" }]}
+            />
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -92,6 +95,10 @@ export default function PublicLayout() {
             ),
           }}
         />
+        <Tabs.Screen name="faq" options={{ href: null }} />
+        <Tabs.Screen name="about" options={{ href: null }} />
+        <Tabs.Screen name="privacy" options={{ href: null }} />
+        <Tabs.Screen name="terms" options={{ href: null }} />
         <Tabs.Screen
           name="support"
           options={{
@@ -136,7 +143,7 @@ export default function PublicLayout() {
               <TouchableOpacity
                 key={item.label}
                 style={styles.modalItem}
-                onPress={() => handleMoreItem(item.label)}
+                onPress={() => handleMoreItem(item.route)}
                 activeOpacity={0.7}
               >
                 <Ionicons name={item.icon} size={22} color="#004030" />
@@ -162,31 +169,81 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
     backgroundColor: "#FFF9E5",
     borderBottomWidth: 1,
     borderBottomColor: "rgba(0,64,48,0.06)",
   },
-  headerLogo: { flexDirection: "row", alignItems: "center", gap: 8 },
-  logoIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+  headerLogo: { flexDirection: "row", alignItems: "center", gap: 10 },
+  logoHex: {
+    width: 34,
+    height: 34,
     backgroundColor: "#004030",
+    borderRadius: 8,
+    overflow: "visible",
+    position: "relative",
+  },
+  logoTBar: {
+    position: "absolute",
+    top: 9,
+    left: 8,
+    width: 18,
+    height: 3.5,
+    borderRadius: 1.75,
+    backgroundColor: "#FFF9E5",
+  },
+  logoTStem: {
+    position: "absolute",
+    top: 9,
+    left: 15.25,
+    width: 3.5,
+    height: 16,
+    borderRadius: 1.75,
+    backgroundColor: "#FFF9E5",
+  },
+  logoCheckDot: {
+    position: "absolute",
+    bottom: -4,
+    right: -4,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: "#4A9782",
     alignItems: "center",
     justifyContent: "center",
+    borderWidth: 1.5,
+    borderColor: "#FFF9E5",
   },
-  logoIconText: { color: "#FFFFFF", fontSize: 14, fontWeight: "800" },
-  logoText: { fontSize: 20, fontWeight: "800", color: "#004030" },
+  logoCheckText: {
+    color: "#FFF9E5",
+    fontSize: 7,
+    fontWeight: "900",
+    lineHeight: 10,
+  },
+  logoText: {
+    fontSize: 22,
+    fontWeight: "900",
+    color: "#004030",
+    letterSpacing: -0.5,
+  },
   logoTextHighlight: { color: "#4A9782" },
-  menuBtn: { padding: 4, gap: 5, alignItems: "flex-end" },
+  menuBtn: {
+    width: 38,
+    height: 38,
+    borderWidth: 1.5,
+    borderColor: "rgba(0,64,48,0.2)",
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+    paddingHorizontal: 8,
+  },
   menuLine: {
     height: 2,
-    width: 22,
+    width: 18,
     backgroundColor: "#004030",
     borderRadius: 2,
-    marginVertical: 2,
   },
   modalOverlay: {
     flex: 1,

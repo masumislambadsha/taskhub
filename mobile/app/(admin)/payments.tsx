@@ -35,7 +35,7 @@ export default function AdminPayments() {
     },
   });
 
-  const payments = data?.data ?? [];
+  const payments = data?.payments ?? [];
   const totalPages = data?.pages ?? 1;
 
   const renderPayment = ({ item }: { item: IPayment }) => (
