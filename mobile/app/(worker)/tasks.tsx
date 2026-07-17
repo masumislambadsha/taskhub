@@ -1,8 +1,8 @@
 import { useState, useCallback, useMemo } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView, RefreshControl, Alert } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, ScrollView, RefreshControl, Alert, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { COLORS, TASK_CATEGORIES } from "../../src/lib/constants";
+import { TASK_CATEGORIES } from "../../src/lib/constants";
 import Input from "../../src/components/ui/Input";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
@@ -72,17 +72,17 @@ export default function Tasks() {
   const renderTask = useCallback(
     ({ item }: { item: ITask }) => (
       <TouchableOpacity onPress={() => handleTaskPress(item)} activeOpacity={0.7}>
-        <Card style={styles.taskCard}>
-          <View style={styles.taskHeader}>
-            <Text style={styles.taskTitle} numberOfLines={1}>{item.title}</Text>
+        <Card style={styles.card}>
+          <View style={styles.cardRow}>
+            <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
             <Badge label={item.status} variant={STATUS_VARIANT[item.status] || "default"} />
           </View>
-          <Text style={styles.taskBuyer}>by {item.buyerName}</Text>
-          <View style={styles.taskMeta}>
-            <Text style={styles.payoutText}>{item.payableAmount} coins</Text>
-            <Text style={styles.deadline}>Due {new Date(item.completionDate).toLocaleDateString()}</Text>
+          <Text style={styles.cardBuyer}>by {item.buyerName}</Text>
+          <View style={styles.cardInfo}>
+            <Text style={styles.cardAmount}>{item.payableAmount} coins</Text>
+            <Text style={styles.cardDue}>Due {new Date(item.completionDate).toLocaleDateString()}</Text>
           </View>
-          <Text style={styles.remaining}>{item.remainingWorkers} slot{item.remainingWorkers !== 1 ? "s" : ""} remaining</Text>
+          <Text style={styles.cardSlots}>{item.remainingWorkers} slot{item.remainingWorkers !== 1 ? "s" : ""} remaining</Text>
         </Card>
       </TouchableOpacity>
     ),
@@ -93,7 +93,7 @@ export default function Tasks() {
 
   if (isError) {
     return (
-      <View style={styles.center}>
+      <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Failed to load tasks</Text>
         <Button title="Retry" onPress={() => refetch()} variant="outline" style={{ marginTop: 12 }} />
       </View>
@@ -102,21 +102,21 @@ export default function Tasks() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchContainer}>
+      <View style={styles.searchSection}>
         <Input placeholder="Search tasks..." value={search} onChangeText={handleSearch} />
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipsScroll} contentContainerStyle={styles.chipsContent}>
-        <TouchableOpacity style={[styles.chip, !category && styles.chipActive]} onPress={() => handleCategory("")}>
-          <Text style={[styles.chipText, !category && styles.chipTextActive]}>All</Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll} contentContainerStyle={{ paddingHorizontal: 16, gap: 8, alignItems: "center" }}>
+        <TouchableOpacity style={[styles.categoryChip, !category && styles.categoryChipActive]} onPress={() => handleCategory("")}>
+          <Text style={[styles.categoryChipText, !category && styles.categoryChipTextActive]}>All</Text>
         </TouchableOpacity>
         {TASK_CATEGORIES.map((cat) => (
           <TouchableOpacity
             key={cat}
-            style={[styles.chip, category === cat && styles.chipActive]}
+            style={[styles.categoryChip, category === cat && styles.categoryChipActive]}
             onPress={() => handleCategory(cat)}
           >
-            <Text style={[styles.chipText, category === cat && styles.chipTextActive]}>{cat}</Text>
+            <Text style={[styles.categoryChipText, category === cat && styles.categoryChipTextActive]}>{cat}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -125,12 +125,12 @@ export default function Tasks() {
         data={data?.data ?? []}
         keyExtractor={(item) => item._id}
         renderItem={renderTask}
-        contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
+        contentContainerStyle={{ padding: 16, paddingTop: 4 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#004030" />}
         ListEmptyComponent={<EmptyState title="No tasks found" message="Try adjusting your search or filter" />}
         ListFooterComponent={
           data && data.page < data.pages ? (
-            <View style={styles.loadMore}>
+            <View style={styles.loadMoreContainer}>
               <Button title="Load More" onPress={() => setPage((p) => p + 1)} variant="outline" />
             </View>
           ) : null
@@ -141,24 +141,93 @@ export default function Tasks() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.background, padding: 24 },
-  errorText: { fontSize: 16, color: COLORS.textSecondary, textAlign: "center" },
-  searchContainer: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
-  chipsScroll: { maxHeight: 44, marginBottom: 8 },
-  chipsContent: { paddingHorizontal: 16, gap: 8, alignItems: "center" },
-  chip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5, borderColor: "#00403033", backgroundColor: COLORS.surface },
-  chipActive: { borderColor: COLORS.primary, backgroundColor: "#EFF6FF" },
-  chipText: { fontSize: 13, fontWeight: "600", color: COLORS.textSecondary },
-  chipTextActive: { color: COLORS.primary },
-  list: { padding: 16, paddingTop: 4 },
-  taskCard: { marginBottom: 12 },
-  taskHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
-  taskTitle: { fontSize: 16, fontWeight: "600", color: COLORS.text, flex: 1, marginRight: 8 },
-  taskBuyer: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 8 },
-  taskMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
-  payoutText: { fontSize: 15, fontWeight: "700", color: COLORS.text },
-  deadline: { fontSize: 13, color: COLORS.textSecondary },
-  remaining: { fontSize: 12, color: COLORS.textSecondary },
-  loadMore: { paddingVertical: 16, alignItems: "center" },
+  errorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF9E5',
+    padding: 24,
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'rgba(0,64,48,0.6)',
+    textAlign: 'center',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  searchSection: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  categoryScroll: {
+    maxHeight: 44,
+    marginBottom: 8,
+  },
+  categoryChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(0,64,48,0.2)',
+    backgroundColor: '#FFFFFF',
+  },
+  categoryChipActive: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#004030',
+  },
+  categoryChipText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(0,64,48,0.6)',
+  },
+  categoryChipTextActive: {
+    color: '#004030',
+  },
+  card: {
+    marginBottom: 12,
+  },
+  cardRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00281D',
+    flex: 1,
+    marginRight: 8,
+  },
+  cardBuyer: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginBottom: 8,
+  },
+  cardInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  cardAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#00281D',
+  },
+  cardDue: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+  },
+  cardSlots: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+  },
+  loadMoreContainer: {
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
 });

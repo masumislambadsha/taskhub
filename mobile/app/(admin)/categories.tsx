@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl, Alert, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, RefreshControl, Alert, TouchableOpacity, StyleSheet } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import api from "../../src/lib/api";
-import { COLORS, TASK_CATEGORIES } from "../../src/lib/constants";
+import { TASK_CATEGORIES } from "../../src/lib/constants";
 import Card from "../../src/components/ui/Card";
 import Button from "../../src/components/ui/Button";
 import Input from "../../src/components/ui/Input";
@@ -54,11 +54,11 @@ export default function AdminCategories() {
   const categories = data?.data ?? [];
 
   const renderCategory = ({ item }: { item: ICategory }) => (
-    <Card style={styles.catCard}>
-      <View style={styles.catRow}>
-        <View style={styles.catInfo}>
-          <Text style={styles.catName}>{item.name}</Text>
-          <Text style={styles.catCount}>{item.taskCount} tasks</Text>
+    <Card style={styles.categoryCard}>
+      <View style={styles.categoryRow}>
+        <View style={styles.categoryInfo}>
+          <Text style={styles.categoryName}>{item.name}</Text>
+          <Text style={styles.taskCount}>{item.taskCount} tasks</Text>
         </View>
         <TouchableOpacity
           onPress={() => {
@@ -68,7 +68,7 @@ export default function AdminCategories() {
             ]);
           }}
         >
-          <Ionicons name="trash-outline" size={20} color={COLORS.danger} />
+          <Ionicons name="trash-outline" size={20} color="#EF4444" />
         </TouchableOpacity>
       </View>
     </Card>
@@ -96,7 +96,7 @@ export default function AdminCategories() {
 
       <View style={styles.staticSection}>
         <Text style={styles.sectionTitle}>Static Categories</Text>
-        <View style={styles.staticRow}>
+        <View style={styles.staticCategoriesRow}>
           {TASK_CATEGORIES.map((cat) => (
             <View key={cat} style={styles.staticChip}>
               <Text style={styles.staticChipText}>{cat}</Text>
@@ -105,12 +105,12 @@ export default function AdminCategories() {
         </View>
       </View>
 
-      <Text style={styles.sectionTitle}>Dynamic Categories</Text>
+      <Text style={[styles.sectionTitle, styles.dynamicTitle]}>Dynamic Categories</Text>
       <FlatList
         data={categories}
         keyExtractor={(item) => item._id}
         renderItem={renderCategory}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{ padding: 16, paddingTop: 4, paddingBottom: 32 }}
         refreshControl={<RefreshControl refreshing={false} onRefresh={refetch} />}
         ListEmptyComponent={<Text style={styles.emptyText}>No custom categories added yet</Text>}
       />
@@ -119,18 +119,69 @@ export default function AdminCategories() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  addCard: { margin: 16, marginBottom: 8 },
-  staticSection: { paddingHorizontal: 16, marginBottom: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: COLORS.primary, marginBottom: 12, paddingHorizontal: 16 },
-  staticRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  staticChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: COLORS.surface, borderWidth: 1, borderColor: "#0040300D" },
-  staticChipText: { fontSize: 13, color: COLORS.textSecondary },
-  list: { padding: 16, paddingTop: 4, paddingBottom: 32 },
-  catCard: { marginBottom: 8 },
-  catRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  catInfo: { flex: 1 },
-  catName: { fontSize: 16, fontWeight: "600", color: COLORS.text },
-  catCount: { fontSize: 12, color: COLORS.textSecondary, marginTop: 2 },
-  emptyText: { textAlign: "center", color: COLORS.textSecondary, marginTop: 24 },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  addCard: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  categoryCard: {
+    marginBottom: 8,
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  categoryInfo: {
+    flex: 1,
+  },
+  categoryName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00281D',
+  },
+  taskCount: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 2,
+  },
+  staticSection: {
+    paddingHorizontal: 16,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#004030',
+    marginBottom: 12,
+  },
+  dynamicTitle: {
+    paddingHorizontal: 16,
+  },
+  staticCategoriesRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  staticChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: 'rgba(0,64,48,0.05)',
+  },
+  staticChipText: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 24,
+  },
 });

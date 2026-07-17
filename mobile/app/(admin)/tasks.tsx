@@ -1,8 +1,7 @@
 import { useState, useCallback } from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl, Alert, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, RefreshControl, Alert, TouchableOpacity, StyleSheet } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { COLORS } from "../../src/lib/constants";
 import { ITask, PaginatedResponse } from "../../src/types";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
@@ -86,8 +85,8 @@ export default function AdminTasks() {
           </View>
           <Text style={styles.buyerName}>Buyer: {item.buyerName}</Text>
           <View style={styles.taskFooter}>
-            <Text style={styles.workerCount}>Workers: {item.filledWorkers}/{item.requiredWorkers}</Text>
-            <Text style={styles.payout}>${item.payableAmount}</Text>
+            <Text style={styles.workersText}>Workers: {item.filledWorkers}/{item.requiredWorkers}</Text>
+            <Text style={styles.payoutText}>${item.payableAmount}</Text>
           </View>
         </Card>
       </TouchableOpacity>
@@ -107,26 +106,58 @@ export default function AdminTasks() {
         data={tasks}
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => { setPage(1); refetch(); }} />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         ListEmptyComponent={<EmptyState title="No tasks found" message="There are no tasks to manage yet" />}
-        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footerLoader}><Spinner size="small" /></View> : null}
+        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="small" /></View> : null}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  list: { padding: 16, paddingBottom: 32 },
-  taskCard: { marginBottom: 12 },
-  taskHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  taskTitle: { fontSize: 16, fontWeight: "700", color: COLORS.text, flex: 1, marginRight: 8 },
-  buyerName: { fontSize: 13, color: COLORS.textSecondary, marginTop: 6 },
-  taskFooter: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
-  workerCount: { fontSize: 13, fontWeight: "600", color: COLORS.primary },
-  payout: { fontSize: 14, fontWeight: "700", color: COLORS.success },
-  footerLoader: { paddingVertical: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  taskCard: {
+    marginBottom: 12,
+  },
+  taskHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  taskTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#00281D',
+    flex: 1,
+    marginRight: 8,
+  },
+  buyerName: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 6,
+  },
+  taskFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  workersText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#004030',
+  },
+  payoutText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#10B981',
+  },
+  footer: {
+    paddingVertical: 16,
+  },
 });

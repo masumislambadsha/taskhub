@@ -2,15 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   RefreshControl,
   Alert,
   TouchableOpacity,
+  StyleSheet,
 } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { COLORS } from "../../src/lib/constants";
 import { IUser, PaginatedResponse } from "../../src/types";
 import Input from "../../src/components/ui/Input";
 import Card from "../../src/components/ui/Card";
@@ -143,16 +142,16 @@ export default function AdminUsers() {
         <Card style={styles.userCard}>
           <View style={styles.userHeader}>
             <Text style={styles.userName}>{item.name}</Text>
-            <View style={styles.badgeRow}>
+            <View style={styles.badgesRow}>
               <Badge label={item.role} variant={roleBadgeVariant[item.role] ?? "default"} />
-              <View style={styles.badgeSpacer} />
+              <View style={{ width: 6 }} />
               <Badge label={item.status} variant={statusBadgeVariant[item.status] ?? "default"} />
             </View>
           </View>
           <Text style={styles.userEmail}>{item.email}</Text>
           <View style={styles.userFooter}>
-            <Text style={styles.userCoins}>{item.coins} coins</Text>
-            <Text style={styles.userDate}>Joined {new Date(item.createdAt).toLocaleDateString()}</Text>
+            <Text style={styles.coinsText}>{item.coins} coins</Text>
+            <Text style={styles.joinDate}>Joined {new Date(item.createdAt).toLocaleDateString()}</Text>
           </View>
         </Card>
       </TouchableOpacity>
@@ -168,36 +167,72 @@ export default function AdminUsers() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchWrap}>
+      <View style={styles.searchContainer}>
         <Input placeholder="Search by name or email..." value={search} onChangeText={setSearch} autoCapitalize="none" />
       </View>
       <FlatList
         data={users}
         keyExtractor={(item) => item._id}
         renderItem={renderItem}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{ padding: 16, paddingTop: 8, paddingBottom: 32 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => { setPage(1); refetch(); }} />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         ListEmptyComponent={<EmptyState title="No users found" message={search ? "Try a different search term" : "No users have registered yet"} />}
-        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footerLoader}><Spinner size="small" /></View> : null}
+        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="small" /></View> : null}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  searchWrap: { paddingHorizontal: 16, paddingTop: 12, paddingBottom: 4 },
-  list: { padding: 16, paddingTop: 8, paddingBottom: 32 },
-  userCard: { marginBottom: 12 },
-  userHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  userName: { fontSize: 16, fontWeight: "700", color: COLORS.text, flex: 1 },
-  badgeRow: { flexDirection: "row", marginLeft: 8 },
-  badgeSpacer: { width: 6 },
-  userEmail: { fontSize: 13, color: COLORS.textSecondary, marginTop: 4 },
-  userFooter: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
-  userCoins: { fontSize: 13, fontWeight: "600", color: COLORS.primary },
-  userDate: { fontSize: 12, color: COLORS.textSecondary },
-  footerLoader: { paddingVertical: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  userCard: {
+    marginBottom: 12,
+  },
+  userHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#00281D',
+    flex: 1,
+  },
+  badgesRow: {
+    flexDirection: 'row',
+    marginLeft: 8,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 4,
+  },
+  userFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  coinsText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#004030',
+  },
+  joinDate: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+  },
+  footer: {
+    paddingVertical: 16,
+  },
 });

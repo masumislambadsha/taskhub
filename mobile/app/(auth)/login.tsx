@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Input from "../../src/components/ui/Input";
 import Button from "../../src/components/ui/Button";
 import Card from "../../src/components/ui/Card";
-import { COLORS, API_BASE_URL } from "../../src/lib/constants";
+import { API_BASE_URL } from "../../src/lib/constants";
 import { setToken, setUserData } from "../../src/lib/storage";
 import type { AuthResponse } from "../../src/types";
 
@@ -38,14 +38,14 @@ export default function Login() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={[styles.flex, { paddingBottom: insets.bottom }]}
+      style={[styles.container, { paddingBottom: insets.bottom }]}
     >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <Text style={styles.title}>TaskHub</Text>
         <Text style={styles.subtitle}>Sign in to your account</Text>
 
-        <Card variant="auth" style={styles.card}>
-          <View style={styles.form}>
+        <Card variant="auth">
+          <View>
             <Input
               label="Email"
               value={email}
@@ -67,7 +67,7 @@ export default function Login() {
               onPress={() => loginMutation.mutate()}
               loading={loginMutation.isPending}
               disabled={!email || !password}
-              style={styles.fullBtn}
+              style={styles.fullWidth}
             />
 
             <View style={styles.divider}>
@@ -80,14 +80,14 @@ export default function Login() {
               title="Continue with Google"
               variant="outline"
               onPress={() => {}}
-              style={styles.fullBtn}
+              style={styles.fullWidth}
             />
           </View>
         </Card>
 
-        <TouchableOpacity onPress={() => router.push("/(auth)/register")} style={styles.linkWrap}>
-          <Text style={styles.link}>
-            Don't have an account? <Text style={styles.linkBold}>Sign up</Text>
+        <TouchableOpacity onPress={() => router.push("/(auth)/register")} style={styles.footer}>
+          <Text style={styles.footerText}>
+            Don't have an account? <Text style={styles.signupLink}>Sign up</Text>
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -96,64 +96,15 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  container: {
-    flexGrow: 1,
-    justifyContent: "center",
-    paddingHorizontal: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "800",
-    color: COLORS.primary,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    textAlign: "center",
-    marginTop: 8,
-    marginBottom: 32,
-  },
-  card: {
-    gap: 0,
-  },
-  form: {
-    gap: 0,
-  },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#0040301A",
-  },
-  dividerText: {
-    marginHorizontal: 12,
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    opacity: 0.7,
-  },
-  fullBtn: {
-    width: "100%",
-  },
-  linkWrap: {
-    marginTop: 24,
-    alignItems: "center",
-    paddingBottom: 24,
-  },
-  link: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  linkBold: {
-    color: COLORS.primary,
-    fontWeight: "600",
-  },
+  container: { flex: 1, backgroundColor: '#FFF9E5' },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 },
+  fullWidth: { width: '100%' },
+  title: { fontSize: 32, fontWeight: '800', color: '#004030', textAlign: 'center' },
+  subtitle: { fontSize: 16, color: 'rgba(0,64,48,0.6)', textAlign: 'center', marginTop: 8, marginBottom: 32 },
+  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(0,64,48,0.1)' },
+  dividerText: { marginHorizontal: 12, fontSize: 13, color: 'rgba(0,64,48,0.6)', opacity: 0.7 },
+  footer: { marginTop: 24, alignItems: 'center', paddingBottom: 24 },
+  footerText: { fontSize: 14, color: 'rgba(0,64,48,0.6)' },
+  signupLink: { color: '#004030', fontWeight: '600' },
 });

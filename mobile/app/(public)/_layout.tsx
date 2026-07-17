@@ -1,8 +1,7 @@
 import { useState, useCallback } from "react";
-import { View, Text, StyleSheet, Modal, TouchableOpacity } from "react-native";
+import { View, Text, Modal, TouchableOpacity, StyleSheet } from "react-native";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../../src/lib/constants";
 
 const MORE_ITEMS = [
   { label: "How it Works", icon: "information-circle-outline" as const },
@@ -24,11 +23,11 @@ export default function PublicLayout() {
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: COLORS.primary,
-          tabBarInactiveTintColor: `${COLORS.textSecondary}99`,
+          tabBarActiveTintColor: "#004030",
+          tabBarInactiveTintColor: "#00403099",
           tabBarStyle: {
-            backgroundColor: COLORS.white,
-            borderTopColor: COLORS.border,
+            backgroundColor: "#FFFFFF",
+            borderTopColor: "#004030",
             borderTopWidth: 1,
             paddingBottom: 4,
             height: 60,
@@ -92,7 +91,7 @@ export default function PublicLayout() {
                 onPress={() => handleMoreItem(item.label)}
                 activeOpacity={0.7}
               >
-                <Ionicons name={item.icon} size={22} color={COLORS.primary} />
+                <Ionicons name={item.icon} size={22} color="#004030" />
                 <Text style={styles.modalItemText}>{item.label}</Text>
               </TouchableOpacity>
             ))}
@@ -110,56 +109,12 @@ export default function PublicLayout() {
 }
 
 const styles = StyleSheet.create({
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-    paddingTop: 12,
-  },
-  modalHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#D1D5DB",
-    alignSelf: "center",
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginBottom: 16,
-  },
-  modalItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: "#0040300D",
-  },
-  modalItemText: {
-    fontSize: 16,
-    color: COLORS.text,
-    marginLeft: 14,
-    fontWeight: "500",
-  },
-  modalClose: {
-    marginTop: 16,
-    paddingVertical: 14,
-    alignItems: "center",
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-  },
-  modalCloseText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: COLORS.primary,
-  },
+  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.4)' },
+  modalContent: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingHorizontal: 20, paddingBottom: 40, paddingTop: 12 },
+  modalHandle: { width: 36, height: 4, borderRadius: 4, backgroundColor: '#D1D5DB', alignSelf: 'center', marginBottom: 16 },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: '#004030', marginBottom: 16 },
+  modalItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: 'rgba(0,64,48,0.05)' },
+  modalItemText: { fontSize: 16, color: '#004030', marginLeft: 14, fontWeight: '500' },
+  modalClose: { marginTop: 16, paddingVertical: 14, alignItems: 'center', backgroundColor: '#FFF9E5', borderRadius: 12 },
+  modalCloseText: { fontSize: 16, fontWeight: '600', color: '#004030' },
 });

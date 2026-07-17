@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, RefreshControl, TouchableOpacity, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { COLORS } from "../../src/lib/constants";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
@@ -31,17 +30,17 @@ export default function Messages() {
   const renderConversation = ({ item }: { item: IConversation }) => (
     <TouchableOpacity activeOpacity={0.7}>
       <Card style={styles.conversationCard}>
-        <View style={styles.convRow}>
+        <View style={styles.conversationRow}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{item.otherUserName.charAt(0).toUpperCase()}</Text>
           </View>
-          <View style={styles.convContent}>
-            <View style={styles.convTop}>
-              <Text style={styles.convName} numberOfLines={1}>{item.otherUserName}</Text>
-              <Text style={styles.convTime}>{new Date(item.lastMessageAt).toLocaleDateString()}</Text>
+          <View style={styles.conversationContent}>
+            <View style={styles.conversationHeader}>
+              <Text style={styles.userName} numberOfLines={1}>{item.otherUserName}</Text>
+              <Text style={styles.lastDate}>{new Date(item.lastMessageAt).toLocaleDateString()}</Text>
             </View>
-            <View style={styles.convBottom}>
-              <Text style={styles.convLastMsg} numberOfLines={1}>{item.lastMessage}</Text>
+            <View style={styles.lastMessageRow}>
+              <Text style={styles.lastMessage} numberOfLines={1}>{item.lastMessage}</Text>
               {item.unreadCount > 0 && <Badge label={`${item.unreadCount}`} variant="info" />}
             </View>
           </View>
@@ -58,8 +57,8 @@ export default function Messages() {
         data={conversations}
         keyExtractor={(item) => item.conversationId}
         renderItem={renderConversation}
-        contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
+        contentContainerStyle={{ padding: 16, paddingTop: 16, paddingBottom: 32 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#004030" />}
         ListEmptyComponent={<EmptyState title="No messages yet" message="Start a conversation by responding to a submission" />}
       />
     </View>
@@ -67,16 +66,59 @@ export default function Messages() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  list: { padding: 16, paddingTop: 16, paddingBottom: 32 },
-  conversationCard: { marginBottom: 10 },
-  convRow: { flexDirection: "row", alignItems: "center" },
-  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.primary, justifyContent: "center", alignItems: "center", marginRight: 12 },
-  avatarText: { fontSize: 20, fontWeight: "700", color: "#FFFFFF" },
-  convContent: { flex: 1 },
-  convTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  convName: { fontSize: 16, fontWeight: "600", color: COLORS.text, flex: 1 },
-  convTime: { fontSize: 12, color: COLORS.textSecondary, marginLeft: 8 },
-  convBottom: { flexDirection: "row", alignItems: "center", marginTop: 4, gap: 8 },
-  convLastMsg: { fontSize: 14, color: COLORS.textSecondary, flex: 1 },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  conversationCard: {
+    marginBottom: 10,
+  },
+  conversationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 9999,
+    backgroundColor: '#004030',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  avatarText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  conversationContent: {
+    flex: 1,
+  },
+  conversationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  userName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00281D',
+    flex: 1,
+  },
+  lastDate: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+    marginLeft: 8,
+  },
+  lastMessageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+    gap: 8,
+  },
+  lastMessage: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    flex: 1,
+  },
 });

@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { View, Text, ScrollView, RefreshControl, StyleSheet } from "react-native";
 import { useFocusEffect } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { COLORS, COINS_PER_DOLLAR_WITHDRAW } from "../../src/lib/constants";
+import { COINS_PER_DOLLAR_WITHDRAW } from "../../src/lib/constants";
 import { getUserData } from "../../src/lib/storage";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
@@ -56,7 +56,7 @@ export default function Earnings() {
 
   if (isError) {
     return (
-      <View style={styles.center}>
+      <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Failed to load earnings</Text>
         <Button title="Retry" onPress={() => refetch()} variant="outline" style={{ marginTop: 12 }} />
       </View>
@@ -65,43 +65,43 @@ export default function Earnings() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
+      style={styles.scrollView}
+      contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#004030" />}
     >
-      <Card variant="accent" style={styles.coinCard}>
-        <Text style={styles.coinLabel}>Available Coins</Text>
-        <Text style={styles.coinAmount}>{coins}</Text>
-        <Text style={styles.coinUsd}>≈ ${(coins / COINS_PER_DOLLAR_WITHDRAW).toFixed(2)} USD</Text>
+      <Card variant="accent" style={styles.accentCard}>
+        <Text style={styles.accentLabel}>Available Coins</Text>
+        <Text style={styles.accentValue}>{coins}</Text>
+        <Text style={styles.accentSubtext}>≈ ${(coins / COINS_PER_DOLLAR_WITHDRAW).toFixed(2)} USD</Text>
       </Card>
 
-      <View style={styles.statsRow}>
-        <Card style={styles.statCard}>
-          <Text style={styles.statValue}>{lifetimeEarnings}</Text>
-          <Text style={styles.statLabel}>Lifetime Earnings (coins)</Text>
+      <View style={styles.earningsRow}>
+        <Card style={styles.earningsCard}>
+          <Text style={styles.earningsValue}>{lifetimeEarnings}</Text>
+          <Text style={styles.earningsLabel}>Lifetime Earnings (coins)</Text>
         </Card>
-        <Card style={styles.statCard}>
-          <Text style={styles.statValue}>{pendingCoins}</Text>
-          <Text style={styles.statLabel}>Pending Coins</Text>
+        <Card style={styles.earningsCard}>
+          <Text style={styles.earningsValue}>{pendingCoins}</Text>
+          <Text style={styles.earningsLabel}>Pending Coins</Text>
         </Card>
       </View>
 
-      <Card style={styles.totalCard}>
-        <Text style={styles.totalLabel}>Total USD Value</Text>
-        <Text style={styles.totalValue}>${(lifetimeEarnings / COINS_PER_DOLLAR_WITHDRAW).toFixed(2)}</Text>
+      <Card style={styles.usdCard}>
+        <Text style={styles.usdLabel}>Total USD Value</Text>
+        <Text style={styles.usdValue}>${(lifetimeEarnings / COINS_PER_DOLLAR_WITHDRAW).toFixed(2)}</Text>
       </Card>
 
       <Text style={styles.sectionTitle}>Submission History</Text>
       {approvedSubs.length > 0 ? (
         approvedSubs.map((s) => (
-          <Card key={s._id} style={styles.historyCard}>
-            <View style={styles.historyRow}>
-              <Text style={styles.historyTask} numberOfLines={1}>{s.taskTitle}</Text>
-              <Text style={styles.historyAmount}>+{s.payableAmount}</Text>
+          <Card key={s._id} style={styles.histCard}>
+            <View style={styles.histHeader}>
+              <Text style={styles.histTitle} numberOfLines={1}>{s.taskTitle}</Text>
+              <Text style={styles.histAmount}>+{s.payableAmount}</Text>
             </View>
-            <View style={styles.historyMeta}>
+            <View style={styles.histMeta}>
               <Badge label={s.status} variant="approved" />
-              <Text style={styles.historyDate}>{new Date(s.createdAt).toLocaleDateString()}</Text>
+              <Text style={styles.histDate}>{new Date(s.createdAt).toLocaleDateString()}</Text>
             </View>
           </Card>
         ))
@@ -113,26 +113,113 @@ export default function Earnings() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  content: { padding: 16, paddingBottom: 32 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.background, padding: 24 },
-  errorText: { fontSize: 16, color: COLORS.textSecondary, textAlign: "center" },
-  coinCard: { alignItems: "center", paddingVertical: 24, marginBottom: 16 },
-  coinLabel: { fontSize: 14, color: COLORS.white, opacity: 0.8 },
-  coinAmount: { fontSize: 42, fontWeight: "800", color: COLORS.white, marginTop: 4 },
-  coinUsd: { fontSize: 14, color: COLORS.white, opacity: 0.7, marginTop: 4 },
-  statsRow: { flexDirection: "row", gap: 12, marginBottom: 16 },
-  statCard: { flex: 1, alignItems: "center", paddingVertical: 20 },
-  statValue: { fontSize: 28, fontWeight: "800", color: COLORS.primary },
-  statLabel: { fontSize: 12, fontWeight: "500", color: COLORS.textSecondary, opacity: 0.6, marginTop: 4, textAlign: "center" },
-  totalCard: { alignItems: "center", paddingVertical: 20, marginBottom: 24 },
-  totalLabel: { fontSize: 14, color: COLORS.textSecondary, opacity: 0.6 },
-  totalValue: { fontSize: 32, fontWeight: "800", color: COLORS.primary, marginTop: 4 },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: COLORS.primary, marginBottom: 12 },
-  historyCard: { marginBottom: 8 },
-  historyRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  historyTask: { fontSize: 14, fontWeight: "600", color: COLORS.text, flex: 1, marginRight: 8 },
-  historyAmount: { fontSize: 16, fontWeight: "800", color: COLORS.success },
-  historyMeta: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 6 },
-  historyDate: { fontSize: 12, color: COLORS.textSecondary },
+  errorContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF9E5',
+    padding: 24,
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'rgba(0,64,48,0.6)',
+    textAlign: 'center',
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  accentCard: {
+    alignItems: 'center',
+    paddingVertical: 24,
+    marginBottom: 16,
+  },
+  accentLabel: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.8)',
+  },
+  accentValue: {
+    fontSize: 42,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginTop: 4,
+  },
+  accentSubtext: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+    marginTop: 4,
+  },
+  earningsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  earningsCard: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  earningsValue: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#004030',
+  },
+  earningsLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  usdCard: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    marginBottom: 24,
+  },
+  usdLabel: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+  },
+  usdValue: {
+    fontSize: 30,
+    fontWeight: '700',
+    color: '#004030',
+    marginTop: 4,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#004030',
+    marginBottom: 12,
+  },
+  histCard: {
+    marginBottom: 8,
+  },
+  histHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  histTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#00281D',
+    flex: 1,
+    marginRight: 8,
+  },
+  histAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#10B981',
+  },
+  histMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  histDate: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+  },
 });

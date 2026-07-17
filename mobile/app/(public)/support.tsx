@@ -1,6 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, Linking, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../../src/lib/constants";
 import Card from "../../src/components/ui/Card";
 
 export default function Support() {
@@ -13,7 +12,7 @@ export default function Support() {
 
       <Card style={styles.supportCard}>
         <View style={styles.iconRow}>
-          <Ionicons name="mail-outline" size={28} color={COLORS.primary} />
+          <Ionicons name="mail-outline" size={28} color="#004030" />
         </View>
         <Text style={styles.cardTitle}>Contact Us</Text>
         <Text style={styles.cardText}>
@@ -24,7 +23,7 @@ export default function Support() {
           onPress={() => Linking.openURL("mailto:support@taskhub.com")}
           activeOpacity={0.7}
         >
-          <Ionicons name="mail" size={18} color={COLORS.secondary} />
+          <Ionicons name="mail" size={18} color="#4A9782" />
           <Text style={styles.emailText}>support@taskhub.com</Text>
         </TouchableOpacity>
       </Card>
@@ -69,17 +68,17 @@ export default function Support() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1, backgroundColor: '#FFF9E5' },
   content: { padding: 16, paddingBottom: 40 },
   headerBar: { marginBottom: 20 },
-  headerTitle: { fontSize: 24, fontWeight: "700", color: COLORS.text },
-  headerSubtitle: { fontSize: 14, color: COLORS.textSecondary, marginTop: 2 },
+  headerTitle: { fontSize: 24, fontWeight: '700', color: '#00281D' },
+  headerSubtitle: { fontSize: 14, color: '#004030', marginTop: 2 },
   supportCard: { marginBottom: 16 },
-  iconRow: { alignItems: "center", marginBottom: 12 },
-  cardTitle: { fontSize: 18, fontWeight: "700", color: COLORS.text, marginBottom: 8 },
-  cardText: { fontSize: 14, color: COLORS.textSecondary, lineHeight: 20, marginBottom: 12 },
-  emailRow: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 8 },
-  emailText: { fontSize: 15, color: COLORS.secondary, fontWeight: "600" },
-  faqQuestion: { fontSize: 15, fontWeight: "600", color: COLORS.text, marginTop: 16, marginBottom: 4 },
-  faqAnswer: { fontSize: 14, color: COLORS.textSecondary, lineHeight: 20 },
+  iconRow: { alignItems: 'center', marginBottom: 12 },
+  cardTitle: { fontSize: 18, fontWeight: '700', color: '#00281D', marginBottom: 8 },
+  cardText: { fontSize: 14, color: '#004030', lineHeight: 20, marginBottom: 12 },
+  emailRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8 },
+  emailText: { fontSize: 15, color: '#4A9782', fontWeight: '600' },
+  faqQuestion: { fontSize: 15, fontWeight: '600', color: '#00281D', marginTop: 16, marginBottom: 4 },
+  faqAnswer: { fontSize: 14, color: '#004030', lineHeight: 20 },
 });

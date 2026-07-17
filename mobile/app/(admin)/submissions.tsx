@@ -1,8 +1,7 @@
 import { useState, useCallback } from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, RefreshControl, TouchableOpacity, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { COLORS } from "../../src/lib/constants";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
@@ -59,15 +58,15 @@ export default function AdminSubmissions() {
   };
 
   const renderSubmission = ({ item }: { item: ISubmission }) => (
-    <Card style={styles.subCard}>
-      <View style={styles.subHeader}>
-        <Text style={styles.subWorker}>{item.workerName}</Text>
+    <Card style={styles.submissionCard}>
+      <View style={styles.submissionHeader}>
+        <Text style={styles.workerName}>{item.workerName}</Text>
         <Badge label={item.status} variant={item.status as "pending" | "approved" | "rejected"} />
       </View>
-      <Text style={styles.subTask}>{item.taskTitle}</Text>
-      <View style={styles.subFooter}>
-        <Text style={styles.subDate}>{new Date(item.createdAt).toLocaleDateString()}</Text>
-        <Text style={styles.subAmount}>{item.payableAmount} coins</Text>
+      <Text style={styles.taskTitle}>{item.taskTitle}</Text>
+      <View style={styles.submissionMeta}>
+        <Text style={styles.metaDate}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+        <Text style={styles.payout}>{item.payableAmount} coins</Text>
       </View>
     </Card>
   );
@@ -92,31 +91,83 @@ export default function AdminSubmissions() {
         data={submissions}
         keyExtractor={(item) => item._id}
         renderItem={renderSubmission}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={{ padding: 16, paddingTop: 4, paddingBottom: 32 }}
         refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={() => { setPage(1); refetch(); }} />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         ListEmptyComponent={<EmptyState title="No submissions" message={`No ${activeTab.toLowerCase()} submissions found`} />}
-        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footerLoader}><Spinner size="small" /></View> : null}
+        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="small" /></View> : null}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  tabRow: { flexDirection: "row", marginHorizontal: 16, marginTop: 16, marginBottom: 12, borderRadius: 12, backgroundColor: COLORS.surface, padding: 4, borderWidth: 1, borderColor: "#0040300D" },
-  tab: { flex: 1, paddingVertical: 10, borderRadius: 10, alignItems: "center" },
-  tabActive: { backgroundColor: COLORS.primary },
-  tabText: { fontSize: 13, fontWeight: "600", color: COLORS.textSecondary },
-  tabTextActive: { color: "#FFFFFF" },
-  list: { padding: 16, paddingTop: 4, paddingBottom: 32 },
-  subCard: { marginBottom: 12 },
-  subHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  subWorker: { fontSize: 15, fontWeight: "600", color: COLORS.text },
-  subTask: { fontSize: 14, color: COLORS.textSecondary, marginTop: 6 },
-  subFooter: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-  subDate: { fontSize: 12, color: COLORS.textSecondary },
-  subAmount: { fontSize: 14, fontWeight: "700", color: COLORS.primary },
-  footerLoader: { paddingVertical: 16 },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  tabRow: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 12,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    padding: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(0,64,48,0.05)',
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  tabActive: {
+    backgroundColor: '#004030',
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(0,64,48,0.6)',
+  },
+  tabTextActive: {
+    color: '#FFFFFF',
+  },
+  submissionCard: {
+    marginBottom: 12,
+  },
+  submissionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  workerName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00281D',
+  },
+  taskTitle: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 6,
+  },
+  submissionMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  metaDate: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+  },
+  payout: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#004030',
+  },
+  footer: {
+    paddingVertical: 16,
+  },
 });

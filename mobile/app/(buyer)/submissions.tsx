@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl, Alert, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, RefreshControl, Alert, TouchableOpacity, StyleSheet } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { COLORS } from "../../src/lib/constants";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
@@ -79,15 +78,15 @@ export default function Submissions() {
 
   const renderSubmission = ({ item }: { item: ISubmission }) => (
     <TouchableOpacity onPress={() => handleSubmissionTap(item)} activeOpacity={item.status === "pending" ? 0.7 : 1}>
-      <Card style={styles.subCard}>
-        <View style={styles.subHeader}>
-          <Text style={styles.subWorker}>{item.workerName}</Text>
+      <Card style={styles.submissionCard}>
+        <View style={styles.submissionHeader}>
+          <Text style={styles.workerName}>{item.workerName}</Text>
           <Badge label={item.status} variant={item.status as "pending" | "approved" | "rejected"} />
         </View>
-        <Text style={styles.subTask}>{item.taskTitle}</Text>
-        <View style={styles.subFooter}>
-          <Text style={styles.subDate}>{new Date(item.createdAt).toLocaleDateString()}</Text>
-          <Text style={styles.subPayout}>${item.payableAmount?.toFixed(2)}</Text>
+        <Text style={styles.taskTitle}>{item.taskTitle}</Text>
+        <View style={styles.submissionMeta}>
+          <Text style={styles.metaDate}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+          <Text style={styles.payout}>${item.payableAmount?.toFixed(2)}</Text>
         </View>
       </Card>
     </TouchableOpacity>
@@ -101,8 +100,8 @@ export default function Submissions() {
         data={data?.data || []}
         keyExtractor={(item) => item._id}
         renderItem={renderSubmission}
-        contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
+        contentContainerStyle={{ padding: 16, paddingTop: 16, paddingBottom: 32 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#004030" />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ListEmptyComponent={<EmptyState title="No submissions yet" message="Submissions from workers will appear here" />}
@@ -113,13 +112,40 @@ export default function Submissions() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  list: { padding: 16, paddingTop: 16, paddingBottom: 32 },
-  subCard: { marginBottom: 12 },
-  subHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  subWorker: { fontSize: 15, fontWeight: "600", color: COLORS.text },
-  subTask: { fontSize: 14, color: COLORS.textSecondary, marginTop: 6 },
-  subFooter: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-  subDate: { fontSize: 12, color: COLORS.textSecondary },
-  subPayout: { fontSize: 14, fontWeight: "700", color: COLORS.primary },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  submissionCard: {
+    marginBottom: 12,
+  },
+  submissionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  workerName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00281D',
+  },
+  taskTitle: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 6,
+  },
+  submissionMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  metaDate: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+  },
+  payout: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#004030',
+  },
 });

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Input from "../../src/components/ui/Input";
 import Button from "../../src/components/ui/Button";
 import Card from "../../src/components/ui/Card";
-import { COLORS, API_BASE_URL } from "../../src/lib/constants";
+import { API_BASE_URL } from "../../src/lib/constants";
 
 type UserRole = "worker" | "buyer";
 
@@ -59,29 +59,26 @@ export default function Register() {
     return (
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={[styles.flex, { paddingBottom: insets.bottom }]}
+        style={[styles.container, { paddingBottom: insets.bottom }]}
       >
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-          <Text style={styles.heading}>Join TaskHub</Text>
-          <Text style={styles.subtitle}>How would you like to use TaskHub?</Text>
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+          <Text style={styles.stepTitle}>Join TaskHub</Text>
+          <Text style={styles.stepSubtitle}>How would you like to use TaskHub?</Text>
 
-          <View style={styles.roleCards}>
+          <View style={styles.roleCardsContainer}>
             {roleCards.map((c) => {
               const selected = role === c.value;
               return (
                 <TouchableOpacity
                   key={c.value}
                   activeOpacity={0.7}
-                  style={[
-                    styles.roleCard,
-                    selected && styles.roleCardSelected,
-                  ]}
+                  style={[styles.roleCard, selected ? styles.roleCardSelected : styles.roleCardUnselected]}
                   onPress={() => setRole(c.value)}
                 >
-                  <Text style={[styles.roleCardTitle, selected && styles.roleCardTitleSelected]}>
+                  <Text style={styles.roleCardTitle}>
                     {c.title}
                   </Text>
-                  <Text style={[styles.roleCardSubtitle, selected && styles.roleCardSubtitleSelected]}>
+                  <Text style={[styles.roleCardSubtitle, selected ? styles.roleCardSubtitleFull : styles.roleCardSubtitleDim]}>
                     {c.subtitle}
                   </Text>
                 </TouchableOpacity>
@@ -93,7 +90,7 @@ export default function Register() {
             title="Continue"
             onPress={handleContinue}
             disabled={!role}
-            style={styles.fullBtn}
+            style={styles.fullWidth}
           />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -103,24 +100,24 @@ export default function Register() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={[styles.flex, { paddingBottom: insets.bottom }]}
+      style={[styles.container, { paddingBottom: insets.bottom }]}
     >
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-        <TouchableOpacity onPress={() => setStep(1)} style={styles.backBtn}>
-          <Text style={styles.backText}>{"< Back"}</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <TouchableOpacity onPress={() => setStep(1)} style={styles.backButton}>
+          <Text style={styles.backButtonText}>{"< Back"}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.heading}>Create your account</Text>
-        <Text style={styles.subtitle}>
+        <Text style={styles.stepTitle}>Create your account</Text>
+        <Text style={styles.stepSubtitle}>
           Signing up as a {role === "worker" ? "Worker" : "Buyer"}
         </Text>
 
-        <View style={styles.formSection}>
+        <View>
           <Button
             title="Continue with Google"
             variant="outline"
             onPress={() => {}}
-            style={styles.fullBtn}
+            style={styles.fullWidth}
           />
 
           <View style={styles.divider}>
@@ -164,13 +161,13 @@ export default function Register() {
             onPress={() => registerMutation.mutate()}
             loading={registerMutation.isPending}
             disabled={!isValidStep2}
-            style={styles.fullBtn}
+            style={styles.fullWidth}
           />
         </View>
 
-        <TouchableOpacity onPress={() => router.push("/(auth)/login")} style={styles.linkWrap}>
-          <Text style={styles.link}>
-            Already have an account? <Text style={styles.linkBold}>Sign in</Text>
+        <TouchableOpacity onPress={() => router.push("/(auth)/login")} style={styles.footer}>
+          <Text style={styles.footerText}>
+            Already have an account? <Text style={styles.signupLink}>Sign in</Text>
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -179,103 +176,25 @@ export default function Register() {
 }
 
 const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  container: {
-    flexGrow: 1,
-    justifyContent: "center",
-    paddingHorizontal: 24,
-  },
-  heading: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: COLORS.text,
-    textAlign: "center",
-  },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    textAlign: "center",
-    marginTop: 4,
-    marginBottom: 32,
-  },
-  roleCards: {
-    gap: 16,
-    marginBottom: 32,
-  },
-  roleCard: {
-    backgroundColor: COLORS.white,
-    borderWidth: 1.5,
-    borderColor: `${COLORS.primary}1A`,
-    borderRadius: 16,
-    padding: 24,
-    alignItems: "center",
-  },
-  roleCardSelected: {
-    borderColor: COLORS.secondary,
-    backgroundColor: `${COLORS.secondary}0D`,
-  },
-  roleCardTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginBottom: 4,
-  },
-  roleCardTitleSelected: {
-    color: COLORS.text,
-  },
-  roleCardSubtitle: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-    opacity: 0.8,
-  },
-  roleCardSubtitleSelected: {
-    opacity: 1,
-  },
-  backBtn: {
-    alignSelf: "flex-start",
-    marginBottom: 16,
-  },
-  backText: {
-    fontSize: 16,
-    color: COLORS.textSecondary,
-    fontWeight: "600",
-  },
-  formSection: {
-    gap: 0,
-  },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 20,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: "#0040301A",
-  },
-  dividerText: {
-    marginHorizontal: 12,
-    fontSize: 13,
-    color: COLORS.textSecondary,
-    opacity: 0.7,
-  },
-  fullBtn: {
-    width: "100%",
-  },
-  linkWrap: {
-    marginTop: 24,
-    alignItems: "center",
-    paddingBottom: 24,
-  },
-  link: {
-    fontSize: 14,
-    color: COLORS.textSecondary,
-  },
-  linkBold: {
-    color: COLORS.primary,
-    fontWeight: "600",
-  },
+  container: { flex: 1, backgroundColor: '#FFF9E5' },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24 },
+  fullWidth: { width: '100%' },
+  stepTitle: { fontSize: 28, fontWeight: '800', color: '#004030', textAlign: 'center' },
+  stepSubtitle: { fontSize: 16, color: 'rgba(0,64,48,0.6)', textAlign: 'center', marginTop: 4, marginBottom: 32 },
+  roleCardsContainer: { gap: 16, marginBottom: 32 },
+  roleCard: { borderWidth: 1.5, borderRadius: 16, padding: 24, alignItems: 'center' },
+  roleCardSelected: { borderColor: '#4A9782', backgroundColor: 'rgba(74,151,130,0.05)' },
+  roleCardUnselected: { backgroundColor: '#FFFFFF', borderColor: 'rgba(0,64,48,0.1)' },
+  roleCardTitle: { fontSize: 20, fontWeight: '700', color: '#004030', marginBottom: 4 },
+  roleCardSubtitle: { fontSize: 14, color: 'rgba(0,64,48,0.6)' },
+  roleCardSubtitleFull: { opacity: 1 },
+  roleCardSubtitleDim: { opacity: 0.8 },
+  backButton: { alignSelf: 'flex-start', marginBottom: 16 },
+  backButtonText: { fontSize: 16, color: 'rgba(0,64,48,0.6)', fontWeight: '600' },
+  divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 20 },
+  dividerLine: { flex: 1, height: 1, backgroundColor: 'rgba(0,64,48,0.1)' },
+  dividerText: { marginHorizontal: 12, fontSize: 13, color: 'rgba(0,64,48,0.6)', opacity: 0.7 },
+  footer: { marginTop: 24, alignItems: 'center', paddingBottom: 24 },
+  footerText: { fontSize: 14, color: 'rgba(0,64,48,0.6)' },
+  signupLink: { color: '#004030', fontWeight: '600' },
 });

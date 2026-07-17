@@ -1,12 +1,12 @@
 import { useState, useCallback } from "react";
 import {
-  View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity, Modal,
-  ScrollView, KeyboardAvoidingView, Platform, Alert,
+  View, Text, FlatList, RefreshControl, TouchableOpacity, Modal,
+  ScrollView, KeyboardAvoidingView, Platform, Alert, StyleSheet,
 } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
 import api from "../../src/lib/api";
-import { COLORS, TASK_CATEGORIES } from "../../src/lib/constants";
+import { TASK_CATEGORIES } from "../../src/lib/constants";
 import Card from "../../src/components/ui/Card";
 import Button from "../../src/components/ui/Button";
 import Input from "../../src/components/ui/Input";
@@ -150,7 +150,7 @@ export default function Tasks() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.headerRow}>
+      <View style={styles.headerActions}>
         <Button title="Create Task" onPress={() => setShowModal(true)} style={styles.createBtn} />
       </View>
 
@@ -158,8 +158,8 @@ export default function Tasks() {
         data={data?.data || []}
         keyExtractor={(item) => item._id}
         renderItem={renderTask}
-        contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.primary} />}
+        contentContainerStyle={{ padding: 16, paddingTop: 8, paddingBottom: 32 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#004030" />}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ListEmptyComponent={<EmptyState title="No tasks yet" message="Create your first task to get started" />}
@@ -171,14 +171,14 @@ export default function Tasks() {
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Create Task</Text>
             <TouchableOpacity onPress={() => { setShowModal(false); resetForm(); }}>
-              <Ionicons name="close" size={28} color={COLORS.text} />
+              <Ionicons name="close" size={28} color="#00281D" />
             </TouchableOpacity>
           </View>
-          <ScrollView contentContainerStyle={styles.modalForm} keyboardShouldPersistTaps="handled">
+          <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }} keyboardShouldPersistTaps="handled">
             <Input label="Title" value={title} onChangeText={setTitle} placeholder="Enter task title" />
             <Input label="Details" value={details} onChangeText={setDetails} placeholder="Describe the task" multiline numberOfLines={3} />
 
-            <Text style={styles.inputLabel}>Category</Text>
+            <Text style={styles.categoryLabel}>Category</Text>
             <View style={styles.categoryRow}>
               {TASK_CATEGORIES.map((cat) => (
                 <TouchableOpacity
@@ -203,7 +203,7 @@ export default function Tasks() {
               onPress={() => createMutation.mutate()}
               loading={createMutation.isPending}
               disabled={!title || !requiredWorkers || !payableAmount || !completionDate}
-              style={styles.submitBtn}
+              style={{ marginTop: 8 }}
             />
           </ScrollView>
         </KeyboardAvoidingView>
@@ -213,26 +213,100 @@ export default function Tasks() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-  headerRow: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
-  createBtn: { alignSelf: "flex-end" },
-  list: { padding: 16, paddingTop: 8, paddingBottom: 32 },
-  taskCard: { marginBottom: 12 },
-  taskHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  taskTitle: { fontSize: 16, fontWeight: "600", color: COLORS.text, flex: 1, marginRight: 8 },
-  taskCategory: { fontSize: 13, color: COLORS.textSecondary, marginTop: 4 },
-  taskMeta: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-  taskMetaText: { fontSize: 14, fontWeight: "600", color: COLORS.primary },
-  taskDeadline: { fontSize: 12, color: COLORS.textSecondary, marginTop: 4 },
-  modalContainer: { flex: 1, backgroundColor: COLORS.background },
-  modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16, borderBottomWidth: 1, borderBottomColor: "#0040300D" },
-  modalTitle: { fontSize: 20, fontWeight: "700", color: COLORS.text },
-  modalForm: { padding: 16, paddingBottom: 40 },
-  inputLabel: { fontSize: 14, fontWeight: "600", color: COLORS.text, marginBottom: 8 },
-  categoryRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 },
-  categoryChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5, borderColor: "#00403033", backgroundColor: COLORS.surface },
-  categoryChipActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primary + "15" },
-  categoryChipText: { fontSize: 13, color: COLORS.textSecondary },
-  categoryChipTextActive: { color: COLORS.primary, fontWeight: "600" },
-  submitBtn: { marginTop: 8 },
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  headerActions: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  createBtn: {
+    alignSelf: 'flex-end',
+  },
+  taskCard: {
+    marginBottom: 12,
+  },
+  taskHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  taskTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#00281D',
+    flex: 1,
+    marginRight: 8,
+  },
+  taskCategory: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 4,
+  },
+  taskMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
+  taskMetaText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#004030',
+  },
+  taskDeadline: {
+    fontSize: 12,
+    color: 'rgba(0,64,48,0.6)',
+    marginTop: 4,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#FFF9E5',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,64,48,0.05)',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#00281D',
+  },
+  categoryLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#00281D',
+    marginBottom: 8,
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 16,
+  },
+  categoryChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(0,64,48,0.2)',
+    backgroundColor: '#FFFFFF',
+  },
+  categoryChipActive: {
+    borderColor: '#004030',
+    backgroundColor: 'rgba(0,64,48,0.1)',
+  },
+  categoryChipText: {
+    fontSize: 14,
+    color: 'rgba(0,64,48,0.6)',
+  },
+  categoryChipTextActive: {
+    color: '#004030',
+    fontWeight: '600',
+  },
 });
