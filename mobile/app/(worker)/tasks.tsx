@@ -1,21 +1,22 @@
 import { useState, useCallback, useMemo } from "react";
-import { View, Text, FlatList, TouchableOpacity, ScrollView, RefreshControl, Alert, StyleSheet } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, ScrollView, RefreshControl, Alert, Image, StyleSheet } from "react-native";
 import { useQuery } from "@tanstack/react-query";
+import { Ionicons } from "@expo/vector-icons";
 import api from "../../src/lib/api";
 import { TASK_CATEGORIES } from "../../src/lib/constants";
 import Input from "../../src/components/ui/Input";
 import Card from "../../src/components/ui/Card";
-import Badge from "../../src/components/ui/Badge";
 import Button from "../../src/components/ui/Button";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
 import type { ITask, PaginatedResponse } from "../../src/types";
 
-const STATUS_VARIANT: Record<string, "pending" | "approved" | "rejected" | "open" | "closed" | "active" | "suspended" | "default"> = {
-  open: "open",
-  closed: "closed",
-  blocked: "rejected",
-};
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr);
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
 
 export default function Tasks() {
   const [search, setSearch] = useState("");
@@ -73,16 +74,35 @@ export default function Tasks() {
     ({ item }: { item: ITask }) => (
       <TouchableOpacity onPress={() => handleTaskPress(item)} activeOpacity={0.7}>
         <Card style={styles.card}>
-          <View style={styles.cardRow}>
-            <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
-            <Badge label={item.status} variant={STATUS_VARIANT[item.status] || "default"} />
+          {item.imageUrl && (
+            <View style={styles.imageWrapper}>
+              <Image source={{ uri: item.imageUrl }} style={styles.taskImage} />
+            </View>
+          )}
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle} numberOfLines={2}>{item.title}</Text>
+            {item.category && (
+              <View style={styles.categoryBadge}>
+                <Text style={styles.categoryBadgeText}>{item.category}</Text>
+              </View>
+            )}
           </View>
           <Text style={styles.cardBuyer}>by {item.buyerName}</Text>
-          <View style={styles.cardInfo}>
-            <Text style={styles.cardAmount}>{item.payableAmount} coins</Text>
-            <Text style={styles.cardDue}>Due {new Date(item.completionDate).toLocaleDateString()}</Text>
+          <View style={styles.cardMeta}>
+            <View style={styles.payoutRow}>
+              <Ionicons name="cash-outline" size={14} color="#D4A017" />
+              <Text style={styles.payoutText}>{item.payableAmount} coins</Text>
+            </View>
+            <Text style={styles.slotsLeft}>
+              {item.requiredWorkers - item.filledWorkers} slots left
+            </Text>
           </View>
-          <Text style={styles.cardSlots}>{item.remainingWorkers} slot{item.remainingWorkers !== 1 ? "s" : ""} remaining</Text>
+          <Text style={styles.deadline}>
+            Deadline: {formatDate(item.completionDate)}
+          </Text>
+          <View style={styles.applyButton}>
+            <Text style={styles.applyButtonText}>View & Apply</Text>
+          </View>
         </Card>
       </TouchableOpacity>
     ),
@@ -122,7 +142,7 @@ export default function Tasks() {
       </ScrollView>
 
       <FlatList
-        data={data?.data ?? []}
+        data={data?.tasks ?? []}
         keyExtractor={(item) => item._id}
         renderItem={renderTask}
         contentContainerStyle={{ padding: 16, paddingTop: 4 }}
@@ -141,93 +161,29 @@ export default function Tasks() {
 }
 
 const styles = StyleSheet.create({
-  errorContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFF9E5',
-    padding: 24,
-  },
-  errorText: {
-    fontSize: 16,
-    color: 'rgba(0,64,48,0.6)',
-    textAlign: 'center',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: '#FFF9E5',
-  },
-  searchSection: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  categoryScroll: {
-    maxHeight: 44,
-    marginBottom: 8,
-  },
-  categoryChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(0,64,48,0.2)',
-    backgroundColor: '#FFFFFF',
-  },
-  categoryChipActive: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#004030',
-  },
-  categoryChipText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: 'rgba(0,64,48,0.6)',
-  },
-  categoryChipTextActive: {
-    color: '#004030',
-  },
-  card: {
-    marginBottom: 12,
-  },
-  cardRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#00281D',
-    flex: 1,
-    marginRight: 8,
-  },
-  cardBuyer: {
-    fontSize: 14,
-    color: 'rgba(0,64,48,0.6)',
-    marginBottom: 8,
-  },
-  cardInfo: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  cardAmount: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#00281D',
-  },
-  cardDue: {
-    fontSize: 14,
-    color: 'rgba(0,64,48,0.6)',
-  },
-  cardSlots: {
-    fontSize: 12,
-    color: 'rgba(0,64,48,0.6)',
-  },
-  loadMoreContainer: {
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
+  errorContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF9E5', padding: 24 },
+  errorText: { fontSize: 16, color: 'rgba(0,64,48,0.6)', textAlign: 'center' },
+  container: { flex: 1, backgroundColor: '#FFF9E5' },
+  searchSection: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
+  categoryScroll: { maxHeight: 44, marginBottom: 8 },
+  categoryChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(0,64,48,0.2)', backgroundColor: '#FFFFFF' },
+  categoryChipActive: { backgroundColor: '#EFF6FF', borderColor: '#004030' },
+  categoryChipText: { fontSize: 14, fontWeight: '600', color: 'rgba(0,64,48,0.6)' },
+  categoryChipTextActive: { color: '#004030' },
+  card: { marginBottom: 12, padding: 0, overflow: 'hidden' },
+  imageWrapper: { width: '100%', height: 160 },
+  taskImage: { width: '100%', height: '100%' },
+  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingHorizontal: 16, paddingTop: 16 },
+  cardTitle: { fontSize: 16, fontWeight: '700', color: '#00281D', flex: 1, lineHeight: 22 },
+  categoryBadge: { backgroundColor: 'rgba(74, 151, 130, 0.1)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  categoryBadgeText: { fontSize: 11, fontWeight: '600', color: '#4A9782' },
+  cardBuyer: { fontSize: 12, color: 'rgba(0, 64, 48, 0.5)', paddingHorizontal: 16, marginTop: 2 },
+  cardMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginTop: 12 },
+  payoutRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  payoutText: { fontSize: 14, fontWeight: '700', color: '#4A9782' },
+  slotsLeft: { fontSize: 12, color: 'rgba(0, 64, 48, 0.5)' },
+  deadline: { fontSize: 10, color: 'rgba(0, 64, 48, 0.3)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, paddingHorizontal: 16, marginTop: 8 },
+  applyButton: { marginTop: 12, marginHorizontal: 16, marginBottom: 16, backgroundColor: '#004030', paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  applyButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+  loadMoreContainer: { paddingVertical: 16, alignItems: 'center' },
 });

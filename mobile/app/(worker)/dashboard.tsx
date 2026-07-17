@@ -56,7 +56,7 @@ export default function Dashboard() {
     },
   });
 
-  const submissions = submissionsQuery.data?.data ?? [];
+  const submissions = submissionsQuery.data?.submissions ?? [];
   const totalSubmissions = submissions.length;
   const approved = submissions.filter((s) => s.status === "approved").length;
   const pending = submissions.filter((s) => s.status === "pending").length;

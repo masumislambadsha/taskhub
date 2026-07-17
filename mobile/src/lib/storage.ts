@@ -41,3 +41,5 @@ export async function clearAll(): Promise<void> {
   await removeToken();
   await removeUserData();
 }
+
+export const clearAuth = clearAll;

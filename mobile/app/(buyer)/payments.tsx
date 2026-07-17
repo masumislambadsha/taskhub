@@ -37,7 +37,7 @@ export default function Payments() {
     );
   }
 
-  const payments = data?.data || [];
+  const payments = data?.payments || [];
 
   const renderPayment = ({ item }: { item: IPayment }) => (
     <Card style={styles.paymentCard}>

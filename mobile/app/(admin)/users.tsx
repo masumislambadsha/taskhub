@@ -50,7 +50,7 @@ export default function AdminUsers() {
     },
   });
 
-  const users = data?.data ?? [];
+  const users = data?.users ?? [];
   const totalPages = data?.pages ?? 1;
 
   const toggleStatusMutation = useMutation({

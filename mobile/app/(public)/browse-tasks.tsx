@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView, RefreshControl, Alert,
+  View, Text, StyleSheet, FlatList, TouchableOpacity, ScrollView, RefreshControl, Alert, Image,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
@@ -15,11 +15,12 @@ import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
 import type { ITask, PaginatedResponse } from "../../src/types";
 
-const STATUS_VARIANT: Record<string, "success" | "warning" | "danger"> = {
-  open: "success",
-  closed: "warning",
-  blocked: "danger",
-};
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr);
+  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+}
 
 export default function BrowseTasks() {
   const [search, setSearch] = useState("");
@@ -77,23 +78,37 @@ export default function BrowseTasks() {
     ({ item }: { item: ITask }) => (
       <TouchableOpacity onPress={() => handleTaskPress(item)} activeOpacity={0.7}>
         <Card style={styles.taskCard}>
+          {item.imageUrl && (
+            <View style={styles.imageWrapper}>
+              <Image source={{ uri: item.imageUrl }} style={styles.taskImage} />
+            </View>
+          )}
           <View style={styles.taskHeader}>
-            <Text style={styles.taskTitle} numberOfLines={1}>
+            <Text style={styles.taskTitle} numberOfLines={2}>
               {item.title}
             </Text>
-            <Badge label={item.status} variant={STATUS_VARIANT[item.status] || "default"} />
+            {item.category && (
+              <View style={styles.categoryBadge}>
+                <Text style={styles.categoryBadgeText}>{item.category}</Text>
+              </View>
+            )}
           </View>
           <Text style={styles.taskBuyer}>by {item.buyerName}</Text>
           <View style={styles.taskMeta}>
             <View style={styles.payoutRow}>
-              <Ionicons name="wallet-outline" size={14} color="#004030" />
+              <Ionicons name="cash-outline" size={14} color="#D4A017" />
               <Text style={styles.payoutText}>{item.payableAmount} coins</Text>
             </View>
-            <Text style={styles.deadline}>Due {new Date(item.completionDate).toLocaleDateString()}</Text>
+            <Text style={styles.slotsLeft}>
+              {item.requiredWorkers - item.filledWorkers} slots left
+            </Text>
           </View>
-          <Text style={styles.remaining}>
-            {item.remainingWorkers} slot{item.remainingWorkers !== 1 ? "s" : ""} remaining
+          <Text style={styles.deadline}>
+            Deadline: {formatDate(item.completionDate)}
           </Text>
+          <View style={styles.applyButton}>
+            <Text style={styles.applyButtonText}>Sign in to Apply</Text>
+          </View>
         </Card>
       </TouchableOpacity>
     ),
@@ -138,7 +153,7 @@ export default function BrowseTasks() {
       </ScrollView>
 
       <FlatList
-        data={data?.data ?? []}
+        data={data?.tasks ?? []}
         keyExtractor={(item) => item._id}
         renderItem={renderTask}
         contentContainerStyle={styles.list}
@@ -171,14 +186,20 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 13, fontWeight: '600', color: '#004030' },
   chipTextActive: { color: '#004030' },
   list: { padding: 16, paddingTop: 4 },
-  taskCard: { marginBottom: 12 },
-  taskHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  taskTitle: { fontSize: 16, fontWeight: '600', color: '#00281D', flex: 1, marginRight: 8 },
-  taskBuyer: { fontSize: 13, color: '#004030', marginBottom: 8 },
-  taskMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
+  taskCard: { marginBottom: 12, padding: 0, overflow: 'hidden' },
+  imageWrapper: { width: '100%', height: 160 },
+  taskImage: { width: '100%', height: '100%' },
+  taskHeader: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, paddingHorizontal: 16, paddingTop: 16 },
+  taskTitle: { fontSize: 16, fontWeight: '700', color: '#00281D', flex: 1, lineHeight: 22 },
+  categoryBadge: { backgroundColor: 'rgba(74, 151, 130, 0.1)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  categoryBadgeText: { fontSize: 11, fontWeight: '600', color: '#4A9782' },
+  taskBuyer: { fontSize: 12, color: 'rgba(0, 64, 48, 0.5)', paddingHorizontal: 16, marginTop: 2 },
+  taskMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginTop: 12 },
   payoutRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  payoutText: { fontSize: 14, fontWeight: '700', color: '#00281D' },
-  deadline: { fontSize: 13, color: '#004030' },
-  remaining: { fontSize: 12, color: '#004030' },
+  payoutText: { fontSize: 14, fontWeight: '700', color: '#4A9782' },
+  slotsLeft: { fontSize: 12, color: 'rgba(0, 64, 48, 0.5)' },
+  deadline: { fontSize: 10, color: 'rgba(0, 64, 48, 0.3)', fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5, paddingHorizontal: 16, marginTop: 8 },
+  applyButton: { marginTop: 12, marginHorizontal: 16, marginBottom: 16, backgroundColor: '#004030', paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
+  applyButtonText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
   loadMore: { paddingVertical: 16, alignItems: 'center' },
 });
