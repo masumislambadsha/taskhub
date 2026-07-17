@@ -131,12 +131,11 @@ export interface IConversation {
   unreadCount: number;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
+export type PaginatedResponse<T, K extends string = "data"> = Record<K, T[]> & {
   total: number;
   page: number;
   pages: number;
-}
+};
 
 export interface AuthResponse {
   token: string;

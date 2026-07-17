@@ -5,11 +5,31 @@ import { Tabs, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
 const MORE_ITEMS = [
-  { label: "How it Works", icon: "information-circle-outline" as const, route: "/(public)/" as const },
-  { label: "FAQ", icon: "help-circle-outline" as const, route: "/(public)/faq" as const },
-  { label: "About", icon: "information-outline" as const, route: "/(public)/about" as const },
-  { label: "Privacy", icon: "shield-checkmark-outline" as const, route: "/(public)/privacy" as const },
-  { label: "Terms", icon: "document-text-outline" as const, route: "/(public)/terms" as const },
+  {
+    label: "How it Works",
+    icon: "information-circle-outline" as const,
+    route: "/(public)/how-it-works" as const,
+  },
+  {
+    label: "FAQ",
+    icon: "help-circle-outline" as const,
+    route: "/(public)/faq" as const,
+  },
+  {
+    label: "About",
+    icon: "information-outline" as const,
+    route: "/(public)/about" as const,
+  },
+  {
+    label: "Privacy",
+    icon: "shield-checkmark-outline" as const,
+    route: "/(public)/privacy" as const,
+  },
+  {
+    label: "Terms",
+    icon: "document-text-outline" as const,
+    route: "/(public)/terms" as const,
+  },
 ];
 
 export default function PublicLayout() {
@@ -95,6 +115,7 @@ export default function PublicLayout() {
             ),
           }}
         />
+        <Tabs.Screen name="how-it-works" options={{ href: null }} />
         <Tabs.Screen name="faq" options={{ href: null }} />
         <Tabs.Screen name="about" options={{ href: null }} />
         <Tabs.Screen name="privacy" options={{ href: null }} />
@@ -122,9 +143,16 @@ export default function PublicLayout() {
             tabBarButton: (props) => (
               <TouchableOpacity
                 onPress={() => setShowMore(true)}
-                style={props.style}
+                style={[props.style, styles.moreTabBtn]}
                 activeOpacity={0.7}
-              />
+              >
+                <Ionicons
+                  name="ellipsis-horizontal-outline"
+                  size={24}
+                  color="#00403099"
+                />
+                <Text style={styles.moreTabLabel}>More</Text>
+              </TouchableOpacity>
             ),
           }}
         />
@@ -244,6 +272,17 @@ const styles = StyleSheet.create({
     width: 18,
     backgroundColor: "#004030",
     borderRadius: 2,
+  },
+  moreTabBtn: {
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 2,
+    paddingBottom: 4,
+  },
+  moreTabLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#00403099",
   },
   modalOverlay: {
     flex: 1,

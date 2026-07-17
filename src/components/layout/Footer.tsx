@@ -1,4 +1,4 @@
-import { MdPublic } from 'react-icons/md';
+import { MdPublic } from "react-icons/md";
 import Link from "next/link";
 import Logo from "@/components/ui/Logo";
 
@@ -89,6 +89,21 @@ export default function Footer() {
               Contact
             </h4>
             <p className="text-sm text-primary/60">hello@taskhub.dev</p>
+            <div className="mt-6">
+              <h4 className="font-bold text-primary mb-3 text-sm uppercase tracking-wider">
+                Mobile App
+              </h4>
+              <a
+                href="https://expo.dev/artifacts/eas/Vu_A6GdruDXbMNESpaXafpFsgY5VWmHijIyHlzoLswg.apk"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-primary px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+                download
+              >
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+                  <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.7 9.05 7.4c1.39.07 2.35.74 3.15.8 1.2-.24 2.35-.93 3.64-.84 1.54.12 2.7.72 3.47 1.84-3.18 1.9-2.43 5.98.74 7.14-.59 1.56-1.35 3.1-2 3.94zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
+                </svg>
+                Download for Android
+              </a>
+            </div>
           </div>
         </div>
         <div className="border-t border-primary/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">

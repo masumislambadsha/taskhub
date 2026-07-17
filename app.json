@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "98a5757d-2e59-465f-a887-eceb11d7ea60"
+      }
+    },
+    "android": {
+      "package": "com.masumislambadsha.taskhub"
+    }
+  }
+}

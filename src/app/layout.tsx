@@ -19,11 +19,17 @@ export const metadata: Metadata = {
   title: "TaskHub | Premium Micro-Task Marketplace",
   description:
     "Earn from micro tasks or get work done faster. The premium marketplace for precise execution.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+  },
   openGraph: {
     title: "TaskHub | Premium Micro-Task Marketplace",
     description:
       "Connect with thousands of workers and buyers in a curated ecosystem.",
     type: "website",
+    images: [{ url: "/logo.svg" }],
   },
 };
 

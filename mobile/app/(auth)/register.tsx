@@ -116,7 +116,7 @@ export default function Register() {
           <Button
             title="Continue with Google"
             variant="outline"
-            onPress={() => {}}
+            onPress={() => Alert.alert("Coming Soon", "Google sign-up is not yet available on mobile.")}
             style={styles.fullWidth}
           />
 

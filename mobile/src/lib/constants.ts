@@ -1,4 +1,15 @@
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+import { Platform } from "react-native";
+
+function resolveApiUrl(): string {
+  const configured = process.env.EXPO_PUBLIC_API_URL;
+  if (configured && configured !== "http://localhost:3000") return configured;
+  if (configured === "http://localhost:3000" && Platform.OS === "android") {
+    return "http://10.0.2.2:3000";
+  }
+  return configured || "http://localhost:3000";
+}
+
+export const API_BASE_URL = resolveApiUrl();
 
 export const COIN_PACKAGES = [
   { id: "pkg_10", coins: 10, price: 1, label: "Starter" },
