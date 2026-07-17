@@ -8,6 +8,7 @@ import Sidebar from "./Sidebar";
 import { useSession } from "next-auth/react";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import HamburgerIcon from "@/components/ui/HamburgerIcon";
+import DarkThemeToggle from "@/components/DarkThemeToggle";
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -23,12 +24,12 @@ export default function DashboardShell({
   const { data: session } = useSession();
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex bg-background dark:bg-black/65 transition-all duration-500">
       <Sidebar role={role} />
-      
+
       <div className="hidden lg:block w-64 shrink-0" />
       <div className="flex-1 flex flex-col min-w-0">
-        
+
         <header className="h-16 bg- border-b border-primary/5 flex items-center justify-between px-4 md:px-6 sticky top-0 z-20 backdrop-blur-sm">
           <div className="lg:hidden">
             <HamburgerIcon
@@ -38,6 +39,7 @@ export default function DashboardShell({
           </div>
           <div className="hidden lg:block" />
           <div className="flex items-center gap-2 sm:gap-4">
+            <DarkThemeToggle dark />
             <div className="flex items-center gap-2   py-1.5 rounded-lg">
               <MdToll className="text-amber-500 text-lg" />
               <span className="text-sm font-bold text-primary">

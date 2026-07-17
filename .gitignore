@@ -43,3 +43,4 @@ requirements
 next-env.d.ts
 
 .vercel
+.getaibd/
