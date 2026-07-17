@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "TaskHub",
-    "slug": "taskhub",
+    "slug": "masum-islam-badsha",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,6 +25,13 @@
     "plugins": [
       "expo-router",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "19b89d67-e51f-41ae-bbcb-f04a8d6cc259"
+      }
+    },
+    "owner": "masumislambadshas-team"
   }
 }
