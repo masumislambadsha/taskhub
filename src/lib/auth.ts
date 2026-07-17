@@ -116,7 +116,9 @@ export const auth = async () => {
     const authHeader = h.get("authorization");
     if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.slice(7);
-      const decoded = await decode({ token, secret: process.env.NEXTAUTH_SECRET! });
+      const url = process.env.NEXTAUTH_URL || "http://localhost:3000";
+      const salt = url.startsWith("https://") ? "__Secure-authjs.session-token" : "authjs.session-token";
+      const decoded = await decode({ token, salt, secret: process.env.NEXTAUTH_SECRET! });
       if (decoded?.id) {
         await connectDB();
         const user = await User.findById(decoded.id).lean();
