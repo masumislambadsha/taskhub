@@ -2,10 +2,12 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
+import { decode } from "next-auth/jwt";
+import { headers } from "next/headers";
 import { connectDB } from "./db";
 import User from "@/models/User";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const { handlers, auth: nextAuthAuth, signIn, signOut } = NextAuth({
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -104,3 +106,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
 });
+
+export const auth = async () => {
+  const session = await nextAuthAuth();
+  if (session) return session;
+
+  try {
+    const h = await headers();
+    const authHeader = h.get("authorization");
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      const decoded = await decode({ token, secret: process.env.NEXTAUTH_SECRET! });
+      if (decoded?.id) {
+        await connectDB();
+        const user = await User.findById(decoded.id).lean();
+        if (user) {
+          return {
+            user: {
+              id: user._id.toString(),
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              coins: user.coins,
+              image: user.photoUrl,
+            },
+          };
+        }
+      }
+    }
+  } catch {}
+
+  return session;
+};
+
+export { handlers, signIn, signOut };
