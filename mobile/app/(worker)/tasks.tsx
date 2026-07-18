@@ -9,7 +9,8 @@ import Card from "../../src/components/ui/Card";
 import Button from "../../src/components/ui/Button";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
-import type { ITask, PaginatedResponse } from "../../src/types";
+import type { ITask } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -34,7 +35,7 @@ export default function Tasks() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["worker-tasks", page, search, category],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<ITask>>("/api/v1/tasks", { params: queryParams });
+      const res = await api.get<PaginatedResponse<ITask, 'tasks'>>("/api/v1/tasks", { params: queryParams });
       return res.data;
     },
   });

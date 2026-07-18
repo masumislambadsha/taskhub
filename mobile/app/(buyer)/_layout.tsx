@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
 import { Stack, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { getUserData } from "../../src/lib/storage";
@@ -12,6 +12,8 @@ export default function BuyerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userName, setUserName] = useState("");
   const [userRole, setUserRole] = useState("");
+  const [photoUrl, setPhotoUrl] = useState<string | undefined>();
+  const [coins, setCoins] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -27,6 +29,8 @@ export default function BuyerLayout() {
       }
       setUserName(user.name || "Buyer");
       setUserRole(user.role || "buyer");
+      setPhotoUrl(user.photoUrl);
+      setCoins(user.coins ?? 0);
       setReady(true);
     })();
   }, []);
@@ -40,10 +44,24 @@ export default function BuyerLayout() {
           <Ionicons name="menu-outline" size={26} color="#004030" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Buyer</Text>
-        <View style={styles.hamburger} />
+        <View style={styles.headerRight}>
+          <View style={styles.coinBadge}>
+            <Ionicons name="cash-outline" size={16} color="#DCD0A8" />
+            <Text style={styles.coinBadgeText}>{coins.toLocaleString()}</Text>
+          </View>
+          {photoUrl ? (
+            <Image source={{ uri: photoUrl }} style={styles.headerAvatar} />
+          ) : (
+            <View style={styles.headerAvatarPlaceholder}>
+              <Text style={styles.headerAvatarInitial}>
+                {(userName?.[0] || "U").toUpperCase()}
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
 
-      <Stack screenOptions={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false, animation: "slide_from_right", animationDuration: 250 }} />
 
       <Sidebar
         open={sidebarOpen}
@@ -51,6 +69,8 @@ export default function BuyerLayout() {
         navItems={NAV_ITEMS.buyer}
         userName={userName}
         userRole="Buyer"
+        photoUrl={photoUrl}
+        coins={coins}
       />
     </View>
   );
@@ -71,5 +91,18 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   hamburger: { width: 40, alignItems: "center" },
-  headerTitle: { fontSize: 18, fontWeight: "700", color: "#004030" },
+  headerTitle: { fontSize: 18, fontWeight: "700", color: "#004030", flex: 1, marginLeft: 8 },
+  headerRight: { flexDirection: "row", alignItems: "center", gap: 8 },
+  coinBadge: {
+    flexDirection: "row", alignItems: "center", gap: 3,
+    backgroundColor: "rgba(0,64,48,0.06)", paddingHorizontal: 10, paddingVertical: 5,
+    borderRadius: 16,
+  },
+  coinBadgeText: { fontSize: 13, fontWeight: "700", color: "#004030" },
+  headerAvatar: { width: 32, height: 32, borderRadius: 16 },
+  headerAvatarPlaceholder: {
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: "#4A9782", justifyContent: "center", alignItems: "center",
+  },
+  headerAvatarInitial: { fontSize: 13, fontWeight: "700", color: "#FFFFFF" },
 });

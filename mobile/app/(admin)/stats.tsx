@@ -22,9 +22,9 @@ export default function AdminStats() {
     },
   });
 
-  if (isLoading) return <Spinner message="Loading analytics..." />;
+  if (isLoading || !data) return <Spinner message="Loading analytics..." />;
 
-  const s = data!;
+  const s = data;
 
   return (
     <ScrollView

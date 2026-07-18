@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
+import Spinner from "../src/components/ui/Spinner";
 
 export default function PaymentReturn() {
   const { status, paymentId } = useLocalSearchParams<{ status: string; paymentId: string }>();
@@ -22,17 +22,8 @@ export default function PaymentReturn() {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <ActivityIndicator size="large" color="#4A9782" />
-        <Text style={styles.text}>Confirming your payment...</Text>
-      </View>
-    </View>
+    <Spinner variant="hub" size="md" message="Confirming Payment..." />
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFF9E5", justifyContent: "center", alignItems: "center" },
-  content: { alignItems: "center", gap: 12 },
-  text: { fontSize: 14, color: "rgba(0,64,48,0.6)" },
-});
+

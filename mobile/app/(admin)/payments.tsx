@@ -72,7 +72,7 @@ export default function AdminPayments() {
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         ListEmptyComponent={<EmptyState title="No payments found" message="Payment records will appear here" />}
-        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="small" /></View> : null}
+        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="sm" /></View> : null}
       />
     </View>
   );

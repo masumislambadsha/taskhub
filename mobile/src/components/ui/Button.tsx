@@ -1,4 +1,9 @@
-import { TouchableOpacity, Text, ActivityIndicator, ViewStyle, StyleSheet } from "react-native";
+/* eslint-disable react-hooks/immutability */
+import { Text, ActivityIndicator, ViewStyle, StyleSheet, Pressable } from "react-native";
+import { useCallback } from "react";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 interface Props {
   title: string;
@@ -74,18 +79,34 @@ const textStyles = StyleSheet.create({
 });
 
 export default function Button({ title, onPress, variant = "primary", loading, disabled, style, size = "md" }: Props) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = useCallback(() => {
+    scale.value = withSpring(0.96, { damping: 15, stiffness: 200 });
+  }, []);
+
+  const handlePressOut = useCallback(() => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 200 });
+  }, []);
+
   return (
-    <TouchableOpacity
+    <AnimatedPressable
       style={[
         styles.base,
         styles[variant],
         size === "sm" ? styles.sm : styles.md,
         disabled && styles.disabled,
+        animatedStyle,
         style,
       ]}
       onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       disabled={disabled || loading}
-      activeOpacity={0.8}
     >
       {loading ? (
         <ActivityIndicator color={variant === "outline" || variant === "ghost" ? "#004030" : "#FFF"} size="small" />
@@ -96,6 +117,6 @@ export default function Button({ title, onPress, variant = "primary", loading, d
           textStyles[variant],
         ]}>{title}</Text>
       )}
-    </TouchableOpacity>
+    </AnimatedPressable>
   );
 }

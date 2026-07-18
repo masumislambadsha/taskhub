@@ -26,6 +26,7 @@ export default function ResetPassword() {
       setDone(true);
       setTimeout(() => router.push("/(auth)/login"), 2500);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       Alert.alert("Error", err?.response?.data?.error || "Something went wrong");
     },

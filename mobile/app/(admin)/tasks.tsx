@@ -2,7 +2,8 @@ import { useState, useCallback } from "react";
 import { View, Text, FlatList, RefreshControl, Alert, TouchableOpacity, StyleSheet } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { ITask, PaginatedResponse } from "../../src/types";
+import { ITask } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
@@ -19,10 +20,10 @@ export default function AdminTasks() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, isFetching, isRefetching, refetch } = useQuery<PaginatedResponse<ITask>>({
+  const { data, isLoading, isFetching, isRefetching, refetch } = useQuery<PaginatedResponse<ITask, 'tasks'>>({
     queryKey: ["admin", "tasks", page],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<ITask>>("/api/v1/admin/tasks", { params: { page, limit: 20 } });
+      const { data } = await api.get<PaginatedResponse<ITask, 'tasks'>>("/api/v1/admin/tasks", { params: { page, limit: 20 } });
       return data;
     },
   });
@@ -38,6 +39,7 @@ export default function AdminTasks() {
       queryClient.invalidateQueries({ queryKey: ["admin", "tasks"] });
       Alert.alert("Success", "Task has been blocked");
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       Alert.alert("Error", err?.response?.data?.error || "Failed to block task");
     },
@@ -111,7 +113,7 @@ export default function AdminTasks() {
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         ListEmptyComponent={<EmptyState title="No tasks found" message="There are no tasks to manage yet" />}
-        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="small" /></View> : null}
+        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="sm" /></View> : null}
       />
     </View>
   );

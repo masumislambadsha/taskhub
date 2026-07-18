@@ -7,7 +7,8 @@ import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
 import Button from "../../src/components/ui/Button";
-import type { ISubmission, PaginatedResponse } from "../../src/types";
+import type { ISubmission } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 
 const TABS = ["All", "Pending", "Approved", "Rejected"] as const;
 type Tab = (typeof TABS)[number];
@@ -31,7 +32,7 @@ export default function Submissions() {
     queryFn: async () => {
       const params: Record<string, unknown> = { page, limit: 20 };
       if (statusParam) params.status = statusParam;
-      const res = await api.get<PaginatedResponse<ISubmission>>("/api/v1/submissions", { params });
+      const res = await api.get<PaginatedResponse<ISubmission, 'submissions'>>("/api/v1/submissions", { params });
       return res.data;
     },
   });

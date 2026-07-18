@@ -36,7 +36,7 @@ export default function TaskSuccess() {
         </View>
         <Text style={styles.successTitle}>Your task is live!</Text>
         <Text style={styles.successDesc}>
-          Workers have been notified. You've successfully posted a new opportunity on TaskHub.
+          Workers have been notified. You&apos;ve successfully posted a new opportunity on TaskHub.
         </Text>
       </View>
 

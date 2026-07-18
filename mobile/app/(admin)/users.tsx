@@ -10,7 +10,8 @@ import {
 } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { IUser, PaginatedResponse } from "../../src/types";
+import { IUser } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 import Input from "../../src/components/ui/Input";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
@@ -39,10 +40,10 @@ export default function AdminUsers() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data, isLoading, isFetching, isRefetching, refetch } = useQuery<PaginatedResponse<IUser>>({
+  const { data, isLoading, isFetching, isRefetching, refetch } = useQuery<PaginatedResponse<IUser, 'users'>>({
     queryKey: ["admin", "users", page, debouncedSearch],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<IUser>>(
+      const { data } = await api.get<PaginatedResponse<IUser, 'users'>>(
         "/api/v1/admin/users",
         { params: { page, limit: 20, search: debouncedSearch || undefined } },
       );
@@ -61,6 +62,7 @@ export default function AdminUsers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       Alert.alert("Error", err?.response?.data?.error || "Failed to update user");
     },
@@ -73,6 +75,7 @@ export default function AdminUsers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       Alert.alert("Error", err?.response?.data?.error || "Failed to update role");
     },
@@ -85,6 +88,7 @@ export default function AdminUsers() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       Alert.alert("Error", err?.response?.data?.error || "Failed to delete user");
     },
@@ -179,7 +183,7 @@ export default function AdminUsers() {
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         ListEmptyComponent={<EmptyState title="No users found" message={search ? "Try a different search term" : "No users have registered yet"} />}
-        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="small" /></View> : null}
+        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="sm" /></View> : null}
       />
     </View>
   );

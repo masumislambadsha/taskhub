@@ -1,8 +1,9 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { View, Text, ScrollView, RefreshControl, TouchableOpacity, StyleSheet } from "react-native";
 import { useFocusEffect, router } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { Ionicons } from "@expo/vector-icons";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import api from "../../src/lib/api";
 import { getUserData } from "../../src/lib/storage";
 import Card from "../../src/components/ui/Card";
@@ -10,19 +11,20 @@ import Button from "../../src/components/ui/Button";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
-import type { ISubmission, PaginatedResponse } from "../../src/types";
+import FadeInView from "../../src/components/animations/FadeInView";
+import SlideInView from "../../src/components/animations/SlideInView";
+import StaggerContainer from "../../src/components/animations/StaggerContainer";
+import ScaleOnPress from "../../src/components/animations/ScaleOnPress";
+import AnimatedCard from "../../src/components/animations/AnimatedCard";
+import AnimatedNumber from "../../src/components/animations/AnimatedNumber";
+import type { ISubmission } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 
 export default function Dashboard() {
   const [firstName, setFirstName] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadUser();
-    }, [])
-  );
-
-  async function loadUser() {
+  const loadUser = useCallback(async () => {
     const str = await getUserData();
     if (str) {
       try {
@@ -30,7 +32,13 @@ export default function Dashboard() {
         setFirstName(u.name?.split(" ")[0] || u.name || "");
       } catch {}
     }
-  }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUser();
+    }, [])
+  );
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-US", {
@@ -43,7 +51,7 @@ export default function Dashboard() {
   const submissionsQuery = useQuery({
     queryKey: ["worker-dashboard-submissions"],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<ISubmission>>("/api/v1/submissions", { params: { page: 1, limit: 100 } });
+      const { data } = await api.get<PaginatedResponse<ISubmission, 'submissions'>>("/api/v1/submissions", { params: { page: 1, limit: 100 } });
       return data;
     },
   });
@@ -66,6 +74,7 @@ export default function Dashboard() {
 
   const approvalRate = totalSubmissions > 0 ? Math.round((approved / totalSubmissions) * 100) : 0;
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await Promise.all([submissionsQuery.refetch(), meQuery.refetch()]);
@@ -75,6 +84,7 @@ export default function Dashboard() {
 
   const isLoading = submissionsQuery.isLoading || meQuery.isLoading;
   const isError = submissionsQuery.isError || meQuery.isError;
+  const isEmpty = !isLoading && !isError && totalSubmissions === 0;
 
   if (isLoading) return <Spinner message="Loading dashboard..." />;
 
@@ -95,101 +105,153 @@ export default function Dashboard() {
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#004030" />}
     >
-      <View style={styles.greetingSection}>
-        <View>
-          <Text style={styles.greeting}>Welcome back, {firstName}</Text>
-          <Text style={styles.dateText}>{dateStr}</Text>
+      <FadeInView>
+        <View style={styles.greetingSection}>
+          <View>
+            <Text style={styles.greeting}>Welcome back, {firstName}</Text>
+            <Text style={styles.dateText}>{dateStr}</Text>
+          </View>
         </View>
-      </View>
+      </FadeInView>
 
-      <Button
-        title="Browse Tasks"
-        onPress={() => router.push("/(worker)/tasks")}
-        style={styles.browseButton}
-      />
+      <FadeInView delay={100}>
+        <ScaleOnPress>
+          <Button
+            title="Browse Tasks"
+            onPress={() => router.push("/(worker)/tasks")}
+            style={styles.browseButton}
+          />
+        </ScaleOnPress>
+      </FadeInView>
 
-      <View style={styles.statsGrid}>
-        <Card style={styles.statCard}>
-          <Ionicons name="document-text-outline" size={24} color="#004030" />
-          <Text style={styles.statValue}>{totalSubmissions}</Text>
-          <Text style={styles.statLabel}>Total Submissions</Text>
-        </Card>
-        <Card style={styles.statCard}>
-          <Ionicons name="checkmark-circle-outline" size={24} color="#4A9782" />
-          <Text style={styles.statValue}>{approved}</Text>
-          <Text style={styles.statLabel}>Approved</Text>
-        </Card>
-        <Card style={styles.statCard}>
-          <Ionicons name="time-outline" size={24} color="#F59E0B" />
-          <Text style={styles.statValue}>{pending}</Text>
-          <Text style={styles.statLabel}>Pending Review</Text>
-        </Card>
-        <Card variant="accent" style={styles.statCard}>
-          <Ionicons name="cash-outline" size={24} color="#FFFFFF" />
-          <Text style={styles.statValueWhite}>{coins}</Text>
-          <Text style={styles.statLabelWhite}>Available Coins</Text>
-        </Card>
-      </View>
-
-      <View style={styles.chartsRow}>
-        <Card style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Earnings This Week</Text>
-          <View style={styles.chartBars}>
-            {[40, 65, 30, 80, 55, 90, 45].map((h, i) => (
-              <View key={i} style={styles.barItem}>
-                <View style={[styles.bar, { height: h }]} />
-              </View>
-            ))}
-          </View>
-          <Text style={styles.chartDayLabels}>Mon Tue Wed Thu Fri Sat Sun</Text>
-        </Card>
-        <Card style={styles.chartCard}>
-          <Text style={styles.chartTitle}>Performance</Text>
-          <View style={styles.performanceRow}>
-            <View style={styles.performanceBar}>
-              <View style={[styles.performanceFill, { width: `${approvalRate}%` }]} />
+      <StaggerContainer staggerDelay={80} direction="up">
+        <View style={styles.statsGrid}>
+          <AnimatedCard style={styles.statCard} interactive>
+            <View style={styles.statCardInner}>
+              <Ionicons name="document-text-outline" size={24} color="#004030" />
+              <AnimatedNumber value={totalSubmissions} style={styles.statValue} />
+              <Text style={styles.statLabel}>Total Submissions</Text>
             </View>
-            <Text style={styles.performancePct}>{approvalRate}%</Text>
-          </View>
-          <Text style={styles.performanceLabel}>Approval Rate</Text>
-        </Card>
-      </View>
-
-      <Text style={styles.sectionTitle}>Recent Submissions</Text>
-      {recentSubmissions.length > 0 ? (
-        recentSubmissions.map((s) => (
-          <Card key={s._id} style={styles.submissionCard}>
-            <View style={styles.submissionRow}>
-              <Text style={styles.submissionTitle} numberOfLines={1}>{s.taskTitle}</Text>
-              <Badge label={s.status} variant={s.status as "pending" | "approved" | "rejected"} />
+          </AnimatedCard>
+          <AnimatedCard style={styles.statCard} interactive>
+            <View style={styles.statCardInner}>
+              <Ionicons name="checkmark-circle-outline" size={24} color="#4A9782" />
+              <AnimatedNumber value={approved} style={styles.statValue} />
+              <Text style={styles.statLabel}>Approved</Text>
             </View>
-            <Text style={styles.submissionDate}>{new Date(s.createdAt).toLocaleDateString()}</Text>
+          </AnimatedCard>
+          <AnimatedCard style={styles.statCard} interactive>
+            <View style={styles.statCardInner}>
+              <Ionicons name="time-outline" size={24} color="#F59E0B" />
+              <AnimatedNumber value={pending} style={styles.statValue} />
+              <Text style={styles.statLabel}>Pending Review</Text>
+            </View>
+          </AnimatedCard>
+          <AnimatedCard variant="accent" style={styles.statCard} interactive>
+            <View style={styles.statCardInner}>
+              <Ionicons name="cash-outline" size={24} color="#FFFFFF" />
+              <AnimatedNumber value={coins} style={styles.statValueWhite} />
+              <Text style={styles.statLabelWhite}>Available Coins</Text>
+            </View>
+          </AnimatedCard>
+        </View>
+      </StaggerContainer>
+
+      <SlideInView delay={200} direction="up">
+        <View style={styles.chartsRow}>
+          <Card style={styles.chartCard}>
+            <Text style={styles.chartTitle}>Earnings This Week</Text>
+            <View style={styles.chartBars}>
+              {[40, 65, 30, 80, 55, 90, 45].map((h, i) => (
+                <Bar key={i} height={h} index={i} />
+              ))}
+            </View>
+            <Text style={styles.chartDayLabels}>Mon Tue Wed Thu Fri Sat Sun</Text>
           </Card>
-        ))
-      ) : (
-        <EmptyState title="No submissions yet" message="Submit work on tasks to see them here" />
-      )}
+          <Card style={styles.chartCard}>
+            <Text style={styles.chartTitle}>Performance</Text>
+            <View style={styles.performanceRow}>
+              <View style={styles.performanceBar}>
+                <View style={[styles.performanceFill, { width: `${approvalRate}%` }]} />
+              </View>
+              <AnimatedNumber value={approvalRate} suffix="%" style={styles.performancePct} />
+            </View>
+            <Text style={styles.performanceLabel}>Approval Rate</Text>
+          </Card>
+        </View>
+      </SlideInView>
 
-      <Text style={styles.sectionTitle}>Quick Actions</Text>
-      <View style={styles.quickActionsGrid}>
-        <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/(worker)/tasks")}>
-          <Ionicons name="search-outline" size={28} color="#004030" />
-          <Text style={styles.actionLabel}>Browse Tasks</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/(worker)/submissions")}>
-          <Ionicons name="document-text-outline" size={28} color="#4A9782" />
-          <Text style={styles.actionLabel}>Submissions</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/(worker)/earnings")}>
-          <Ionicons name="cash-outline" size={28} color="#F59E0B" />
-          <Text style={styles.actionLabel}>Earnings</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/(worker)/withdrawals")}>
-          <Ionicons name="card-outline" size={28} color="#EF4444" />
-          <Text style={styles.actionLabel}>Withdraw</Text>
-        </TouchableOpacity>
-      </View>
+      <SlideInView delay={300} direction="up">
+        <Text style={styles.sectionTitle}>Recent Submissions</Text>
+        {recentSubmissions.length > 0 ? (
+          <StaggerContainer staggerDelay={60} direction="up">
+            {recentSubmissions.map((s) => (
+              <AnimatedCard key={s._id} style={styles.submissionCard}>
+                <View style={styles.submissionRow}>
+                  <Text style={styles.submissionTitle} numberOfLines={1}>{s.taskTitle}</Text>
+                  <Badge label={s.status} variant={s.status as "pending" | "approved" | "rejected"} />
+                </View>
+                <Text style={styles.submissionDate}>{new Date(s.createdAt).toLocaleDateString()}</Text>
+              </AnimatedCard>
+            ))}
+          </StaggerContainer>
+        ) : (
+          <EmptyState title="No submissions yet" message="Submit work on tasks to see them here" />
+        )}
+      </SlideInView>
+
+      <SlideInView delay={400} direction="up">
+        <Text style={styles.sectionTitle}>Quick Actions</Text>
+        <View style={styles.quickActionsGrid}>
+          <ScaleOnPress>
+            <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/(worker)/tasks")} activeOpacity={1}>
+              <Ionicons name="search-outline" size={28} color="#004030" />
+              <Text style={styles.actionLabel}>Browse Tasks</Text>
+            </TouchableOpacity>
+          </ScaleOnPress>
+          <ScaleOnPress>
+            <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/(worker)/submissions")} activeOpacity={1}>
+              <Ionicons name="document-text-outline" size={28} color="#4A9782" />
+              <Text style={styles.actionLabel}>Submissions</Text>
+            </TouchableOpacity>
+          </ScaleOnPress>
+          <ScaleOnPress>
+            <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/(worker)/earnings")} activeOpacity={1}>
+              <Ionicons name="cash-outline" size={28} color="#F59E0B" />
+              <Text style={styles.actionLabel}>Earnings</Text>
+            </TouchableOpacity>
+          </ScaleOnPress>
+          <ScaleOnPress>
+            <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/(worker)/withdrawals")} activeOpacity={1}>
+              <Ionicons name="card-outline" size={28} color="#EF4444" />
+              <Text style={styles.actionLabel}>Withdraw</Text>
+            </TouchableOpacity>
+          </ScaleOnPress>
+        </View>
+      </SlideInView>
     </ScrollView>
+  );
+}
+
+const AnimatedView = Animated.createAnimatedComponent(View);
+
+function Bar({ height, index }: { height: number; index: number }) {
+  const animatedHeight = useSharedValue(0);
+  const animatedStyle = useAnimatedStyle(() => ({
+    height: animatedHeight.value,
+  }));
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      animatedHeight.value = withSpring(height, { damping: 15, stiffness: 100 });
+    }, index * 60);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <View style={styles.barItem}>
+      <AnimatedView style={[styles.bar, animatedStyle]} />
+    </View>
   );
 }
 
@@ -241,6 +303,9 @@ const styles = StyleSheet.create({
   },
   statCard: {
     width: '47%',
+    paddingVertical: 0,
+  },
+  statCardInner: {
     alignItems: 'center',
     paddingVertical: 20,
   },

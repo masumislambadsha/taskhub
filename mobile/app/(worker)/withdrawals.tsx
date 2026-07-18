@@ -10,7 +10,8 @@ import Button from "../../src/components/ui/Button";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
-import type { IWithdrawal, PaginatedResponse } from "../../src/types";
+import type { IWithdrawal } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 
 export default function Withdrawals() {
   const [coins, setCoins] = useState("");
@@ -20,11 +21,7 @@ export default function Withdrawals() {
   const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadUserCoins();
-  }, []);
-
-  async function loadUserCoins() {
+  const loadUserCoins = useCallback(async () => {
     const str = await getUserData();
     if (str) {
       try {
@@ -32,7 +29,12 @@ export default function Withdrawals() {
         setUserCoins(u.coins ?? 0);
       } catch {}
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadUserCoins();
+  }, []);
 
   const coinNum = parseInt(coins) || 0;
   const usdAmount = (coinNum / COINS_PER_DOLLAR_WITHDRAW).toFixed(2);
@@ -41,7 +43,7 @@ export default function Withdrawals() {
   const { data: withdrawals, isLoading, isError, refetch } = useQuery({
     queryKey: ["worker-withdrawals"],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<IWithdrawal>>("/api/v1/withdrawals", { params: { page: 1, limit: 50 } });
+      const res = await api.get<PaginatedResponse<IWithdrawal, 'withdrawals'>>("/api/v1/withdrawals", { params: { page: 1, limit: 50 } });
       return res.data;
     },
   });
@@ -63,6 +65,7 @@ export default function Withdrawals() {
       await queryClient.invalidateQueries({ queryKey: ["worker-withdrawals"] });
       await loadUserCoins();
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       Alert.alert("Error", err?.response?.data?.error || "Withdrawal request failed");
     },
@@ -75,7 +78,7 @@ export default function Withdrawals() {
     setRefreshing(false);
   }, [refetch]);
 
-  const withdrawalList = withdrawals?.data ?? [];
+  const withdrawalList = withdrawals?.withdrawals ?? [];
 
   if (isLoading && !withdrawals) return <Spinner message="Loading..." />;
 
@@ -130,7 +133,7 @@ export default function Withdrawals() {
 
       <Text style={styles.sectionTitle}>Recent Withdrawals</Text>
       {withdrawalList.length > 0 ? (
-        withdrawalList.map((w) => (
+        withdrawalList.map((w: IWithdrawal) => (
           <Card key={w._id} style={styles.withdrawalCard}>
             <View style={styles.withdrawalHeader}>
               <View style={styles.withdrawalInfo}>

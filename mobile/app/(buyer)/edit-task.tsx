@@ -34,6 +34,7 @@ export default function EditTask() {
 
   useEffect(() => {
     if (task) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTitle(task.title);
       setDetails(task.details);
       setCategory(task.category || "");
@@ -61,6 +62,7 @@ export default function EditTask() {
         { text: "OK", onPress: () => router.back() },
       ]);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       Alert.alert("Error", err?.response?.data?.error || "Failed to update task");
     },

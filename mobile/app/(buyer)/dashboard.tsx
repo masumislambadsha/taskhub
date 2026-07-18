@@ -10,20 +10,15 @@ import Button from "../../src/components/ui/Button";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
-import type { ITask, ISubmission, PaginatedResponse } from "../../src/types";
+import type { ITask, ISubmission } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 
 export default function Dashboard() {
   const [firstName, setFirstName] = useState("");
   const [coins, setCoins] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadUser();
-    }, [])
-  );
-
-  async function loadUser() {
+  const loadUser = useCallback(async () => {
     const str = await getUserData();
     if (str) {
       try {
@@ -32,7 +27,13 @@ export default function Dashboard() {
         setCoins(u.coins ?? 0);
       } catch {}
     }
-  }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUser();
+    }, [])
+  );
 
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-US", {
@@ -45,7 +46,7 @@ export default function Dashboard() {
   const tasksQuery = useQuery({
     queryKey: ["buyer-dashboard-tasks"],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<ITask>>("/api/v1/tasks", { params: { page: 1, limit: 1000 } });
+      const { data } = await api.get<PaginatedResponse<ITask, 'tasks'>>("/api/v1/tasks", { params: { page: 1, limit: 1000 } });
       return data;
     },
   });
@@ -53,7 +54,7 @@ export default function Dashboard() {
   const submissionsQuery = useQuery({
     queryKey: ["buyer-dashboard-submissions"],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<ISubmission>>("/api/v1/submissions", { params: { page: 1, limit: 1000 } });
+      const { data } = await api.get<PaginatedResponse<ISubmission, 'submissions'>>("/api/v1/submissions", { params: { page: 1, limit: 1000 } });
       return data;
     },
   });
@@ -73,6 +74,7 @@ const submissions = submissionsQuery.data?.submissions ?? [];
 
   const pendingSubmissions = submissions.filter((s) => s.status === "pending");
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await Promise.all([tasksQuery.refetch(), submissionsQuery.refetch()]);

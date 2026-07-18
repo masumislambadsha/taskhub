@@ -54,7 +54,7 @@ export default function ForgotPassword() {
         <Text style={styles.subtitle}>Forgot your password?</Text>
 
         <Card variant="auth">
-          <Text style={styles.infoText}>Enter your email and we'll send you a reset link.</Text>
+          <Text style={styles.infoText}>Enter your email and we&apos;ll send you a reset link.</Text>
           <Input
             label="Email address"
             value={email}

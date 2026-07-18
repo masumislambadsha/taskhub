@@ -12,6 +12,10 @@ import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import type { ComponentProps } from "react";
 import { COIN_PACKAGES } from "../../src/lib/constants";
+import FadeInView from "../../src/components/animations/FadeInView";
+import SlideInView from "../../src/components/animations/SlideInView";
+import ScaleOnPress from "../../src/components/animations/ScaleOnPress";
+import StaggerContainer from "../../src/components/animations/StaggerContainer";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 void SCREEN_WIDTH; // used for layout calculations
@@ -195,31 +199,41 @@ export default function LandingPage() {
       {/* SECTION 1: HERO */}
       <View style={styles.heroContainer}>
         <View style={styles.heroContent}>
-          <Text style={styles.heroTitle}>
-            Earn from micro tasks or{" "}
-            <Text style={styles.heroHighlight}>get work done faster</Text>
-          </Text>
-          <Text style={styles.heroSubtitle}>
-            The premium marketplace for precise execution. Join thousands of
-            workers and buyers in a curated ecosystem built for efficiency.
-          </Text>
-          <View style={styles.heroButtons}>
-            <TouchableOpacity
-              style={styles.primaryButton}
-              onPress={() => handleRegister("worker")}
-              activeOpacity={0.9}
-            >
-              <Text style={styles.primaryButtonText}>Start earning</Text>
-              <Ionicons name="arrow-forward" size={16} color="white" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              onPress={() => handleRegister("buyer")}
-              activeOpacity={0.9}
-            >
-              <Text style={styles.secondaryButtonText}>Post a task</Text>
-            </TouchableOpacity>
-          </View>
+          <FadeInView>
+            <Text style={styles.heroTitle}>
+              Earn from micro tasks or{" "}
+              <Text style={styles.heroHighlight}>get work done faster</Text>
+            </Text>
+          </FadeInView>
+          <SlideInView delay={150} direction="up">
+            <Text style={styles.heroSubtitle}>
+              The premium marketplace for precise execution. Join thousands of
+              workers and buyers in a curated ecosystem built for efficiency.
+            </Text>
+          </SlideInView>
+          <SlideInView delay={300} direction="up">
+            <View style={styles.heroButtons}>
+              <ScaleOnPress>
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={() => handleRegister("worker")}
+                  activeOpacity={1}
+                >
+                  <Text style={styles.primaryButtonText}>Start earning</Text>
+                  <Ionicons name="arrow-forward" size={16} color="white" />
+                </TouchableOpacity>
+              </ScaleOnPress>
+              <ScaleOnPress>
+                <TouchableOpacity
+                  style={styles.secondaryButton}
+                  onPress={() => handleRegister("buyer")}
+                  activeOpacity={1}
+                >
+                  <Text style={styles.secondaryButtonText}>Post a task</Text>
+                </TouchableOpacity>
+              </ScaleOnPress>
+            </View>
+          </SlideInView>
         </View>
 
         {/* Mock Dashboard */}
@@ -715,7 +729,7 @@ export default function LandingPage() {
       <View style={styles.communitySection}>
         <View style={styles.communityInner}>
           <View style={styles.testimonialFeatured}>
-            <Text style={styles.quoteMark}>"</Text>
+            <Text style={styles.quoteMark}>&quot;</Text>
             <Text style={styles.communityTitle}>Community Voice</Text>
             <Text style={styles.featuredQuote}>
               {
@@ -742,8 +756,8 @@ export default function LandingPage() {
                 ))}
               </View>
               <Text style={styles.testimonialQuote}>
-                "Consistent payouts and a clean interface. Best micro-task
-                platform I've used."
+                &quot;Consistent payouts and a clean interface. Best micro-task
+                platform I&apos;ve used.&quot;
               </Text>
               <Text style={styles.testimonialAuthor}>
                 Elena Petrova ·{" "}
@@ -755,8 +769,8 @@ export default function LandingPage() {
             <View style={styles.testimonialCardSm}>
               <Ionicons name="flash" size={20} color="#4A9782" />
               <Text style={[styles.testimonialQuote, { marginTop: 8 }]}>
-                "Lightning fast turnaround on our marketing outreach tasks. What
-                used to take a week now takes four hours."
+                &quot;Lightning fast turnaround on our marketing outreach tasks. What
+                used to take a week now takes four hours.&quot;
               </Text>
               <Text style={styles.testimonialAuthor}>
                 David Chen ·{" "}
@@ -771,7 +785,7 @@ export default function LandingPage() {
       <View style={styles.impactSection}>
         <Text style={styles.impactTitle}>Global Impact, Local Empowerment</Text>
         <Text style={styles.impactSubtitle}>
-          TaskHub isn't just a platform; it's a movement providing fair-wage
+          TaskHub isn&apos;t just a platform; it&apos;s a movement providing fair-wage
           opportunities to individuals in 140+ countries.
         </Text>
         <View style={styles.impactGrid}>
@@ -798,7 +812,7 @@ export default function LandingPage() {
             </View>
             <Text style={styles.faqTitle}>Everything you need to know.</Text>
             <Text style={styles.faqSubtitle}>
-              Can't find the answer you're looking for? Reach out to our support
+              Can&apos;t find the answer you&apos;re looking for? Reach out to our support
               team.
             </Text>
             <TouchableOpacity
@@ -823,31 +837,43 @@ export default function LandingPage() {
       </View>
 
       {/* SECTION 12: FINAL CTA */}
-      <View style={styles.ctaSection}>
-        <View style={styles.ctaCircleTopLeft} />
-        <View style={styles.ctaCircleBottomRight} />
-        <Text style={styles.ctaTitle}>Ready to redefine how you work?</Text>
-        <Text style={styles.ctaSubtitle}>
-          Join the most efficient micro-tasking network today. Signing up takes
-          less than 2 minutes.
-        </Text>
-        <View style={styles.ctaButtons}>
-          <TouchableOpacity
-            style={styles.ctaPrimaryBtn}
-            onPress={() => handleRegister("worker")}
-            activeOpacity={0.9}
-          >
-            <Text style={styles.ctaPrimaryBtnText}>Get Started Now</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.ctaSecondaryBtn}
-            onPress={() => router.push("/(public)/browse-tasks")}
-            activeOpacity={0.9}
-          >
-            <Text style={styles.ctaSecondaryBtnText}>Learn More</Text>
-          </TouchableOpacity>
+      <SlideInView direction="up">
+        <View style={styles.ctaSection}>
+          <View style={styles.ctaCircleTopLeft} />
+          <View style={styles.ctaCircleBottomRight} />
+          <FadeInView>
+            <Text style={styles.ctaTitle}>Ready to redefine how you work?</Text>
+          </FadeInView>
+          <SlideInView delay={150} direction="up">
+            <Text style={styles.ctaSubtitle}>
+              Join the most efficient micro-tasking network today. Signing up takes
+              less than 2 minutes.
+            </Text>
+          </SlideInView>
+          <SlideInView delay={300} direction="up">
+            <View style={styles.ctaButtons}>
+              <ScaleOnPress>
+                <TouchableOpacity
+                  style={styles.ctaPrimaryBtn}
+                  onPress={() => handleRegister("worker")}
+                  activeOpacity={1}
+                >
+                  <Text style={styles.ctaPrimaryBtnText}>Get Started Now</Text>
+                </TouchableOpacity>
+              </ScaleOnPress>
+              <ScaleOnPress>
+                <TouchableOpacity
+                  style={styles.ctaSecondaryBtn}
+                  onPress={() => router.push("/(public)/browse-tasks")}
+                  activeOpacity={1}
+                >
+                  <Text style={styles.ctaSecondaryBtnText}>Learn More</Text>
+                </TouchableOpacity>
+              </ScaleOnPress>
+            </View>
+          </SlideInView>
         </View>
-      </View>
+      </SlideInView>
 
       <View style={{ height: 32 }} />
     </ScrollView>
