@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { View, Text, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
@@ -8,12 +8,18 @@ import Input from "../../src/components/ui/Input";
 import Button from "../../src/components/ui/Button";
 import Card from "../../src/components/ui/Card";
 import { API_BASE_URL } from "../../src/lib/constants";
+import { useGoogleAuth } from "../../src/hooks/useGoogleAuth";
 
 type UserRole = "worker" | "buyer";
 
 export default function Register() {
   const insets = useSafeAreaInsets();
   const { role: paramRole } = useLocalSearchParams<{ role?: string }>();
+
+  const onGoogleError = useCallback((msg: string) => {
+    Alert.alert("Google Sign-In", msg);
+  }, []);
+  const { signInWithGoogle, loading: googleLoading } = useGoogleAuth(onGoogleError);
 
   const [step, setStep] = useState(paramRole === "worker" || paramRole === "buyer" ? 2 : 1);
   const [role, setRole] = useState<UserRole>((paramRole as UserRole) || "worker");
@@ -43,6 +49,7 @@ export default function Register() {
         { text: "OK", onPress: () => router.replace("/(auth)/login") },
       ]);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       const msg = err?.response?.data?.error || "Registration failed";
       Alert.alert("Error", typeof msg === "string" ? msg : "Invalid input");
@@ -116,7 +123,8 @@ export default function Register() {
           <Button
             title="Continue with Google"
             variant="outline"
-            onPress={() => Alert.alert("Coming Soon", "Google sign-up is not yet available on mobile.")}
+            onPress={signInWithGoogle}
+            loading={googleLoading}
             style={styles.fullWidth}
           />
 

@@ -164,9 +164,28 @@ export default function PublicLayout() {
           activeOpacity={1}
           onPress={() => setShowMore(false)}
         >
-          <View style={styles.modalContent}>
+            <View style={styles.modalContent}>
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>More</Text>
+
+            <TouchableOpacity
+              style={styles.modalItem}
+              onPress={() => { setShowMore(false); router.push("/(auth)/login"); }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="log-in-outline" size={22} color="#004030" />
+              <Text style={styles.modalItemText}>Log in</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modalItem, styles.modalSignupItem]}
+              onPress={() => { setShowMore(false); router.push("/(auth)/register"); }}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="person-add-outline" size={22} color="#FFFFFF" />
+              <Text style={[styles.modalItemText, { color: "#FFFFFF" }]}>Sign up</Text>
+            </TouchableOpacity>
+
+            <View style={styles.modalDivider} />
             {MORE_ITEMS.map((item) => (
               <TouchableOpacity
                 key={item.label}
@@ -317,6 +336,19 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(0,64,48,0.05)",
+  },
+  modalSignupItem: {
+    backgroundColor: "#004030",
+    borderRadius: 10,
+    marginVertical: 4,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderBottomWidth: 0,
+  },
+  modalDivider: {
+    height: 1,
+    backgroundColor: "rgba(0,64,48,0.08)",
+    marginVertical: 8,
   },
   modalItemText: {
     fontSize: 16,

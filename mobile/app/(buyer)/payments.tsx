@@ -7,7 +7,8 @@ import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
 import Button from "../../src/components/ui/Button";
-import type { IPayment, PaginatedResponse } from "../../src/types";
+import type { IPayment } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 
 export default function Payments() {
   const [refreshing, setRefreshing] = useState(false);
@@ -15,7 +16,7 @@ export default function Payments() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["buyer-payments"],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<IPayment>>("/api/v1/payments/history", { params: { page: 1, limit: 50 } });
+      const { data } = await api.get<PaginatedResponse<IPayment, 'payments'>>("/api/v1/payments/history", { params: { page: 1, limit: 50 } });
       return data;
     },
   });

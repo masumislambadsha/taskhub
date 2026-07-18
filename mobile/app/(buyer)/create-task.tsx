@@ -41,6 +41,7 @@ export default function CreateTask() {
       queryClient.invalidateQueries({ queryKey: ["buyer-tasks"] });
       router.push(`/(buyer)/task-success?id=${data._id}`);
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       Alert.alert("Error", err?.response?.data?.error || "Failed to create task");
     },

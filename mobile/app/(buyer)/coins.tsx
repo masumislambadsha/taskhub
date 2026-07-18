@@ -10,19 +10,14 @@ import Badge from "../../src/components/ui/Badge";
 import Button from "../../src/components/ui/Button";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
-import type { IPayment, PaginatedResponse, CoinPackage } from "../../src/types";
+import type { IPayment, CoinPackage } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 
 export default function Coins() {
   const [userCoins, setUserCoins] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadCoins();
-    }, [])
-  );
-
-  async function loadCoins() {
+  const loadCoins = useCallback(async () => {
     const str = await getUserData();
     if (str) {
       try {
@@ -30,12 +25,18 @@ export default function Coins() {
         setUserCoins(u.coins ?? 0);
       } catch {}
     }
-  }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCoins();
+    }, [])
+  );
 
   const { data: paymentsData, refetch } = useQuery({
     queryKey: ["buyer-payments-history"],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<IPayment>>("/api/v1/payments/history", { params: { page: 1, limit: 50 } });
+      const { data } = await api.get<PaginatedResponse<IPayment, 'payments'>>("/api/v1/payments/history", { params: { page: 1, limit: 50 } });
       return data;
     },
   });
@@ -48,6 +49,7 @@ export default function Coins() {
     onSuccess: () => {
       Alert.alert("Success", "Purchase initiated!");
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       Alert.alert("Error", err?.response?.data?.error || "Purchase failed");
     },
@@ -71,7 +73,7 @@ export default function Coins() {
     );
   };
 
-  const payments = paymentsData?.data || [];
+  const payments = paymentsData?.payments || [];
 
   return (
     <ScrollView
@@ -111,7 +113,7 @@ export default function Coins() {
       {payments.length === 0 ? (
         <EmptyState title="No purchases yet" message="Your payment history will appear here" />
       ) : (
-        payments.map((p) => (
+        payments.map((p: IPayment) => (
           <Card key={p._id} style={styles.paymentCard}>
             <View style={styles.paymentRow}>
               <View>

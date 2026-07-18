@@ -75,6 +75,7 @@ export default function WorkerTaskDetail() {
       Alert.alert("Success", "Submission sent! Waiting for buyer review.", [
         { text: "OK", onPress: () => router.push("/(worker)/submissions") },
       ]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       Alert.alert("Error", err?.response?.data?.error || "Submission failed");
     } finally {

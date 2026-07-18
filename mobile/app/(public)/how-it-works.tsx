@@ -103,7 +103,7 @@ export default function HowItWorks() {
             <View key={s.step} style={styles.stepCard}>
               <View style={styles.stepIconRow}>
                 <View style={styles.stepIcon}>
-                  <Ionicons name={s.icon as any} size={20} color="#4A9782" />
+                  <Ionicons name={s.icon as keyof typeof Ionicons.glyphMap} size={20} color="#4A9782" />
                 </View>
                 <Text style={styles.stepNumber}>{s.step}</Text>
               </View>
@@ -130,7 +130,7 @@ export default function HowItWorks() {
             <View key={s.step} style={[styles.stepCard, styles.stepCardDark]}>
               <View style={styles.stepIconRow}>
                 <View style={styles.stepIconDark}>
-                  <Ionicons name={s.icon as any} size={20} color="#4A9782" />
+                  <Ionicons name={s.icon as keyof typeof Ionicons.glyphMap} size={20} color="#4A9782" />
                 </View>
                 <Text style={[styles.stepNumber, { color: "rgba(255,255,255,0.15)" }]}>{s.step}</Text>
               </View>
@@ -177,7 +177,7 @@ export default function HowItWorks() {
         <View style={styles.paymentGrid}>
           {PAYMENT_METHODS.map((m) => (
             <View key={m.name} style={styles.paymentCard}>
-              <Ionicons name={m.icon as any} size={24} color="#4A9782" />
+              <Ionicons name={m.icon as keyof typeof Ionicons.glyphMap} size={24} color="#4A9782" />
               <Text style={styles.paymentName}>{m.name}</Text>
               <Text style={styles.paymentNote}>{m.note}</Text>
             </View>

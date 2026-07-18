@@ -10,19 +10,14 @@ import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
 import Button from "../../src/components/ui/Button";
-import type { ISubmission, PaginatedResponse } from "../../src/types";
+import type { ISubmission } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 
 export default function Earnings() {
   const [coins, setCoins] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadCoins();
-    }, [])
-  );
-
-  async function loadCoins() {
+  const loadCoins = useCallback(async () => {
     const str = await getUserData();
     if (str) {
       try {
@@ -30,12 +25,18 @@ export default function Earnings() {
         setCoins(u.coins ?? 0);
       } catch {}
     }
-  }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCoins();
+    }, [])
+  );
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["worker-earnings"],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<ISubmission>>("/api/v1/submissions", { params: { page: 1, limit: 1000 } });
+      const res = await api.get<PaginatedResponse<ISubmission, 'submissions'>>("/api/v1/submissions", { params: { page: 1, limit: 1000 } });
       return res.data;
     },
   });

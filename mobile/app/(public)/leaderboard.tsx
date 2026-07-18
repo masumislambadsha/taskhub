@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
+import { View, Text, StyleSheet, FlatList, RefreshControl, ViewStyle, TextStyle } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import api from "../../src/lib/api";
 import Card from "../../src/components/ui/Card";
@@ -42,9 +42,9 @@ export default function Leaderboard() {
     const isTop3 = item.rank <= 3;
 
     return (
-    <Card style={[styles.rankCard, isTop3 && styles.rankCardTop].filter(Boolean) as any}>
+    <Card style={[styles.rankCard, isTop3 && styles.rankCardTop].filter(Boolean) as ViewStyle[]}>
       <View style={styles.rankRow}>
-        <View style={[styles.rankBadge, isTop3 && { backgroundColor: rankStyle?.bg }].filter(Boolean) as any}>
+        <View style={[styles.rankBadge, isTop3 && { backgroundColor: rankStyle?.bg }].filter(Boolean) as ViewStyle[]}>
           {isTop3 ? (
               <Text style={styles.rankIcon}>{RANK_ICONS[item.rank]}</Text>
             ) : (
@@ -60,7 +60,7 @@ export default function Leaderboard() {
             <Text style={styles.rankCoinsLabel}>coins</Text>
           </View>
           <View style={styles.rateContainer}>
-            <Text style={[styles.rateValue, isTop3 && { color: rankStyle?.text }].filter(Boolean) as any}>
+            <Text style={[styles.rateValue, isTop3 && { color: rankStyle?.text }].filter(Boolean) as TextStyle[]}>
               {item.approvalRate}%
             </Text>
             <Text style={styles.rateLabel}>rate</Text>

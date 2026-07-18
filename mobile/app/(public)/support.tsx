@@ -7,7 +7,7 @@ export default function Support() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.headerBar}>
         <Text style={styles.headerTitle}>Support</Text>
-        <Text style={styles.headerSubtitle}>We're here to help</Text>
+        <Text style={styles.headerSubtitle}>We&apos;re here to help</Text>
       </View>
 
       <Card style={styles.supportCard}>
@@ -39,13 +39,13 @@ export default function Support() {
 
         <Text style={styles.faqQuestion}>How do I withdraw my earnings?</Text>
         <Text style={styles.faqAnswer}>
-          Once you've earned at least 200 coins, you can request a withdrawal. Coins are converted at a
+          Once you&apos;ve earned at least 200 coins, you can request a withdrawal. Coins are converted at a
           rate of 20 coins per $1 USD and sent to your preferred payment method.
         </Text>
 
         <Text style={styles.faqQuestion}>What happens if my submission is rejected?</Text>
         <Text style={styles.faqAnswer}>
-          If your submission is rejected, you can revise and resubmit based on the buyer's feedback.
+          If your submission is rejected, you can revise and resubmit based on the buyer&apos;s feedback.
           Open communication with buyers helps ensure successful outcomes.
         </Text>
 
@@ -60,7 +60,7 @@ export default function Support() {
         <Text style={styles.cardTitle}>Still need help?</Text>
         <Text style={styles.cardText}>
           Our support team typically responds within 24 hours. For urgent matters, please reach out via
-          email with "URGENT" in the subject line.
+          email with &quot;URGENT&quot; in the subject line.
         </Text>
       </Card>
     </ScrollView>

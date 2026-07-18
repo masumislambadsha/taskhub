@@ -6,7 +6,8 @@ import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
-import type { ISubmission, PaginatedResponse } from "../../src/types";
+import type { ISubmission } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 
 export default function Submissions() {
   const queryClient = useQueryClient();
@@ -16,7 +17,7 @@ export default function Submissions() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["buyer-submissions", page],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<ISubmission>>("/api/v1/submissions", { params: { page, limit: 20 } });
+      const { data } = await api.get<PaginatedResponse<ISubmission, 'submissions'>>("/api/v1/submissions", { params: { page, limit: 20 } });
       return data;
     },
   });
@@ -26,6 +27,7 @@ export default function Submissions() {
       await api.post(`/api/v1/submissions/${id}/status`, { status: "approved" });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["buyer-submissions"] }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => Alert.alert("Error", err?.response?.data?.error || "Failed to approve"),
   });
 
@@ -34,6 +36,7 @@ export default function Submissions() {
       await api.post(`/api/v1/submissions/${id}/status`, { status: "rejected" });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["buyer-submissions"] }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => Alert.alert("Error", err?.response?.data?.error || "Failed to reject"),
   });
 
@@ -105,7 +108,7 @@ export default function Submissions() {
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ListEmptyComponent={<EmptyState title="No submissions yet" message="Submissions from workers will appear here" />}
-        ListFooterComponent={page < (data?.pages || 1) ? <Spinner size="small" /> : null}
+        ListFooterComponent={page < (data?.pages || 1) ? <Spinner size="sm" /> : null}
       />
     </View>
   );

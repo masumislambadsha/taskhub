@@ -37,6 +37,7 @@ export default function AdminCategories() {
       setNewCategory("");
       Alert.alert("Success", "Category added");
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => Alert.alert("Error", err?.response?.data?.error || "Failed to add category"),
   });
 
@@ -48,6 +49,7 @@ export default function AdminCategories() {
       queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
       Alert.alert("Success", "Category deleted");
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => Alert.alert("Error", err?.response?.data?.error || "Failed to delete"),
   });
 

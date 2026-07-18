@@ -53,6 +53,7 @@ export default function BuyerTaskDetail() {
       queryClient.invalidateQueries({ queryKey: ["buyer-task-detail", id] });
       queryClient.invalidateQueries({ queryKey: ["buyer-tasks"] });
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => Alert.alert("Error", err?.response?.data?.error || "Failed to close task"),
   });
 
@@ -90,7 +91,7 @@ export default function BuyerTaskDetail() {
         </TouchableOpacity>
         <View style={styles.headerInfo}>
           <View style={styles.headerRow}>
-            <Badge label={task.status} variant={task.status as any} />
+            <Badge label={task.status} variant={task.status as "pending" | "approved" | "rejected" | "open" | "closed" | "blocked" | "archived" | "success" | "failed" | "active" | "suspended" | "info" | "warning" | "danger" | "default"} />
           </View>
           <Text style={styles.taskTitle}>{task.title}</Text>
           <Text style={styles.taskDate}>
@@ -191,7 +192,7 @@ export default function BuyerTaskDetail() {
                 <Text style={styles.submissionDetail} numberOfLines={1}>{s.details?.slice(0, 60)}...</Text>
                 <Text style={styles.submissionDate}>{formatDate(s.createdAt)}</Text>
               </View>
-              <Badge label={s.status} variant={s.status as any} />
+              <Badge label={s.status} variant={s.status as "pending" | "approved" | "rejected" | "open" | "closed" | "blocked" | "archived" | "success" | "failed" | "active" | "suspended" | "info" | "warning" | "danger" | "default"} />
             </View>
           ))
         )}

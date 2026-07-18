@@ -45,8 +45,10 @@ export function useSocket(userId: string | undefined, userName: string | undefin
     socketRef.current?.emit("messages:read", conversationId);
   }, []);
 
+  /* eslint-disable react-hooks/refs */
   return {
     socket: socketRef.current,
+    /* eslint-enable react-hooks/refs */
     sendMessage,
     joinConversation,
     leaveConversation,

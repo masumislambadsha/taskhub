@@ -1,14 +1,10 @@
-import { useEffect } from "react";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
+import { useEffect, useCallback } from "react";
 import { router } from "expo-router";
 import { getToken, getUserData } from "../src/lib/storage";
+import Spinner from "../src/components/ui/Spinner";
 
 export default function Index() {
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
+  const checkAuth = useCallback(async () => {
     const token = await getToken();
     if (!token) {
       router.replace("/(public)");
@@ -32,15 +28,11 @@ export default function Index() {
     } catch {
       router.replace("/(public)");
     }
-  }
+  }, []);
 
-  return (
-    <View style={styles.container}>
-      <ActivityIndicator size="large" color="#004030" />
-    </View>
-  );
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  return <Spinner variant="hub" size="xl" message="Loading TaskHub..." />;
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#FFF9E5" },
-});

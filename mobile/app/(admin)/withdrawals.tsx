@@ -2,7 +2,8 @@ import { useState, useCallback } from "react";
 import { View, Text, FlatList, RefreshControl, Alert, TouchableOpacity, StyleSheet } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../../src/lib/api";
-import { IWithdrawal, PaginatedResponse } from "../../src/types";
+import { IWithdrawal } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
@@ -18,10 +19,10 @@ export default function AdminWithdrawals() {
 
   const statusParam = filter === "all" ? undefined : filter;
 
-  const { data, isLoading, isFetching, isRefetching, refetch } = useQuery<PaginatedResponse<IWithdrawal>>({
+  const { data, isLoading, isFetching, isRefetching, refetch } = useQuery<PaginatedResponse<IWithdrawal, 'withdrawals'>>({
     queryKey: ["admin", "withdrawals", page, filter],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<IWithdrawal>>("/api/v1/withdrawals", { params: { page, limit: 20, status: statusParam } });
+      const { data } = await api.get<PaginatedResponse<IWithdrawal, 'withdrawals'>>("/api/v1/withdrawals", { params: { page, limit: 20, status: statusParam } });
       return data;
     },
   });
@@ -37,6 +38,7 @@ export default function AdminWithdrawals() {
       queryClient.invalidateQueries({ queryKey: ["admin", "withdrawals"] });
       Alert.alert("Success", "Withdrawal has been approved");
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => Alert.alert("Error", err?.response?.data?.error || "Failed to approve"),
   });
 
@@ -48,6 +50,7 @@ export default function AdminWithdrawals() {
       queryClient.invalidateQueries({ queryKey: ["admin", "withdrawals"] });
       Alert.alert("Success", "Withdrawal has been rejected");
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => Alert.alert("Error", err?.response?.data?.error || "Failed to reject"),
   });
 
@@ -139,7 +142,7 @@ export default function AdminWithdrawals() {
         onEndReached={loadMore}
         onEndReachedThreshold={0.3}
         ListEmptyComponent={<EmptyState title={`No ${filter === "all" ? "" : filter} withdrawals`} message={filter === "pending" ? "No pending withdrawal requests" : `No ${filter} withdrawals found`} />}
-        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="small" /></View> : null}
+        ListFooterComponent={isFetching && page > 1 ? <View style={styles.footer}><Spinner size="sm" /></View> : null}
       />
     </View>
   );

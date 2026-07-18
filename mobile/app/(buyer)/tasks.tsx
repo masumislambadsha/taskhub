@@ -13,7 +13,8 @@ import Input from "../../src/components/ui/Input";
 import Badge from "../../src/components/ui/Badge";
 import Spinner from "../../src/components/ui/Spinner";
 import EmptyState from "../../src/components/ui/EmptyState";
-import type { ITask, PaginatedResponse } from "../../src/types";
+import type { ITask } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 
 const statusVariant: Record<string, "pending" | "approved" | "rejected" | "open" | "closed" | "active" | "suspended" | "default"> = {
   open: "open",
@@ -39,7 +40,7 @@ export default function Tasks() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["buyer-tasks", page],
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<ITask>>("/api/v1/tasks", { params: { page, limit: 20 } });
+      const { data } = await api.get<PaginatedResponse<ITask, 'tasks'>>("/api/v1/tasks", { params: { page, limit: 20 } });
       return data;
     },
   });
@@ -63,6 +64,7 @@ export default function Tasks() {
       resetForm();
       queryClient.invalidateQueries({ queryKey: ["buyer-tasks"] });
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => {
       Alert.alert("Error", err?.response?.data?.error || "Failed to create task");
     },
@@ -73,6 +75,7 @@ export default function Tasks() {
       await api.patch(`/api/v1/tasks/${id}`, { status: "closed" });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["buyer-tasks"] }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => Alert.alert("Error", err?.response?.data?.error || "Failed to close task"),
   });
 
@@ -81,6 +84,7 @@ export default function Tasks() {
       await api.delete(`/api/v1/tasks/${id}`);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["buyer-tasks"] }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (err: any) => Alert.alert("Error", err?.response?.data?.error || "Failed to delete task"),
   });
 
@@ -163,7 +167,7 @@ export default function Tasks() {
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         ListEmptyComponent={<EmptyState title="No tasks yet" message="Create your first task to get started" />}
-        ListFooterComponent={page < (data?.pages || 1) ? <Spinner size="small" /> : null}
+        ListFooterComponent={page < (data?.pages || 1) ? <Spinner size="sm" /> : null}
       />
 
       <Modal visible={showModal} animationType="slide" presentationStyle="pageSheet">

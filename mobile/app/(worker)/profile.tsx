@@ -8,25 +8,26 @@ import Card from "../../src/components/ui/Card";
 import Badge from "../../src/components/ui/Badge";
 import Button from "../../src/components/ui/Button";
 import Spinner from "../../src/components/ui/Spinner";
-import type { IUser, ISubmission, PaginatedResponse } from "../../src/types";
+import type { IUser, ISubmission } from "../../src/types";
+import type { PaginatedResponse } from "../../src/types";
 
 export default function Profile() {
   const [localUser, setLocalUser] = useState<IUser | null>(null);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadUser();
-    }, [])
-  );
-
-  async function loadUser() {
+  const loadUser = useCallback(async () => {
     const str = await getUserData();
     if (str) {
       try {
         setLocalUser(JSON.parse(str));
       } catch {}
     }
-  }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUser();
+    }, [])
+  );
 
   const meQuery = useQuery({
     queryKey: ["worker-profile-me"],
@@ -39,7 +40,7 @@ export default function Profile() {
   const submissionsQuery = useQuery({
     queryKey: ["worker-profile-submissions"],
     queryFn: async () => {
-      const res = await api.get<PaginatedResponse<ISubmission>>("/api/v1/submissions", {
+      const res = await api.get<PaginatedResponse<ISubmission, 'submissions'>>("/api/v1/submissions", {
         params: { page: 1, limit: 100, status: "approved" },
       });
       return res.data;

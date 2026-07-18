@@ -1,13 +1,13 @@
-import { useEffect, useRef } from "react";
-import {
-  View, Text, TouchableOpacity, Animated, Dimensions, StyleSheet,
-} from "react-native";
+/* eslint-disable react-hooks/immutability */
+import { useEffect } from "react";
+import { View, Text, TouchableOpacity, Image, Dimensions, StyleSheet } from "react-native";
 import { router, usePathname } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { getToken, clearAuth } from "../lib/storage";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming, Easing, interpolate } from "react-native-reanimated";
+import { clearAuth } from "../lib/storage";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
-const SIDEBAR_WIDTH = SCREEN_WIDTH * 0.75;
+const SIDEBAR_WIDTH = Math.min(SCREEN_WIDTH * 0.75, 320);
 
 const ICON_MAP: Record<string, keyof typeof Ionicons.glyphMap> = {
   MdDashboard: "grid-outline",
@@ -41,31 +41,43 @@ interface Props {
   navItems: readonly NavItem[];
   userName?: string;
   userRole?: string;
+  photoUrl?: string;
+  coins?: number;
 }
 
-export default function Sidebar({ open, onClose, navItems, userName, userRole }: Props) {
-  const slideAnim = useRef(new Animated.Value(-SIDEBAR_WIDTH)).current;
-  const overlayAnim = useRef(new Animated.Value(0)).current;
+export default function Sidebar({ open, onClose, navItems, userName, userRole, photoUrl, coins }: Props) {
+  const slideProgress = useSharedValue(0);
   const pathname = usePathname();
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: open ? 0 : -SIDEBAR_WIDTH,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(overlayAnim, {
-        toValue: open ? 1 : 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
+    slideProgress.value = withSpring(open ? 1 : 0, {
+      damping: 20,
+      stiffness: 150,
+      mass: 0.8,
+    });
   }, [open]);
+
+  const overlayStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(slideProgress.value, [0, 1], [0, 0.4]),
+    pointerEvents: slideProgress.value > 0.5 ? ("auto" as const) : ("none" as const),
+  }));
+
+  const sidebarStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateX: interpolate(
+          slideProgress.value,
+          [0, 1],
+          [-SIDEBAR_WIDTH, 0],
+        ),
+      },
+    ],
+    pointerEvents: slideProgress.value > 0.5 ? ("auto" as const) : ("none" as const),
+  }));
 
   function handleNav(href: string) {
     onClose();
-    router.push(href as any);
+    router.push(href as Parameters<typeof router.push>[0]);
   }
 
   async function handleLogout() {
@@ -82,48 +94,43 @@ export default function Sidebar({ open, onClose, navItems, userName, userRole }:
 
   return (
     <>
-      <Animated.View
-        style={[styles.overlay, { opacity: overlayAnim }]}
-        pointerEvents={open ? "auto" : "none"}
-      >
+      <Animated.View style={[styles.overlay, overlayStyle]}>
         <TouchableOpacity style={styles.overlayTouch} onPress={onClose} activeOpacity={1} />
       </Animated.View>
 
-      <Animated.View
-        style={[styles.sidebar, { transform: [{ translateX: slideAnim }] }]}
-        pointerEvents={open ? "auto" : "none"}
-      >
+      <Animated.View style={[styles.sidebar, sidebarStyle]}>
         <View style={styles.sidebarInner}>
           <View style={styles.profileSection}>
-            <View style={styles.avatar}>
-              <Ionicons name="person" size={28} color="#FFFFFF" />
-            </View>
+            {photoUrl ? (
+              <Image source={{ uri: photoUrl }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarInitial}>
+                  {(userName?.[0] || "U").toUpperCase()}
+                </Text>
+              </View>
+            )}
             <Text style={styles.userName} numberOfLines={1}>
               {userName || "User"}
             </Text>
+            {coins !== undefined && (
+              <View style={styles.coinRow}>
+                <Ionicons name="cash-outline" size={14} color="#DCD0A8" />
+                <Text style={styles.coinText}>{coins.toLocaleString()}</Text>
+              </View>
+            )}
             <Text style={styles.userRole}>{userRole || "Member"}</Text>
           </View>
 
           <View style={styles.navSection}>
-            {navItems.map((item) => (
-              <TouchableOpacity
+            {navItems.map((item, index) => (
+              <NavItemComponent
                 key={item.href}
-                style={[styles.navItem, isActive(item.href) && styles.navItemActive]}
+                item={item}
+                isActive={isActive(item.href)}
+                index={index}
                 onPress={() => handleNav(item.href)}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name={ICON_MAP[item.icon] || "ellipse-outline"}
-                  size={22}
-                  color={isActive(item.href) ? "#FFFFFF" : "rgba(255,255,255,0.7)"}
-                />
-                <Text
-                  style={[styles.navLabel, isActive(item.href) && styles.navLabelActive]}
-                  numberOfLines={1}
-                >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
+              />
             ))}
           </View>
 
@@ -136,6 +143,46 @@ export default function Sidebar({ open, onClose, navItems, userName, userRole }:
         </View>
       </Animated.View>
     </>
+  );
+}
+
+function NavItemComponent({ item, isActive, index, onPress }: { item: NavItem; isActive: boolean; index: number; onPress: () => void }) {
+  const translateX = useSharedValue(40);
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    translateX.value = withTiming(0, {
+      duration: 300,
+      easing: Easing.out(Easing.cubic),
+    });
+    opacity.value = withTiming(1, { duration: 300 });
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateX: translateX.value }],
+  }));
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <TouchableOpacity
+        style={[styles.navItem, isActive && styles.navItemActive]}
+        onPress={onPress}
+        activeOpacity={0.7}
+      >
+        <Ionicons
+          name={ICON_MAP[item.icon] || "ellipse-outline"}
+          size={22}
+          color={isActive ? "#FFFFFF" : "rgba(255,255,255,0.7)"}
+        />
+        <Text
+          style={[styles.navLabel, isActive && styles.navLabelActive]}
+          numberOfLines={1}
+        >
+          {item.label}
+        </Text>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
@@ -180,13 +227,35 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.15)",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  avatarImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    marginBottom: 8,
+  },
+  avatarInitial: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#FFFFFF",
   },
   userName: {
     fontSize: 18,
     fontWeight: "700",
     color: "#FFFFFF",
     textAlign: "center",
+  },
+  coinRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 4,
+  },
+  coinText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#DCD0A8",
   },
   userRole: {
     fontSize: 12,

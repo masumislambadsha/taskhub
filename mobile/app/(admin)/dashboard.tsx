@@ -32,8 +32,6 @@ export default function AdminDashboard() {
     },
   });
 
-  if (isLoading) return <Spinner message="Loading dashboard..." />;
-
   if (isError) {
     return (
       <View style={styles.errorContainer}>
@@ -45,7 +43,9 @@ export default function AdminDashboard() {
     );
   }
 
-  const s = data!;
+  if (!data) return <Spinner message="Loading dashboard..." />;
+
+  const s = data;
 
   return (
     <ScrollView
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
       <View style={styles.statsRow}>
         <Card style={styles.statCard}>
           <Ionicons name="people-outline" size={24} color="#004030" />
-          <Text style={styles.statValue}>{s.totalWorkers}</Text>
+          <Text style={styles.statValue}>{s.totalWorkers || 0}</Text>
           <Text style={styles.statLabel}>Total Workers</Text>
         </Card>
         <Card style={styles.statCard}>
