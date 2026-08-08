@@ -7,12 +7,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import Logo from "@/components/ui/Logo";
 import HamburgerIcon from "@/components/ui/HamburgerIcon";
+import DarkModeToggle from "@/components/ui/DarkModeToggle";
 
 const navLinks = [
   { href: "/how-it-works", label: "How it Works" },
   { href: "/tasks", label: "Browse Tasks" },
   { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/blog", label: "Blog" },
   { href: "/faq", label: "FAQ" },
+  { href: "/contact", label: "Contact" },
   { href: "/support", label: "Support" },
 ];
 
@@ -56,22 +59,29 @@ export default function Navbar() {
               Leaderboard
             </Link>
             <Link
+              href="/blog"
+              className="text-primary/70 hover:text-primary text-sm font-medium transition-all"
+            >
+              Blog
+            </Link>
+            <Link
               href="/faq"
               className="text-primary/70 hover:text-primary text-sm font-medium transition-all"
             >
               FAQ
             </Link>
             <Link
-              href="/support"
+              href="/contact"
               className="text-primary/70 hover:text-primary text-sm font-medium transition-all"
             >
-              Support
+              Contact
             </Link>
           </div>
         </div>
 
         
         <div className="hidden lg:flex items-center gap-3">
+          <DarkModeToggle />
           {session ? (
             <>
               <NotificationBell />
@@ -168,6 +178,7 @@ export default function Navbar() {
         
         <div className="flex lg:hidden items-center gap-1 text-primary">
           {session && <NotificationBell />}
+          <DarkModeToggle />
           <HamburgerIcon checked={mobileOpen} onChange={setMobileOpen} />
         </div>
       </nav>
