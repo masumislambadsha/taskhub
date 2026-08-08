@@ -8,7 +8,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginFormData } from "@/lib/validators/auth";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { MdVisibility, MdVisibilityOff, MdPerson } from "react-icons/md";
+
+const DEMO_ACCOUNTS = [
+  { role: "Worker", email: "user-woker@taskhub.com", password: "pass-121212" },
+  { role: "Buyer", email: "buyer@taskhub.com", password: "pass-121212" },
+  { role: "Admin", email: "admin@taskhub.com", password: "pass-121212" },
+];
 
 function LoginForm() {
   const params = useSearchParams();
@@ -18,12 +24,13 @@ function LoginForm() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
-  async function onSubmit(data: LoginFormData) {
+  async function performLogin(data: LoginFormData) {
     setLoading(true);
     try {
       const res = await signIn("credentials", { ...data, redirect: false });
@@ -47,6 +54,16 @@ function LoginForm() {
     }
   }
 
+  async function onSubmit(data: LoginFormData) {
+    await performLogin(data);
+  }
+
+  async function handleDemoLogin(account: (typeof DEMO_ACCOUNTS)[number]) {
+    setValue("email", account.email);
+    setValue("password", account.password);
+    await performLogin(account);
+  }
+
   async function handleGoogle() {
     await signIn("google", { callbackUrl: "/api/auth/me?redirect=1" });
   }
@@ -66,6 +83,29 @@ function LoginForm() {
             Authentication failed. Please try again.
           </div>
         )}
+
+        <div className="mb-6">
+          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-primary/40 mb-3">
+            <MdPerson className="text-base" />
+            Try a demo account
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2">
+            {DEMO_ACCOUNTS.map((account) => (
+              <button
+                key={account.role}
+                type="button"
+                onClick={() => handleDemoLogin(account)}
+                disabled={loading}
+                className="flex-1 text-xs font-semibold bg-background border border-primary/10 rounded-lg px-3 py-2.5 text-primary hover:border-secondary hover:bg-secondary/5 transition-colors disabled:opacity-60"
+              >
+                {account.role}
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-primary/40 mt-2">
+            One click auto-fills the credentials and signs you in.
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
