@@ -10,11 +10,11 @@ interface DarkThemeToggleProps {
 export default function DarkThemeToggle({ dark }: DarkThemeToggleProps) {
   const [isDark, setIsDark] = useState(false);
 
-  // Initialize from localStorage on mount
+  // Initialize from localStorage on mount (default: light)
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const html = document.documentElement;
-    if (savedTheme === "dark" || (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+    if (savedTheme === "dark") {
       html.classList.add("dark");
       html.setAttribute("data-theme", "dark");
       setIsDark(true);

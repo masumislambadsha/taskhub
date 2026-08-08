@@ -45,3 +45,6 @@ next-env.d.ts
 
 .vercel
 .getaibd/
+
+# project requirements doc — never commit
+/Squid Game-7 Project 1 Upgrade Session.txt

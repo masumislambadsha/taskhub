@@ -3,8 +3,8 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#FFF9E5] flex flex-col">
-      <header className="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-20 bg-[#FFF9E5]/80 backdrop-blur-xl">
+    <div className="min-h-screen bg-background flex flex-col">
+      <header className="fixed top-0 w-full z-50 flex justify-between items-center px-8 h-20 bg-background/80 backdrop-blur-xl">
         <Link
           href="/"
           className="text-2xl font-black tracking-tight text-primary font-headline"
@@ -82,7 +82,7 @@ export default function NotFound() {
         </div>
       </main>
 
-      <footer className="w-full py-10 px-8 bg-[#FFF9E5] border-t border-primary/10">
+      <footer className="w-full py-10 px-8 bg-background border-t border-primary/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-primary/40">
             © 2024 TaskHub. The Editorial Artisan.
