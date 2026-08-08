@@ -16,7 +16,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-screen bg-[#FFF9E5] flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <main className="flex-grow flex items-center justify-center px-6 py-12">
         <div className="relative w-full max-w-lg">
           <div className="absolute -top-12 -left-12 w-48 h-48 bg-secondary/10 rounded-full blur-3xl opacity-50" />
@@ -71,7 +71,7 @@ export default function Error({
         </div>
       </main>
 
-      <footer className="bg-[#FFF9E5] border-t border-primary/10 py-10 px-8">
+      <footer className="bg-background border-t border-primary/10 py-10 px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-primary/40">
             © 2024 TaskHub. The Editorial Artisan.
