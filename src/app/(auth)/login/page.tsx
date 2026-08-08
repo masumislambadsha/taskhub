@@ -11,9 +11,9 @@ import toast from "react-hot-toast";
 import { MdVisibility, MdVisibilityOff, MdPerson } from "react-icons/md";
 
 const DEMO_ACCOUNTS = [
-  { role: "Worker", email: "user-woker@taskhub.com", password: "pass-121212" },
-  { role: "Buyer", email: "buyer@taskhub.com", password: "pass-121212" },
-  { role: "Admin", email: "admin@taskhub.com", password: "pass-121212" },
+  { role: "Worker", email: "worker@taskhub.com", password: "121212" },
+  { role: "Buyer", email: "buyer@taskhub.com", password: "121212" },
+  { role: "Admin", email: "admin@taskhub.com", password: "121212" },
 ];
 
 function LoginForm() {

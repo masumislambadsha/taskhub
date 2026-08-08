@@ -22,11 +22,19 @@ body {
 /* ── Dark theme ───────────────────────────────────────────────────────────── */
 .dark {
   color-scheme: dark;
-  --color-primary: #9ad3b5;
+  --color-primary: #e8f2ec;
   --color-secondary: #58a78f;
   --color-accent: #d8c89b;
   --color-background: #0e1512;
   --color-on-background: #dde7e0;
+  /* Lift the palette shades that are only used dark-toned (600-700) in light
+     mode. Overriding the variables (not classes) also flips opacity variants
+     (e.g. text-amber-600/70 -> color-mix(var(--color-amber-600)...)). */
+  --color-red-600: #f87171;
+  --color-green-600: #4ade80;
+  --color-amber-600: #fbbf24;
+  --color-amber-700: #fcd34d;
+  --color-blue-600: #60a5fa;
 }
 
 /* Brand surfaces keep a deep panel tone so white text stays legible */
@@ -45,6 +53,44 @@ body {
     var(--color-secondary) 12%,
     transparent
   );
+}
+
+/* DatePicker selected day uses data-[selected=true]:bg-primary + text-white */
+.dark .data-\[selected\=true\]\:bg-primary[data-selected=true] {
+  background-color: #14342a;
+}
+
+/* Badge / status chips use bg-*-100 with text-*-800 (which flips light in dark).
+   Give the *-100 backgrounds a dark tint so the light text stays readable. */
+.dark .bg-red-100 {
+  background-color: #3a1612;
+}
+.dark .bg-green-100 {
+  background-color: #0c2b1c;
+}
+.dark .bg-yellow-100 {
+  background-color: #382b10;
+}
+.dark .bg-amber-100 {
+  background-color: #382b10;
+}
+.dark .bg-blue-100 {
+  background-color: #10283c;
+}
+.dark .bg-gray-100 {
+  background-color: #1a2620;
+}
+.dark .bg-orange-100 {
+  background-color: #3a2a12;
+}
+.dark .hover\:bg-green-100:hover {
+  background-color: #0c2b1c;
+}
+.dark .hover\:bg-red-100:hover {
+  background-color: #3a1612;
+}
+.dark .hover\:bg-yellow-100:hover {
+  background-color: #382b10;
 }
 
 .dark body {
@@ -71,6 +117,40 @@ body {
 }
 .dark .hover\:bg-background\/60:hover {
   background-color: rgb(14, 21, 18 / 0.6);
+}
+
+/* Brand gradients (bg-linear-to-* from-primary to-secondary text-white) must
+   stay deep so white text is legible. --tw-gradient-stops resolves these vars
+   lazily, so overriding the stops on .dark wins over the layered utilities. */
+.dark .from-primary {
+  --tw-gradient-from: #14342a;
+}
+.dark .to-primary {
+  --tw-gradient-to: #14342a;
+}
+.dark .from-secondary {
+  --tw-gradient-from: #3f7f6b;
+}
+.dark .to-secondary {
+  --tw-gradient-to: #3f7f6b;
+}
+.dark .from-accent {
+  --tw-gradient-from: #8a7b4f;
+}
+.dark .to-accent {
+  --tw-gradient-to: #8a7b4f;
+}
+
+/* Solid primary/secondary buttons hover to a light-mint color-mix in dark.
+   Pin a deep tone so the white label stays readable. */
+.dark .hover\:bg-primary\/90:hover {
+  background-color: #1a4436;
+}
+.dark .group-hover\:bg-primary\/90:is(:where(.group):hover *) {
+  background-color: #1a4436;
+}
+.dark .hover\:bg-secondary\/90:hover {
+  background-color: #4a8a76;
 }
 
 /* Status / info tinted backgrounds */
@@ -144,6 +224,11 @@ body {
 .dark .text-gray-500,
 .dark .text-gray-600 {
   color: #94a3b8;
+}
+
+/* Hardcoded brand-ish violet accent */
+.dark .text-\[\#635BFF\] {
+  color: #8f89ff;
 }
 
 /* Colored text that was dark (600-900) lifts to a bright tone. */
