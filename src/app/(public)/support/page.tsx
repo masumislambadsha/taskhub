@@ -4,6 +4,10 @@ import { MdArrowForward, MdCategory, MdCheckCircle, MdExpandMore, MdSchedule, Md
 
 import { useState } from "react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { contactSchema, ContactFormData } from "@/lib/validators/contact";
+import axios from "axios";
 
 const CATEGORIES = [
   {
@@ -98,17 +102,37 @@ const USEFUL_LINKS = [
 
 export default function SupportPage() {
   const [open, setOpen] = useState<number | null>(null);
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    category: "",
-    message: "",
-  });
+  const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSent(true);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: { subject: "" },
+  });
+
+  async function onSend(data: ContactFormData) {
+    setLoading(true);
+    setSubmitError(null);
+    try {
+      await axios.post("/api/v1/contact", data);
+      setSent(true);
+      reset();
+    } catch (err) {
+      const msg = axios.isAxiosError(err)
+        ? err.response?.data?.error
+        : "Something went wrong";
+      setSubmitError(
+        typeof msg === "string" ? msg : "Unable to send message. Try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -263,7 +287,7 @@ export default function SupportPage() {
                 <button
                   onClick={() => {
                     setSent(false);
-                    setForm({ name: "", email: "", category: "", message: "" });
+                    reset();
                   }}
                   className="mt-6 text-sm text-secondary font-semibold hover:underline"
                 >
@@ -272,50 +296,62 @@ export default function SupportPage() {
               </div>
             ) : (
               <form
-                onSubmit={handleSubmit}
+                onSubmit={handleSubmit(onSend)}
+                noValidate
                 className="bg-white rounded-2xl border border-primary/5 shadow-sm p-7 space-y-5"
               >
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2">
+                    <label
+                      htmlFor="support-name"
+                      className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2"
+                    >
                       Name
                     </label>
                     <input
+                      id="support-name"
+                      {...register("name")}
                       type="text"
-                      required
-                      value={form.name}
-                      onChange={(e) =>
-                        setForm({ ...form, name: e.target.value })
-                      }
                       placeholder="Your name"
                       className="w-full border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30 transition"
                     />
+                    {errors.name && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.name.message}
+                      </p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2">
+                    <label
+                      htmlFor="support-email"
+                      className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2"
+                    >
                       Email
                     </label>
                     <input
+                      id="support-email"
+                      {...register("email")}
                       type="email"
-                      required
-                      value={form.email}
-                      onChange={(e) =>
-                        setForm({ ...form, email: e.target.value })
-                      }
                       placeholder="your@email.com"
                       className="w-full border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30 transition"
                     />
+                    {errors.email && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.email.message}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2">
+                  <label
+                    htmlFor="support-subject"
+                    className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2"
+                  >
                     Category
                   </label>
                   <select
-                    value={form.category}
-                    onChange={(e) =>
-                      setForm({ ...form, category: e.target.value })
-                    }
+                    id="support-subject"
+                    {...register("subject")}
                     className="w-full border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30 transition text-primary bg-white"
                   >
                     <option value="">Select a category...</option>
@@ -325,28 +361,42 @@ export default function SupportPage() {
                       </option>
                     ))}
                   </select>
+                  {errors.subject && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.subject.message}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2">
+                  <label
+                    htmlFor="support-message"
+                    className="block text-[10px] font-bold uppercase tracking-widest text-primary/50 mb-2"
+                  >
                     Message
                   </label>
                   <textarea
+                    id="support-message"
+                    {...register("message")}
                     rows={5}
-                    required
-                    value={form.message}
-                    onChange={(e) =>
-                      setForm({ ...form, message: e.target.value })
-                    }
                     placeholder="Describe your issue in detail..."
                     className="w-full border border-primary/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/30 resize-none transition"
                   />
+                  {errors.message && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.message.message}
+                    </p>
+                  )}
                 </div>
+                {submitError && (
+                  <p className="text-red-500 text-xs">{submitError}</p>
+                )}
                 <button
                   type="submit"
-                  className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-xs sm:text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
+                  disabled={loading}
+                  className="w-full bg-primary text-white py-3.5 rounded-xl font-bold text-xs sm:text-sm hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   <MdSend className="text-sm" />
-                  Send Message
+                  {loading ? "Sending…" : "Send Message"}
                 </button>
               </form>
             )}
