@@ -30,6 +30,7 @@ services:
         NEXT_PUBLIC_SOCKET_URL: http://localhost
         NEXT_PUBLIC_APP_URL: http://localhost
         NEXT_PUBLIC_IMGBB_API_KEY: ${NEXT_PUBLIC_IMGBB_API_KEY:-}
+        NEXT_PUBLIC_SENTRY_DSN: ${NEXT_PUBLIC_SENTRY_DSN:-}
         GIT_SHA: ${GIT_SHA:-dev}
     env_file: .env
     environment:

@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const logger = require("./config/logger");
 const { persistMessage, markConversationRead } = require("./controllers/messageController");
 
@@ -47,6 +48,7 @@ module.exports = function registerSocketHandlers(io) {
         io.to(conversationId).emit("message:receive", payload);
       } catch (err) {
         logger.error({ err, userId: socket.userId, roomId: conversationId }, "error saving message");
+        Sentry.captureException(err);
         socket.emit("message:error", { error: "Failed to send message" });
       }
     });
@@ -73,6 +75,7 @@ module.exports = function registerSocketHandlers(io) {
         });
       } catch (err) {
         logger.error({ err, userId: socket.userId, roomId: conversationId }, "error marking messages read");
+        Sentry.captureException(err);
       }
     });
 
