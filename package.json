@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "build:worker": "esbuild src/worker/index.ts --bundle --platform=node --target=node22 --packages=external --tsconfig=tsconfig.json --outfile=dist/worker/index.js",
-    "start:worker": "node dist/worker/index.js"
+    "start:worker": "node dist/worker/index.js",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.11.1",
@@ -55,6 +56,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.0",
     "tailwindcss": "^4.2.2",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }
