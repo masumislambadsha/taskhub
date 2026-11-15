@@ -1,10 +1,5 @@
 import mongoose from "mongoose";
-
-const MONGODB_URI = process.env.MONGODB_URI as string;
-
-if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable");
-}
+import { logger } from "@/lib/logger";
 
 interface MongooseCache {
   conn: typeof mongoose | null;
@@ -24,6 +19,11 @@ const RETRY_DELAY_MS = 2000;
 async function connectWithRetry(
   retries = MAX_RETRIES,
 ): Promise<typeof mongoose> {
+  const MONGODB_URI = process.env.MONGODB_URI;
+  if (!MONGODB_URI) {
+    throw new Error("Please define the MONGODB_URI environment variable");
+  }
+
   try {
     return await mongoose.connect(MONGODB_URI, {
       bufferCommands: false,
@@ -31,8 +31,9 @@ async function connectWithRetry(
     });
   } catch (err) {
     if (retries > 0) {
-      console.warn(
-        `MongoDB connection failed. Retrying... (${retries} attempts left)`,
+      logger.warn(
+        { retriesLeft: retries },
+        "MongoDB connection failed, retrying",
       );
       await new Promise((res) => setTimeout(res, RETRY_DELAY_MS));
       return connectWithRetry(retries - 1);

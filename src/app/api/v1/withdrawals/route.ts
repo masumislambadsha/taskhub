@@ -5,6 +5,7 @@ import Withdrawal from "@/models/Withdrawal";
 import User from "@/models/User";
 import { withdrawalSchema } from "@/lib/validators/withdrawal";
 import { coinsToUsdWithdraw } from "@/lib/coins";
+import { withRequestLogging } from "@/lib/with-request-logging";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
   });
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withRequestLogging("/api/v1/withdrawals", async function POST(req: NextRequest) {
   const session = await auth();
   if (!session || session.user.role !== "worker") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -66,4 +67,4 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json(withdrawal, { status: 201 });
-}
+});

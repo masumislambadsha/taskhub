@@ -9,8 +9,12 @@ import User from "@/models/User";
 import Submission from "@/models/Submission";
 import { coinsToUsdWithdraw } from "@/lib/coins";
 import Image from "next/image";
+import { connection } from "next/server";
 
 export default async function LeaderboardPage() {
+  // The leaderboard renders per request so it is always current.
+  await connection();
+
   await connectDB();
 
   const topWorkers = await Submission.aggregate([

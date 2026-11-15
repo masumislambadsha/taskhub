@@ -1,0 +1,10 @@
+# Development overrides: also publish Mongo and Redis on localhost for local tools
+# (for example `npm run seed`). Use together with the base file:
+#   docker compose -f compose.yml -f compose.dev.yml up -d --build --wait
+services:
+  mongo:
+    ports:
+      - "127.0.0.1:27017:27017"
+  redis:
+    ports:
+      - "127.0.0.1:6379:6379"

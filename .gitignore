@@ -19,6 +19,7 @@
 
 # production
 /build
+/dist/
 
 # misc
 .DS_Store
@@ -32,6 +33,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 requirements
 .npmrc
 mobile
@@ -48,3 +50,7 @@ next-env.d.ts
 
 # project requirements doc — never commit
 /Squid Game-7 Project 1 Upgrade Session.txt
+
+# manual-testing leftovers
+*cookies*.txt
+resp.json
