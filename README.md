@@ -82,6 +82,37 @@ Unlike a basic CRUD app, TaskHub is designed as a production-style SaaS:
 
 ---
 
+## Run locally with Docker
+
+Needs Docker with Compose v2.
+
+1. Copy the env file and fill in the secrets you need (at least `NEXTAUTH_SECRET`):
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Build and start everything (Nginx, web, realtime, worker, MongoDB, Redis):
+
+   ```bash
+   docker compose up -d --build --wait
+   ```
+
+3. Open http://localhost. Health checks: `/api/health` (liveness) and `/api/health/ready` (MongoDB and Redis).
+
+4. To load development data, publish the database ports with the dev override and run the seed script from your machine:
+
+   ```bash
+   docker compose -f compose.yml -f compose.dev.yml up -d --wait mongo redis
+   MONGODB_URI="mongodb://localhost:27017/taskhub?directConnection=true" npm run seed
+   ```
+
+   The seed creates `admin@seed.taskhub.local`, `buyer1@` to `buyer3@` and `worker1@` to `worker10@` (same domain), all with the dev password `TaskHub-dev-1234` (override with `SEED_PASSWORD`). It refuses to run against a non-local database or in production.
+
+Stop with `docker compose down` (add `-v` to also delete the database and Redis volumes).
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Frontend:
