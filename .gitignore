@@ -60,3 +60,6 @@ deploy/env/*.env
 deploy/github-secrets.input.env
 deploy/*.pem
 deploy/id_*
+
+# deploy.sh state (current and previous image tag on the VPS)
+/.deploy/
