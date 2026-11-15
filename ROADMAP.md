@@ -196,7 +196,7 @@ map $http_upgrade $connection_upgrade {
 }
 
 upstream web      { server web1:3000; }
-upstream realtime { server realtime1:4000; }
+upstream realtime { server realtime1:3001; }
 
 server {
     listen 80;
@@ -582,12 +582,12 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
    ```nginx
    upstream realtime {
        hash $remote_addr consistent;
-       server realtime1:4000;
-       server realtime2:4000;
+       server realtime1:3001;
+       server realtime2:3001;
    }
    ```
    If you later put Cloudflare in front, first restore the real client IP (`set_real_ip_from` and `real_ip_header`), or every user hashes to the same instance.
-   **The alternative:** clients use `transports: ["websocket"]` only, so no stickiness is needed, but networks that block WebSockets lose the polling fallback. Record your choice in an ADR.
+   **The alternative:** clients use `transports: ["websocket"]` only, so no stickiness is needed, but networks that block WebSockets lose the polling fallback. Record your choice in an ADR. Both the web client (`src/hooks/useSocket.ts`) and the mobile client already connect with `transports: ["websocket"]`, so sticky sessions only matter if long-polling is re-enabled.
 6. **Reconnection:** the client shows "Reconnecting…", and on reconnect it fetches messages newer than the last one it has, over REST, so nothing is lost. (Optional: the Redis Streams adapter supports Socket.io's connection state recovery.)
 7. **Graceful shutdown:** on SIGTERM, stop accepting connections and call `io.close()`, so clients move to the other instance.
 
