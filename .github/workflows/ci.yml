@@ -90,3 +90,131 @@ jobs:
           push: false
           cache-from: type=gha,scope=realtime
           cache-to: type=gha,mode=max,scope=realtime
+
+  # ── Production: publish images, then deploy to the VPS ─────────────────────
+  # Both jobs are skipped (not failed) until the repository variables below exist.
+  # See deploy/README.md for the full list of secrets and variables.
+
+  publish:
+    needs: [check, docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DOCKERHUB_USERNAME != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # Fail early: an empty value here would bake a wrong URL into the browser bundle.
+      - name: Check build variables
+        env:
+          NEXT_PUBLIC_SOCKET_URL: ${{ vars.NEXT_PUBLIC_SOCKET_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ vars.NEXT_PUBLIC_APP_URL }}
+        run: |
+          missing=0
+          for name in NEXT_PUBLIC_SOCKET_URL NEXT_PUBLIC_APP_URL; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Repository variable $name is not set (Settings > Secrets and variables > Actions > Variables)."
+              missing=1
+            fi
+          done
+          exit "$missing"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: web
+          push: true
+          tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/taskhub-web:${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/taskhub-web:latest
+          build-args: |
+            NEXT_PUBLIC_SOCKET_URL=${{ vars.NEXT_PUBLIC_SOCKET_URL }}
+            NEXT_PUBLIC_APP_URL=${{ vars.NEXT_PUBLIC_APP_URL }}
+            NEXT_PUBLIC_SENTRY_DSN=${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+            NEXT_PUBLIC_IMGBB_API_KEY=${{ vars.NEXT_PUBLIC_IMGBB_API_KEY }}
+            SENTRY_ENVIRONMENT=${{ vars.SENTRY_ENVIRONMENT || 'production-vps' }}
+            GIT_SHA=${{ github.sha }}
+          cache-from: type=gha,scope=publish-web
+          cache-to: type=gha,mode=max,scope=publish-web
+
+      - name: Build and push worker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: worker
+          push: true
+          tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/taskhub-worker:${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/taskhub-worker:latest
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+          cache-from: type=gha,scope=publish-worker
+          cache-to: type=gha,mode=max,scope=publish-worker
+
+      - name: Build and push realtime image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./server
+          push: true
+          tags: |
+            ${{ vars.DOCKERHUB_USERNAME }}/taskhub-realtime:${{ github.sha }}
+            ${{ vars.DOCKERHUB_USERNAME }}/taskhub-realtime:latest
+          cache-from: type=gha,scope=publish-realtime
+          cache-to: type=gha,mode=max,scope=publish-realtime
+
+  deploy:
+    needs: publish
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      # Secrets reach the VPS as environment variables (envs:), never as part of the script text.
+      - name: Deploy on the VPS
+        uses: appleboy/ssh-action@v1.2.2
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          APP_DIR: ${{ vars.VPS_APP_DIR || '/opt/apps/taskhub' }}
+          REPO_URL: https://github.com/${{ github.repository }}.git
+          WEB_ENV_PRODUCTION: ${{ secrets.WEB_ENV_PRODUCTION }}
+          REALTIME_ENV_PRODUCTION: ${{ secrets.REALTIME_ENV_PRODUCTION }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          envs: IMAGE_TAG,DOCKERHUB_USERNAME,APP_DIR,REPO_URL,WEB_ENV_PRODUCTION,REALTIME_ENV_PRODUCTION
+          script_stop: true
+          script: |
+            set -e
+
+            if [ -z "$WEB_ENV_PRODUCTION" ] || [ -z "$REALTIME_ENV_PRODUCTION" ]; then
+              echo "WEB_ENV_PRODUCTION or REALTIME_ENV_PRODUCTION is empty. Set both GitHub secrets."
+              exit 1
+            fi
+
+            # First run: clone the public repo. Later runs: move to the commit being deployed.
+            if [ ! -d "$APP_DIR/.git" ]; then
+              mkdir -p "$APP_DIR"
+              git clone "$REPO_URL" "$APP_DIR"
+            fi
+            cd "$APP_DIR"
+            git fetch --prune origin
+            git reset --hard "$IMAGE_TAG"
+
+            umask 077
+            mkdir -p deploy/env
+            printf '%s\n' "$WEB_ENV_PRODUCTION" > deploy/env/web.env
+            printf '%s\n' "$REALTIME_ENV_PRODUCTION" > deploy/env/realtime.env
+
+            deploy/deploy.sh "$IMAGE_TAG"
