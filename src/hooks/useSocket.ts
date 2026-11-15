@@ -11,19 +11,29 @@ const SOCKET_URL =
   "http://localhost:3001";
 
 let socketInstance: Socket | null = null;
+// ID of the user the current socket belongs to, so we reconnect when it changes.
+let socketUserId: string | null = null;
 
-function getSocket(userId: string, userName: string): Socket {
-  
-  if (socketInstance && socketInstance.auth) {
-    const auth = socketInstance.auth as { userId?: string };
-    if (auth.userId !== userId) {
-      socketInstance.disconnect();
-      socketInstance = null;
-    }
+function getSocket(userId: string): Socket {
+  if (socketInstance && socketUserId !== userId) {
+    socketInstance.disconnect();
+    socketInstance = null;
   }
-  if (!socketInstance || !socketInstance.connected) {
+  // `active` is true while connecting or reconnecting. Fetching the token makes
+  // connecting slower, so only replace a socket that has given up (for example
+  // after the server rejected its token).
+  if (!socketInstance || !socketInstance.active) {
+    socketInstance?.disconnect();
+    socketUserId = userId;
     socketInstance = io(SOCKET_URL, {
-      auth: { userId, userName },
+      // A function, so every connect and reconnect fetches a fresh short-lived
+      // token. The server takes the user's identity from the token only.
+      auth: (cb) => {
+        fetch("/api/v1/socket-token", { credentials: "include" })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => cb({ token: d?.token }))
+          .catch(() => cb({}));
+      },
       transports: ["websocket"],
       autoConnect: true,
     });
@@ -52,7 +62,7 @@ export function useSocket({
   useEffect(() => {
     if (!session?.user?.id) return;
 
-    const socket = getSocket(session.user.id, session.user.name ?? "Unknown");
+    const socket = getSocket(session.user.id);
     socketRef.current = socket;
 
     if (conversationId) {
