@@ -111,6 +111,10 @@ Needs Docker with Compose v2.
 
 Stop with `docker compose down` (add `-v` to also delete the database and Redis volumes).
 
+## Deploy to a VPS
+
+Production runs from prebuilt Docker Hub images on a VPS with Nginx on the host, HTTPS from certbot and an SSH deploy job in GitHub Actions. It stays off until the GitHub secrets are added. The full runbook (setup, secrets, first deploy, rollback, switch-over from Vercel and Render) is in [deploy/README.md](deploy/README.md).
+
 ---
 
 ## 🛠️ Tech Stack
