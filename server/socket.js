@@ -1,8 +1,14 @@
 const Sentry = require("@sentry/node");
 const logger = require("./config/logger");
 const { persistMessage, markConversationRead } = require("./controllers/messageController");
+const { getSocketJwtSecret } = require("./config/env");
 
 module.exports = function registerSocketHandlers(io) {
+  if (!getSocketJwtSecret()) {
+    logger.error(
+      "SOCKET_JWT_SECRET is missing or shorter than 32 characters: every socket connection will be rejected",
+    );
+  }
   io.use(require("./middleware/socketAuth"));
 
   io.on("connection", (socket) => {
