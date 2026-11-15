@@ -6,6 +6,7 @@ import Stripe from "stripe";
 import { COIN_PACKAGES } from "@/lib/constants";
 import { getBkashToken, createBkashPayment } from "@/lib/bkash";
 import { initSSLCommerz } from "@/lib/sslcommerz";
+import { withRequestLogging } from "@/lib/with-request-logging";
 
 // Created on first use so `next build` doesn't need STRIPE_SECRET_KEY.
 let stripeClient: Stripe | undefined;
@@ -15,7 +16,7 @@ function getStripe(): Stripe {
   }));
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withRequestLogging("/api/v1/payments/create-session", async function POST(req: NextRequest) {
   const session = await auth();
   if (!session || session.user.role !== "buyer") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -122,4 +123,4 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ error: "Invalid gateway" }, { status: 400 });
-}
+});

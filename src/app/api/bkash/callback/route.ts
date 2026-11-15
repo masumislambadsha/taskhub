@@ -3,10 +3,12 @@ import { connectDB } from "@/lib/db";
 import Payment from "@/models/Payment";
 import User from "@/models/User";
 import { executeBkashPayment } from "@/lib/bkash";
+import { logger } from "@/lib/logger";
+import { withRequestLogging } from "@/lib/with-request-logging";
 
 const BASE = process.env.NEXTAUTH_URL!;
 
-export async function GET(req: NextRequest) {
+export const GET = withRequestLogging("/api/bkash/callback", async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const paymentID = searchParams.get("paymentID");
   const status = searchParams.get("status");
@@ -41,13 +43,21 @@ export async function GET(req: NextRequest) {
       await User.findByIdAndUpdate(payment.userId, {
         $inc: { coins: payment.coinsPurchased },
       });
+      logger.info(
+        {
+          paymentId: String(payment._id),
+          userId: String(payment.userId),
+          coins: payment.coinsPurchased,
+        },
+        "payment credited",
+      );
     }
 
     return NextResponse.redirect(
       `${BASE}/buyer/coins?success=1&paymentId=${dbPaymentId}`,
     );
   } catch (err) {
-    console.error("bKash callback error:", err);
+    logger.error({ err }, "bKash callback error");
     return NextResponse.redirect(`${BASE}/buyer/coins?cancelled=1`);
   }
-}
+});

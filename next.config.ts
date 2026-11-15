@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Docker builds set BUILD_STANDALONE=1; Vercel builds leave it unset.
   output: process.env.BUILD_STANDALONE === "1" ? "standalone" : undefined,
+  // pino is loaded from node_modules at runtime instead of being bundled.
+  serverExternalPackages: ["pino"],
   images: {
     remotePatterns: [
       {

@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db";
 import Task from "@/models/Task";
 import User from "@/models/User";
 import { taskSchema } from "@/lib/validators/task";
+import { withRequestLogging } from "@/lib/with-request-logging";
 
 export async function GET(req: NextRequest) {
   await connectDB();
@@ -45,7 +46,7 @@ export async function GET(req: NextRequest) {
   });
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withRequestLogging("/api/v1/tasks", async function POST(req: NextRequest) {
   const session = await auth();
   if (!session || session.user.role !== "buyer") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -81,4 +82,4 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json(task, { status: 201 });
-}
+});

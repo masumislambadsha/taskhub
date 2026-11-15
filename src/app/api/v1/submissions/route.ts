@@ -5,6 +5,7 @@ import Submission from "@/models/Submission";
 import Task from "@/models/Task";
 import { submissionSchema } from "@/lib/validators/submission";
 import { createNotification } from "@/lib/notifications";
+import { withRequestLogging } from "@/lib/with-request-logging";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
   });
 }
 
-export async function POST(req: NextRequest) {
+export const POST = withRequestLogging("/api/v1/submissions", async function POST(req: NextRequest) {
   const session = await auth();
   if (!session || session.user.role !== "worker") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -99,4 +100,4 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json(submission, { status: 201 });
-}
+});
