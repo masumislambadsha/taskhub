@@ -23,7 +23,7 @@ Version 1, 9 November 2026. Goal: turn TaskHub into a flagship project that prov
 - A separate Express + Socket.io realtime server in `server/` (JavaScript, its own package.json, its own Message model). Clients pass their `userId` in the socket handshake and the server does not verify a token yet. It is deployed on Render's free plan (`server/render.yaml`), which sleeps when idle.
 - Image uploads go through imgbb (public URLs).
 - Email goes through Resend.
-- An Expo app lives in `mobile/`.
+- The Expo app lives in a separate repo, `taskhub-mobile-app`.
 - There are no tests and no CI. The only check is `npm run lint`.
 
 ## Decide these before Phase 0
@@ -587,7 +587,7 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
    }
    ```
    If you later put Cloudflare in front, first restore the real client IP (`set_real_ip_from` and `real_ip_header`), or every user hashes to the same instance.
-   **The alternative:** clients use `transports: ["websocket"]` only, so no stickiness is needed, but networks that block WebSockets lose the polling fallback. Record your choice in an ADR. Both the web client (`src/hooks/useSocket.ts`) and the mobile client already connect with `transports: ["websocket"]`, so sticky sessions only matter if long-polling is re-enabled.
+   **The alternative:** clients use `transports: ["websocket"]` only, so no stickiness is needed, but networks that block WebSockets lose the polling fallback. Record your choice in an ADR. Both the web client (`src/hooks/useSocket.ts`) and the mobile client (in the separate `taskhub-mobile-app` repo) already connect with `transports: ["websocket"]`, so sticky sessions only matter if long-polling is re-enabled.
 6. **Reconnection:** the client shows "Reconnecting…", and on reconnect it fetches messages newer than the last one it has, over REST, so nothing is lost. (Optional: the Redis Streams adapter supports Socket.io's connection state recovery.)
 7. **Graceful shutdown:** on SIGTERM, stop accepting connections and call `io.close()`, so clients move to the other instance.
 
