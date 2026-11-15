@@ -54,6 +54,10 @@ jobs:
         working-directory: server
         run: node --check index.js
 
+      - name: Realtime server tests
+        working-directory: server
+        run: npm test
+
   docker:
     runs-on: ubuntu-latest
     steps:
