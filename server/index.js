@@ -1,7 +1,11 @@
+// Must stay first: initialises Sentry before other modules load.
+require("./instrument");
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
+const Sentry = require("@sentry/node");
 
 const { ALLOWED_ORIGINS, PORT } = require("./config/env");
 const { connectDB } = require("./config/db");
@@ -28,6 +32,9 @@ connectDB();
 
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use("/health", healthRouter);
+
+// Reports unhandled Express errors. Does nothing when Sentry is disabled.
+Sentry.setupExpressErrorHandler(app);
 
 // ── Socket.io handlers ───────────────────────────────────────────────────────
 registerSocketHandlers(io);

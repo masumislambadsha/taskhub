@@ -1,4 +1,6 @@
+import "./instrument";
 import http from "node:http";
+import * as Sentry from "@sentry/node";
 import mongoose from "mongoose";
 import Redis from "ioredis";
 import { connectDB } from "@/lib/db";
@@ -91,9 +93,12 @@ async function shutdown(signal: string): Promise<void> {
     // Disconnecting while a connection attempt is in flight would hang.
     if (mongoOk()) await mongoose.disconnect();
     log.info("shutdown complete");
+    await Sentry.close(2000);
     process.exit(0);
   } catch (err) {
     log.error({ err }, "error during shutdown");
+    Sentry.captureException(err);
+    await Sentry.close(2000);
     process.exit(1);
   }
 }
