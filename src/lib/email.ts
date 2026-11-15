@@ -1,12 +1,16 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Created on first use so `next build` doesn't need RESEND_API_KEY.
+let resendClient: Resend | undefined;
+function getResend(): Resend {
+  return (resendClient ??= new Resend(process.env.RESEND_API_KEY));
+}
 
 export async function sendPasswordResetEmail(
   email: string,
   resetUrl: string,
 ): Promise<void> {
-  const { error } = await resend.emails.send({
+  const { error } = await getResend().emails.send({
     
     
     from: "TaskHub <onboarding@resend.dev>",

@@ -9,8 +9,13 @@ import User from "@/models/User";
 import Submission from "@/models/Submission";
 import { coinsToUsdWithdraw } from "@/lib/coins";
 import Image from "next/image";
+import { connection } from "next/server";
 
 export default async function LeaderboardPage() {
+  // Docker image builds have no database to prerender against, so render
+  // this page per request there. Vercel builds are unchanged.
+  if (process.env.BUILD_STANDALONE === "1") await connection();
+
   await connectDB();
 
   const topWorkers = await Submission.aggregate([
