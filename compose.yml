@@ -1,0 +1,94 @@
+# TaskHub local stack: nginx -> web1 + realtime1, plus worker, mongo and redis.
+# Usage: cp .env.example .env, fill in secrets, then
+#   docker compose up -d --build --wait
+# Only nginx publishes a port (80). Everything else stays on the internal network.
+
+x-app-env: &app-env
+  MONGODB_URI: mongodb://mongo:27017/taskhub?directConnection=true
+  REDIS_URL: redis://redis:6379
+  NEXTAUTH_URL: http://localhost
+  AUTH_TRUST_HOST: "true"
+
+services:
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      web1:
+        condition: service_healthy
+      realtime1:
+        condition: service_healthy
+
+  web1:
+    build:
+      context: .
+      target: web
+      args:
+        NEXT_PUBLIC_SOCKET_URL: http://localhost
+        NEXT_PUBLIC_APP_URL: http://localhost
+        NEXT_PUBLIC_IMGBB_API_KEY: ${NEXT_PUBLIC_IMGBB_API_KEY:-}
+        GIT_SHA: ${GIT_SHA:-dev}
+    env_file: .env
+    environment:
+      <<: *app-env
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  realtime1:
+    build: ./server
+    env_file: .env
+    environment:
+      <<: *app-env
+      PORT: "3001"
+      NEXT_PUBLIC_APP_URL: http://localhost
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      target: worker
+      args:
+        GIT_SHA: ${GIT_SHA:-dev}
+    env_file: .env
+    environment:
+      <<: *app-env
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mongo:
+    # Single-node replica set (needed for transactions later). The image has its
+    # own healthcheck, so none is defined here. No auth: internal network only.
+    image: mongodb/mongodb-atlas-local
+    hostname: mongo
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mongo-data:
+  mongo-config:
+  redis-data:
