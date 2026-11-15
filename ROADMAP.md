@@ -20,7 +20,7 @@ Version 1, 9 November 2026. Goal: turn TaskHub into a flagship project that prov
 - Three roles: buyer, worker, admin.
 - Payments: Stripe Checkout with a webhook, bKash, and SSLCommerz (with IPN).
 - Coins are stored in the `coins` field on the user document and the code increases and decreases it directly. Buy and withdrawal rates are in `src/lib/coins.ts` (with the constants in `src/lib/constants.ts`), and the minimum withdrawal is 200 coins.
-- A separate Express + Socket.io realtime server in `server/` (JavaScript, its own package.json, its own Message model). Clients pass their `userId` in the socket handshake and the server does not verify a token yet. It is deployed on Render's free plan (`server/render.yaml`), which sleeps when idle.
+- A separate Express + Socket.io realtime server in `server/` (JavaScript, its own package.json, its own Message model). The realtime server verifies a short-lived signed token from `/api/v1/socket-token` and only allows users into their own conversations. It is deployed on Render's free plan (`server/render.yaml`), which sleeps when idle.
 - Image uploads go through imgbb (public URLs).
 - Email goes through Resend.
 - The Expo app lives in a separate repo, `taskhub-mobile-app`.
