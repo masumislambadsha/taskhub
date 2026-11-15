@@ -13,7 +13,14 @@ const eslintConfig = defineConfig([
     "build/**",
     "dist/**",
     "next-env.d.ts",
+    // Separate Expo app with its own tooling.
+    "mobile/**",
   ]),
+  {
+    // The realtime server is plain CommonJS, so require() is correct there.
+    files: ["server/**/*.js"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;
