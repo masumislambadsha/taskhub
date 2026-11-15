@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { MONGO_URI } = require("./env");
+const logger = require("./logger");
 
 // Backoff between failed attempts: 5s, 10s, 20s, then every 30s.
 const RETRY_DELAYS_MS = [5000, 10000, 20000];
@@ -22,15 +23,21 @@ async function connectDB() {
   for (let attempt = 1; ; attempt++) {
     try {
       await mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 10000 });
-      console.log("✅ Socket server connected to MongoDB");
+      logger.info("connected to MongoDB");
       return;
     } catch (err) {
       const delay =
         RETRY_DELAYS_MS[attempt - 1] !== undefined
           ? RETRY_DELAYS_MS[attempt - 1]
           : MAX_RETRY_DELAY_MS;
-      console.error(
-        `MongoDB connection failed (attempt ${attempt}): ${err && err.name}: ${safeMessage(err)}. Retrying in ${delay / 1000}s`,
+      logger.error(
+        {
+          attempt,
+          retryInMs: delay,
+          errName: err && err.name,
+          errMessage: safeMessage(err),
+        },
+        "MongoDB connection failed, retrying",
       );
       await sleep(delay);
     }

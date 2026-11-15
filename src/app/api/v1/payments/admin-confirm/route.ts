@@ -3,8 +3,9 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Payment from "@/models/Payment";
 import User from "@/models/User";
+import { withRequestLogging } from "@/lib/with-request-logging";
 
-export async function POST(req: NextRequest) {
+export const POST = withRequestLogging("/api/v1/payments/admin-confirm", async function POST(req: NextRequest) {
   const session = await auth();
   if (!session || session.user.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -28,4 +29,4 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({ ok: true });
-}
+});

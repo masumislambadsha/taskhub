@@ -5,6 +5,7 @@ const cors = require("cors");
 
 const { ALLOWED_ORIGINS, PORT } = require("./config/env");
 const { connectDB } = require("./config/db");
+const logger = require("./config/logger");
 const registerSocketHandlers = require("./socket");
 const healthRouter = require("./routes/health");
 
@@ -32,5 +33,5 @@ app.use("/health", healthRouter);
 registerSocketHandlers(io);
 
 httpServer.listen(PORT, () => {
-  console.log(`🚀 Socket.io server running on port ${PORT}`);
+  logger.info({ port: PORT }, "Socket.io server listening");
 });

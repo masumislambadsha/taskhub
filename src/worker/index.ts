@@ -2,6 +2,9 @@ import http from "node:http";
 import mongoose from "mongoose";
 import Redis from "ioredis";
 import { connectDB } from "@/lib/db";
+import { createLogger } from "@/lib/logger";
+
+const log = createLogger("worker");
 
 const HEALTH_PORT = Number(process.env.WORKER_HEALTH_PORT) || 4100;
 const REDIS_URL = process.env.REDIS_URL;
@@ -21,9 +24,9 @@ const redis = REDIS_URL
 redis?.on("error", () => {
   // Reported through /health. ioredis keeps reconnecting on its own.
 });
-redis?.on("ready", () => console.log("[worker] redis connected"));
+redis?.on("ready", () => log.info("redis connected"));
 redis?.on("close", () => {
-  if (!shuttingDown) console.warn("[worker] redis connection closed");
+  if (!shuttingDown) log.warn("redis connection closed");
 });
 
 function mongoOk(): boolean {
@@ -38,11 +41,12 @@ async function connectMongoWithRetry(): Promise<void> {
   while (!shuttingDown) {
     try {
       await connectDB();
-      console.log("[worker] mongodb connected");
+      log.info("mongodb connected");
       return;
     } catch {
-      console.warn(
-        `[worker] mongodb connection failed, retrying in ${RECONNECT_DELAY_MS / 1000}s`,
+      log.warn(
+        { retryInMs: RECONNECT_DELAY_MS },
+        "mongodb connection failed, retrying",
       );
       await new Promise((resolve) => setTimeout(resolve, RECONNECT_DELAY_MS));
     }
@@ -67,10 +71,10 @@ const server = http.createServer((req, res) => {
 async function shutdown(signal: string): Promise<void> {
   if (shuttingDown) return;
   shuttingDown = true;
-  console.log(`[worker] ${signal} received, shutting down`);
+  log.info({ signal }, "signal received, shutting down");
 
   const forceExit = setTimeout(() => {
-    console.error("[worker] shutdown timed out, forcing exit");
+    log.error("shutdown timed out, forcing exit");
     process.exit(1);
   }, SHUTDOWN_TIMEOUT_MS);
   forceExit.unref();
@@ -86,10 +90,10 @@ async function shutdown(signal: string): Promise<void> {
     }
     // Disconnecting while a connection attempt is in flight would hang.
     if (mongoOk()) await mongoose.disconnect();
-    console.log("[worker] shutdown complete");
+    log.info("shutdown complete");
     process.exit(0);
   } catch (err) {
-    console.error("[worker] error during shutdown", err);
+    log.error({ err }, "error during shutdown");
     process.exit(1);
   }
 }
@@ -98,10 +102,11 @@ process.on("SIGTERM", () => void shutdown("SIGTERM"));
 process.on("SIGINT", () => void shutdown("SIGINT"));
 
 server.listen(HEALTH_PORT, () => {
-  console.log(
-    `[worker] started, health on :${HEALTH_PORT}, version ${process.env.GIT_SHA || "dev"}`,
+  log.info(
+    { healthPort: HEALTH_PORT, version: process.env.GIT_SHA || "dev" },
+    "started",
   );
-  if (!REDIS_URL) console.warn("[worker] REDIS_URL is not set");
+  if (!REDIS_URL) log.warn("REDIS_URL is not set");
 });
 
 void connectMongoWithRetry();
