@@ -3,8 +3,10 @@ import { connectDB } from "@/lib/db";
 import Payment from "@/models/Payment";
 import User from "@/models/User";
 import { validateSSLPayment } from "@/lib/sslcommerz";
+import { logger } from "@/lib/logger";
+import { withRequestLogging } from "@/lib/with-request-logging";
 
-export async function POST(req: NextRequest) {
+export const POST = withRequestLogging("/api/sslcommerz/ipn", async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const data = Object.fromEntries(formData) as Record<string, string>;
@@ -24,11 +26,19 @@ export async function POST(req: NextRequest) {
         await User.findByIdAndUpdate(payment.userId, {
           $inc: { coins: payment.coinsPurchased },
         });
+        logger.info(
+          {
+            paymentId: String(payment._id),
+            userId: String(payment.userId),
+            coins: payment.coinsPurchased,
+          },
+          "payment credited",
+        );
       }
     }
   } catch (err) {
-    console.error("SSLCommerz IPN error:", err);
+    logger.error({ err }, "SSLCommerz IPN error");
   }
 
   return NextResponse.json({ status: "received" });
-}
+});

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Message from "@/models/Message";
@@ -22,14 +23,14 @@ export async function GET() {
         $or: [
           {
             senderId: {
-              $eq: require("mongoose").Types.ObjectId.createFromHexString(
+              $eq: mongoose.Types.ObjectId.createFromHexString(
                 userId,
               ),
             },
           },
           {
             receiverId: {
-              $eq: require("mongoose").Types.ObjectId.createFromHexString(
+              $eq: mongoose.Types.ObjectId.createFromHexString(
                 userId,
               ),
             },
@@ -57,7 +58,7 @@ export async function GET() {
                   {
                     $ne: [
                       "$senderId",
-                      require("mongoose").Types.ObjectId.createFromHexString(
+                      mongoose.Types.ObjectId.createFromHexString(
                         userId,
                       ),
                     ],

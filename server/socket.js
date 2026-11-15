@@ -1,14 +1,16 @@
+const Sentry = require("@sentry/node");
+const logger = require("./config/logger");
 const { persistMessage, markConversationRead } = require("./controllers/messageController");
 
 module.exports = function registerSocketHandlers(io) {
   io.use(require("./middleware/socketAuth"));
 
   io.on("connection", (socket) => {
-    console.log(`🔌 User connected: ${socket.userId}`);
+    logger.info({ userId: socket.userId }, "user connected");
 
     socket.on("join:conversation", (conversationId) => {
       socket.join(conversationId);
-      console.log(`👥 ${socket.userId} joined room: ${conversationId}`);
+      logger.debug({ userId: socket.userId, roomId: conversationId }, "joined room");
     });
 
     socket.on("leave:conversation", (conversationId) => {
@@ -45,7 +47,8 @@ module.exports = function registerSocketHandlers(io) {
 
         io.to(conversationId).emit("message:receive", payload);
       } catch (err) {
-        console.error("Error saving message:", err);
+        logger.error({ err, userId: socket.userId, roomId: conversationId }, "error saving message");
+        Sentry.captureException(err);
         socket.emit("message:error", { error: "Failed to send message" });
       }
     });
@@ -71,12 +74,13 @@ module.exports = function registerSocketHandlers(io) {
           userId: socket.userId,
         });
       } catch (err) {
-        console.error("Error marking messages read:", err);
+        logger.error({ err, userId: socket.userId, roomId: conversationId }, "error marking messages read");
+        Sentry.captureException(err);
       }
     });
 
     socket.on("disconnect", () => {
-      console.log(`🔌 User disconnected: ${socket.userId}`);
+      logger.info({ userId: socket.userId }, "user disconnected");
     });
   });
 };

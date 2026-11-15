@@ -3,18 +3,24 @@ import Stripe from "stripe";
 import { connectDB } from "@/lib/db";
 import Payment from "@/models/Payment";
 import User from "@/models/User";
+import { logger } from "@/lib/logger";
+import { withRequestLogging } from "@/lib/with-request-logging";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-02-25.clover",
-});
+// Created on first use so `next build` doesn't need STRIPE_SECRET_KEY.
+let stripeClient: Stripe | undefined;
+function getStripe(): Stripe {
+  return (stripeClient ??= new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2026-02-25.clover",
+  }));
+}
 
-export async function POST(req: NextRequest) {
+export const POST = withRequestLogging("/api/v1/payments/stripe/webhook", async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get("stripe-signature")!;
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       body,
       sig,
       process.env.STRIPE_WEBHOOK_SECRET!,
@@ -37,8 +43,16 @@ export async function POST(req: NextRequest) {
       await User.findByIdAndUpdate(payment.userId, {
         $inc: { coins: payment.coinsPurchased },
       });
+      logger.info(
+        {
+          paymentId: String(payment._id),
+          userId: String(payment.userId),
+          coins: payment.coinsPurchased,
+        },
+        "payment credited",
+      );
     }
   }
 
   return NextResponse.json({ ok: true });
-}
+});

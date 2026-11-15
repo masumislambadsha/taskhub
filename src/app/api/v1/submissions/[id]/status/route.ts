@@ -5,8 +5,9 @@ import Submission from "@/models/Submission";
 import Task from "@/models/Task";
 import User from "@/models/User";
 import { createNotification } from "@/lib/notifications";
+import { withRequestLogging } from "@/lib/with-request-logging";
 
-export async function PATCH(
+export const PATCH = withRequestLogging("/api/v1/submissions/[id]/status", async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
@@ -60,4 +61,4 @@ export async function PATCH(
   }
 
   return NextResponse.json(submission);
-}
+});

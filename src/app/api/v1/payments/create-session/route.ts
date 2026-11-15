@@ -6,12 +6,17 @@ import Stripe from "stripe";
 import { COIN_PACKAGES } from "@/lib/constants";
 import { getBkashToken, createBkashPayment } from "@/lib/bkash";
 import { initSSLCommerz } from "@/lib/sslcommerz";
+import { withRequestLogging } from "@/lib/with-request-logging";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-02-25.clover",
-});
+// Created on first use so `next build` doesn't need STRIPE_SECRET_KEY.
+let stripeClient: Stripe | undefined;
+function getStripe(): Stripe {
+  return (stripeClient ??= new Stripe(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: "2026-02-25.clover",
+  }));
+}
 
-export async function POST(req: NextRequest) {
+export const POST = withRequestLogging("/api/v1/payments/create-session", async function POST(req: NextRequest) {
   const session = await auth();
   if (!session || session.user.role !== "buyer") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -35,7 +40,7 @@ export async function POST(req: NextRequest) {
       status: "pending",
     })) as IPaymentDoc;
 
-    const stripeSession = await stripe.checkout.sessions.create({
+    const stripeSession = await getStripe().checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
@@ -118,4 +123,4 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({ error: "Invalid gateway" }, { status: 400 });
-}
+});
