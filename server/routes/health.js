@@ -1,4 +1,5 @@
 const express = require("express");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const mongoose = require("mongoose");
 
 const router = express.Router();
