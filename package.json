@@ -8,6 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "build:worker": "esbuild src/worker/index.ts --bundle --platform=node --target=node22 --packages=external --tsconfig=tsconfig.json --banner:js=\"process.env.LOG_SERVICE=process.env.LOG_SERVICE||'worker';\" --outfile=dist/worker/index.js",
     "start:worker": "node dist/worker/index.js",
     "seed": "tsx scripts/seed.ts"
@@ -50,7 +52,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
     "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20",
+    "@types/node": "^22.20.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
@@ -60,6 +62,7 @@
     "pino-pretty": "^13.2.0",
     "tailwindcss": "^4.2.2",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.1.0"
   }
 }
