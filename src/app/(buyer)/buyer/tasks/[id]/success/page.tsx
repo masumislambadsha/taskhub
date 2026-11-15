@@ -30,7 +30,7 @@ export default function TaskSuccessPage() {
           Your task is live!
         </h1>
         <p className="text-primary/60 text-base max-w-xl leading-relaxed">
-          Workers have been notified. You've successfully posted a new
+          Workers have been notified. You&apos;ve successfully posted a new
           opportunity on TaskHub.
         </p>
       </div>
