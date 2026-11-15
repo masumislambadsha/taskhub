@@ -11,17 +11,15 @@ ARG NODE_IMAGE=node:22-slim
 FROM ${NODE_IMAGE} AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-# --legacy-peer-deps: @auth/mongodb-adapter asks for mongodb@6 while the app
-# uses mongodb@7, which `npm ci` rejects without it.
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --legacy-peer-deps
+    npm ci
 
 # ── prod-deps: production-only node_modules for the worker ──────────────────
 FROM ${NODE_IMAGE} AS prod-deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --omit=dev --legacy-peer-deps
+    npm ci --omit=dev
 
 # ── build: next build (standalone) and the worker bundle ────────────────────
 FROM ${NODE_IMAGE} AS build
