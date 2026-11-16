@@ -9,6 +9,8 @@ services:
     envVars:
       - key: MONGODB_URI
         sync: false
+      - key: SOCKET_JWT_SECRET
+        sync: false
       - key: NEXT_PUBLIC_APP_URL
         value: https://task-hub-io.vercel.app
       - key: NODE_ENV
