@@ -107,9 +107,10 @@ offline to migrate.
 - Admin status changes (block, archive, unarchive) still move no coins. Un-archiving a task
   the buyer deleted reopens slots that are not backed by escrow, so approvals past the
   funded ones are refused as `escrow_insufficient` instead of paying out of nothing.
-- The worker submission route (`POST /api/v1/submissions`) still updates `filledWorkers`
-  without a transaction. It does not touch coins, but two submissions at once can lose a
-  count, and reconcile then reports that task's escrow as a mismatch, which is correct.
+- The worker submission route (`POST /api/v1/submissions`) used to update `filledWorkers`
+  without a transaction, so two submissions at once could lose a count and reconcile would
+  report that task's escrow as a mismatch. This is fixed: `submitWork` takes the slot with a
+  conditional update and creates the submission in one transaction.
 - Deleting a user does not refund the escrow of their tasks; their coins are forfeited.
 - Withdrawals still take coins at approval, not at request, so a worker can have several
   pending requests that together exceed their balance; the approvals past the balance are
