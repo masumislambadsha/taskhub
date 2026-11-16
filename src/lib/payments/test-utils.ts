@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { MongoMemoryReplSet } from "mongodb-memory-server";
+import { inject } from "vitest";
 import LedgerAccount from "@/models/LedgerAccount";
 import LedgerTransaction from "@/models/LedgerTransaction";
 import Payment from "@/models/Payment";
@@ -9,25 +9,26 @@ import User from "@/models/User";
 import Withdrawal from "@/models/Withdrawal";
 
 /**
- * Starts the MongoDB used by the payment integration tests. Transactions need
- * a replica set, so this is a one-node `MongoMemoryReplSet` (the binary is
- * downloaded on first use; CI can do that too).
+ * Connects to the MongoDB used by the payment integration tests. Transactions
+ * need a replica set, so the global setup (`global-setup.ts`) starts one
+ * one-node `MongoMemoryReplSet` for the whole run (the binary is downloaded on
+ * first use; CI can do that too) and shares its URI with every test file
+ * through Vitest's `inject`. A file that only needs the helpers in here still
+ * works on its own, because the global setup runs for every Vitest run.
  *
  * If the binary cannot be downloaded, point `MONGODB_TEST_URI` at any replica
  * set instead, for example:
  *   docker run -d --name tmongo -p 27099:27017 mongo:7 --replSet rs0 --bind_ip_all
  *   docker exec tmongo mongosh --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"}]})'
  *   MONGODB_TEST_URI='mongodb://localhost:27099/?directConnection=true' npm test
- * Each test file uses its own database name, so files can run in parallel.
+ * In that case the global setup starts nothing and the tests use that URI.
+ *
+ * The server is shared, so each test file must use its own database name, and
+ * `stop()` only drops that database and disconnects. The global setup stops the
+ * server when the run ends.
  */
 export async function startTestDb(dbName: string) {
-  let replSet: MongoMemoryReplSet | undefined;
-  let uri = process.env.MONGODB_TEST_URI;
-  if (!uri) {
-    replSet = await MongoMemoryReplSet.create({ replSet: { count: 1 } });
-    uri = replSet.getUri();
-  }
-  await mongoose.connect(uri, { dbName });
+  await mongoose.connect(inject("mongoUri"), { dbName });
   await Promise.all([
     Payment.init(),
     User.init(),
@@ -39,9 +40,8 @@ export async function startTestDb(dbName: string) {
   ]);
   return {
     async stop() {
-      if (process.env.MONGODB_TEST_URI) await mongoose.connection.dropDatabase();
+      await mongoose.connection.dropDatabase();
       await mongoose.disconnect();
-      await replSet?.stop();
     },
     async reset() {
       await Promise.all([
