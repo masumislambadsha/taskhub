@@ -291,6 +291,14 @@ Later phases add integration tests (Phase 1), E2E (4.3), and image push plus dep
 
 **Done when:** a pull request shows green checks and a failing test blocks the merge.
 
+## 0.9 Production deployment (pulled forward from 4.4)
+
+**Goal:** a ready-to-use VPS deployment that stays switched off until you add the secrets.
+
+The production compose file, host Nginx site, VPS bootstrap script, deploy script with health check and rollback, Docker Hub publish job and SSH deploy job are in place. The runbook, GitHub secrets and the switch-over checklist from Vercel and Render are in [deploy/README.md](deploy/README.md). The reasoning is in `docs/adr/0002-vps-deployment.md`.
+
+**Done when:** `publish` and `deploy` are skipped in CI until you set the variables, and a manual `deploy/deploy.sh <sha>` on a VPS passes its health check.
+
 **Phase 0 interview story:** "I split a Next.js + Socket.io app into web, realtime and worker services behind Nginx, with health checks, structured logs, Sentry and CI."
 
 ---
@@ -934,6 +942,8 @@ Set `numDimensions` to your embedding model's actual size.
 ## 4.4 Deploy
 
 **Goal:** a merge to `main` deploys itself with zero downtime, and you can roll back in one command.
+
+**Status:** the pipeline now exists (see 0.9): images go to Docker Hub, the deploy job connects by SSH, and a failed health check rolls back. What is left here is the zero-downtime rolling restart, which needs the second instance from Phase 2.
 
 **Tip:** you can do a first rough deploy right after Phase 0 to find hosting problems early, then automate it here.
 

@@ -54,3 +54,12 @@ next-env.d.ts
 # manual-testing leftovers
 *cookies*.txt
 resp.json
+
+# deployment: real runtime env files and the secrets-upload input (the .example files stay tracked)
+deploy/env/*.env
+deploy/github-secrets.input.env
+deploy/*.pem
+deploy/id_*
+
+# deploy.sh state (current and previous image tag on the VPS)
+/.deploy/

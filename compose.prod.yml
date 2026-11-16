@@ -1,0 +1,63 @@
+# TaskHub production stack for a single VPS. Uses prebuilt images from Docker Hub.
+# Nginx runs on the VPS host (see deploy/nginx/taskhub.conf), not in this file.
+# MongoDB is MongoDB Atlas, so it is not part of this stack.
+#
+# Usage (normally through deploy/deploy.sh):
+#   DOCKERHUB_USERNAME=your-dockerhub-user IMAGE_TAG=<git-sha> \
+#     docker compose -f compose.prod.yml up -d
+name: taskhub
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+services:
+  web:
+    image: ${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME to your Docker Hub user}/taskhub-web:${IMAGE_TAG:?set IMAGE_TAG to the image tag (a git SHA) to run}
+    restart: unless-stopped
+    env_file: deploy/env/web.env
+    environment:
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  realtime:
+    image: ${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME to your Docker Hub user}/taskhub-realtime:${IMAGE_TAG:?set IMAGE_TAG to the image tag (a git SHA) to run}
+    restart: unless-stopped
+    env_file: deploy/env/realtime.env
+    ports:
+      - "127.0.0.1:3001:3001"
+    logging: *default-logging
+
+  worker:
+    image: ${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME to your Docker Hub user}/taskhub-worker:${IMAGE_TAG:?set IMAGE_TAG to the image tag (a git SHA) to run}
+    restart: unless-stopped
+    env_file: deploy/env/web.env
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    logging: *default-logging
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    logging: *default-logging
+
+volumes:
+  redis-data:
