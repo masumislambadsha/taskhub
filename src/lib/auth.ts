@@ -6,6 +6,11 @@ import { decode } from "next-auth/jwt";
 import { headers } from "next/headers";
 import { connectDB } from "./db";
 import User from "@/models/User";
+import { WORKER_INITIAL_COINS } from "@/lib/constants";
+import {
+  createUserWithBonus,
+  isDuplicateKeyError,
+} from "@/lib/ledger/flows/users";
 
 const { handlers, auth: nextAuthAuth, signIn, signOut } = NextAuth({
   providers: [
@@ -47,14 +52,20 @@ const { handlers, auth: nextAuthAuth, signIn, signOut } = NextAuth({
         await connectDB();
         const existing = await User.findOne({ email: user.email! });
         if (!existing) {
-          await User.create({
-            name: user.name!,
-            email: user.email!,
-            photoUrl: user.image ?? undefined,
-            role: "worker",
-            coins: 10,
-            status: "active",
-          });
+          try {
+            await createUserWithBonus({
+              data: {
+                name: user.name!,
+                email: user.email!,
+                photoUrl: user.image ?? undefined,
+                role: "worker",
+              },
+              bonus: WORKER_INITIAL_COINS,
+            });
+          } catch (err) {
+            // A concurrent first sign-in already created the user.
+            if (!isDuplicateKeyError(err)) throw err;
+          }
         }
       }
       return true;
