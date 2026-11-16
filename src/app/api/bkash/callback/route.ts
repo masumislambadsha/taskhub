@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import Payment from "@/models/Payment";
-import User from "@/models/User";
 import { executeBkashPayment } from "@/lib/bkash";
+import { creditPayment } from "@/lib/payments/credit";
 import { logger } from "@/lib/logger";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
@@ -19,38 +18,49 @@ export const GET = withRequestLogging("/api/bkash/callback", async function GET(
 
   try {
     const execData = await executeBkashPayment(paymentID);
+    const dbPaymentId = execData.merchantInvoiceNumber;
+    const ctx = { bkashPaymentId: paymentID, paymentId: dbPaymentId };
 
     if (
       execData.statusCode !== "0000" ||
       execData.transactionStatus !== "Completed"
     ) {
+      logger.warn(
+        {
+          ...ctx,
+          statusCode: execData.statusCode,
+          transactionStatus: execData.transactionStatus,
+        },
+        "bKash payment not completed",
+      );
       return NextResponse.redirect(`${BASE}/buyer/coins?cancelled=1`);
     }
 
-    const dbPaymentId = execData.merchantInvoiceNumber;
+    if (execData.paymentID !== paymentID || !execData.trxID) {
+      logger.warn(
+        { ...ctx, reason: "gateway_mismatch" },
+        "payment credit refused",
+      );
+      return NextResponse.redirect(`${BASE}/buyer/coins?cancelled=1`);
+    }
 
     await connectDB();
-    const payment = await Payment.findOne({
-      _id: dbPaymentId,
-      status: "pending",
+    const result = await creditPayment({
+      paymentId: String(dbPaymentId),
+      expected: {
+        amount: Number(execData.amount),
+        currency: execData.currency,
+      },
+      gateway: {
+        name: "bkash",
+        transactionId: execData.trxID,
+        meta: execData,
+      },
     });
 
-    if (payment) {
-      payment.status = "success";
-      payment.gatewayTransactionId = execData.trxID;
-      payment.meta = execData;
-      await payment.save();
-      await User.findByIdAndUpdate(payment.userId, {
-        $inc: { coins: payment.coinsPurchased },
-      });
-      logger.info(
-        {
-          paymentId: String(payment._id),
-          userId: String(payment.userId),
-          coins: payment.coinsPurchased,
-        },
-        "payment credited",
-      );
+    // "already_processed": an earlier callback for this payment credited it.
+    if (!result.credited && result.reason !== "already_processed") {
+      return NextResponse.redirect(`${BASE}/buyer/coins?cancelled=1`);
     }
 
     return NextResponse.redirect(
