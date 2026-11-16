@@ -11,6 +11,7 @@ import { CoinPackage } from "@/types";
 import { SiStripe } from "react-icons/si";
 import { PiCoinFill } from "react-icons/pi";
 import BkashIcon from "@/components/icons/BkashIcon";
+import RecentCoinActivity from "@/components/ui/RecentCoinActivity";
 
 const GATEWAY_COLORS: Record<string, string> = {
   stripe: "#635BFF",
@@ -167,6 +168,8 @@ export default function BuyCoinsPage() {
           Coins are non-refundable once used to post tasks.
         </p>
       </div>
+
+      <RecentCoinActivity />
     </div>
   );
 }
