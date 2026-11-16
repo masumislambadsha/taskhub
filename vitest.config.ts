@@ -11,7 +11,8 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/*.test.ts"],
     env: { LOG_LEVEL: "silent" },
-    // Payment integration tests start an in-memory MongoDB replica set.
+    // One in-memory MongoDB replica set is shared by all test files.
+    globalSetup: ["src/lib/payments/global-setup.ts"],
     hookTimeout: 180_000,
   },
 });
