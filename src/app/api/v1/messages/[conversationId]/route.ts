@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import { isParticipant, parseConversationId } from "@/lib/conversation";
 import Message from "@/models/Message";
 import mongoose from "mongoose";
 
@@ -15,19 +16,19 @@ export async function GET(_req: Request, { params }: Props) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { conversationId } = await params;
-  await connectDB();
+  if (!parseConversationId(conversationId)) {
+    return NextResponse.json(
+      { error: "Invalid conversation ID" },
+      { status: 400 },
+    );
+  }
 
   const userId = session.user.id;
-
-  
-  const sample = await Message.findOne({ conversationId }).lean();
-  if (
-    sample &&
-    sample.senderId.toString() !== userId &&
-    sample.receiverId.toString() !== userId
-  ) {
+  if (!isParticipant(conversationId, userId)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  await connectDB();
 
   const messages = await Message.find({ conversationId })
     .sort("createdAt")
