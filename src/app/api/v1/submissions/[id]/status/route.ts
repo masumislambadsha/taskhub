@@ -67,6 +67,11 @@ export const PATCH = withRequestLogging("/api/v1/submissions/[id]/status", async
     if (!result.ok) {
       if (result.reason === "not_found")
         return NextResponse.json({ error: "Not found" }, { status: 404 });
+      if (result.reason === "insufficient_coins")
+        return NextResponse.json(
+          { error: "Insufficient coins to reopen this slot at the task's current payout" },
+          { status: 400 },
+        );
       return escrowProblem();
     }
     submission = result.submission;

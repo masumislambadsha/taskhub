@@ -20,6 +20,7 @@ const LABELS: Record<string, string> = {
   signup_bonus: "Welcome bonus",
   task_fund: "Task funded",
   task_adjust: "Task budget changed",
+  task_reprice: "Task budget changed",
   task_refund: "Task refund",
   submission_payout: "Task payout",
   submission_reject_refund: "Task refund",
