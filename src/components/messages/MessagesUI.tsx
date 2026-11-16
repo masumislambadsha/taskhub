@@ -43,6 +43,27 @@ function Avatar({
   );
 }
 
+function convFromSearchParams(
+  searchParams: Pick<URLSearchParams, "get">,
+): IConversation | null {
+  const conv = searchParams.get("conv");
+  const taskId = searchParams.get("taskId");
+  const taskTitle = searchParams.get("taskTitle");
+  const otherId = searchParams.get("otherId");
+  const otherName = searchParams.get("otherName");
+  if (!(conv && taskId && otherId && otherName)) return null;
+  return {
+    conversationId: conv,
+    taskId,
+    taskTitle: taskTitle ?? "Task",
+    otherUserId: otherId,
+    otherUserName: decodeURIComponent(otherName),
+    lastMessage: "",
+    lastMessageAt: new Date().toISOString(),
+    unreadCount: 0,
+  };
+}
+
 export default function MessagesUI({
   role,
   emptyHint,
@@ -52,11 +73,26 @@ export default function MessagesUI({
   const searchParams = useSearchParams();
   const qc = useQueryClient();
 
-  const [selectedConv, setSelectedConv] = useState<IConversation | null>(null);
+  const [selectedConv, setSelectedConv] = useState<IConversation | null>(() =>
+    convFromSearchParams(searchParams),
+  );
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [typingUser, setTypingUser] = useState<string | null>(null);
-  const [mobileView, setMobileView] = useState<"list" | "chat">("list");
+  const [mobileView, setMobileView] = useState<"list" | "chat">(() =>
+    convFromSearchParams(searchParams) ? "chat" : "list",
+  );
+
+  // When the URL changes to point at a conversation (?conv=...), open it.
+  const [seenSearchParams, setSeenSearchParams] = useState(searchParams);
+  if (seenSearchParams !== searchParams) {
+    setSeenSearchParams(searchParams);
+    const fromUrl = convFromSearchParams(searchParams);
+    if (fromUrl) {
+      setSelectedConv(fromUrl);
+      setMobileView("chat");
+    }
+  }
 
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -68,28 +104,6 @@ export default function MessagesUI({
     queryFn: () => axios.get("/api/v1/messages").then((r) => r.data),
     refetchInterval: 15000,
   });
-
-  useEffect(() => {
-    const conv = searchParams.get("conv");
-    const taskId = searchParams.get("taskId");
-    const taskTitle = searchParams.get("taskTitle");
-    const otherId = searchParams.get("otherId");
-    const otherName = searchParams.get("otherName");
-    if (conv && taskId && otherId && otherName) {
-      const c: IConversation = {
-        conversationId: conv,
-        taskId,
-        taskTitle: taskTitle ?? "Task",
-        otherUserId: otherId,
-        otherUserName: decodeURIComponent(otherName),
-        lastMessage: "",
-        lastMessageAt: new Date().toISOString(),
-        unreadCount: 0,
-      };
-      setSelectedConv(c);
-      setMobileView("chat");
-    }
-  }, [searchParams]);
 
   const activeConv = selectedConv;
 

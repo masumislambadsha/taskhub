@@ -20,9 +20,7 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownItem,
-  DropdownItemIndicator,
   Button,
-  Label,
   DatePicker,
   DateField,
   Calendar,
@@ -52,7 +50,7 @@ export default function EditTaskPage() {
     setValue,
     formState: { errors },
   } = useForm<TaskFormData>({
-    resolver: zodResolver(taskSchema) as any,
+    resolver: zodResolver(taskSchema),
   });
 
   const category = watch("category") || "";

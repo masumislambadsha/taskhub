@@ -13,7 +13,7 @@ function getJwtSalt(): string {
 export async function POST(req: NextRequest) {
   try {
     const text = await req.text();
-    let body: any = {};
+    let body: unknown = {};
     try { body = JSON.parse(text); } catch {}
     const parsed = loginSchema.safeParse(body);
     if (!parsed.success) {

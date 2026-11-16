@@ -25,9 +25,7 @@ import {
   DropdownPopover,
   DropdownSection,
   DropdownItem,
-  DropdownItemIndicator,
   Button,
-  Label,
   DatePicker,
   DateField,
   Calendar,
@@ -59,7 +57,7 @@ export default function NewTaskPage() {
     
   } = useForm<TaskFormData>({
     
-    resolver: zodResolver(taskSchema) as any,
+    resolver: zodResolver(taskSchema),
     defaultValues: { requiredWorkers: 1, payableAmount: 10 },
   });
 
@@ -157,7 +155,7 @@ export default function NewTaskPage() {
 
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6">
         
-        <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div>
             <label className="block text-sm font-medium text-primary mb-1.5">
               Task Title

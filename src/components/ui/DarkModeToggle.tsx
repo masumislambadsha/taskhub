@@ -1,30 +1,36 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { MdLightMode, MdDarkMode } from "react-icons/md";
+import {
+  getIsDarkServerSnapshot,
+  getIsDarkSnapshot,
+  notifyThemeChange,
+  subscribeTheme,
+} from "@/lib/theme-store";
 
 interface DarkModeToggleProps {
   dark?: boolean;
 }
 
 export default function DarkModeToggle({ dark }: DarkModeToggleProps) {
-  const [isDark, setIsDark] = useState(false);
+  const isDark = useSyncExternalStore(
+    subscribeTheme,
+    getIsDarkSnapshot,
+    getIsDarkServerSnapshot,
+  );
 
-  // Initialize theme from localStorage on mount (default: light)
+  // Apply the saved theme to <html> on mount (default: light)
   useEffect(() => {
     const html = document.documentElement;
     const savedTheme = localStorage.getItem("theme");
 
-    const shouldBeDark = savedTheme === "dark";
-
-    if (shouldBeDark) {
+    if (savedTheme === "dark") {
       html.classList.add("dark");
       html.setAttribute("data-theme", "dark");
-      setIsDark(true);
     } else {
       html.classList.remove("dark");
       html.removeAttribute("data-theme");
-      setIsDark(false);
     }
   }, []);
 
@@ -42,7 +48,7 @@ export default function DarkModeToggle({ dark }: DarkModeToggleProps) {
       localStorage.setItem("theme", "light");
     }
     
-    setIsDark(next);
+    notifyThemeChange();
   };
 
   return (
