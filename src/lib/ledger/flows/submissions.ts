@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Submission, { type ISubmissionDoc } from "@/models/Submission";
 import Task, { type ITaskDoc } from "@/models/Task";
 import { escrowAccount, userAccount } from "../accounts";
@@ -29,6 +30,12 @@ export async function submitWork(args: {
   data: { details: string; proofLinks?: string[]; proofImageUrl?: string };
 }): Promise<SubmitWorkResult> {
   const { taskId, worker, data } = args;
+  // `taskId` comes from request JSON, so it can be any value at runtime: an
+  // operator object would otherwise reach the query filter, and a malformed
+  // string would throw a CastError.
+  if (typeof taskId !== "string" || !mongoose.isValidObjectId(taskId)) {
+    return { ok: false, reason: "not_available" };
+  }
   return inLedgerTransaction(async (session): Promise<SubmitWorkResult> => {
     const task = await Task.findOneAndUpdate(
       {
