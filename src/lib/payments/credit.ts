@@ -1,8 +1,13 @@
 import mongoose from "mongoose";
 import Payment from "@/models/Payment";
 import type { IPaymentDoc } from "@/models/Payment";
-import User from "@/models/User";
 import { logger } from "@/lib/logger";
+import {
+  postTransaction,
+  SYSTEM_ACCOUNTS,
+  UnknownAccountError,
+  userAccount,
+} from "@/lib/ledger";
 
 /**
  * Taka charged per US dollar of package price. `Payment.amount` is always the
@@ -87,7 +92,8 @@ function isDuplicateKey(err: unknown): boolean {
  * The only place that adds purchased coins to a user's balance.
  *
  * In one MongoDB transaction it flips the payment from `pending` to `success`
- * (only if it is still pending) and, only if that matched, adds the coins. A
+ * (only if it is still pending) and, only if that matched, posts the ledger
+ * transaction `system:issuance -N, user +N` (key `payment:<paymentId>`). A
  * second call for the same payment, however concurrent, credits nothing.
  */
 export async function creditPayment(input: CreditInput): Promise<CreditResult> {
@@ -162,14 +168,34 @@ export async function creditPayment(input: CreditInput): Promise<CreditResult> {
         );
         if (!updated) return refuse("already_processed");
 
-        const userUpdate = await User.updateOne(
-          { _id: updated.userId },
-          { $inc: { coins: updated.coinsPurchased } },
-          { session },
-        );
-        if (userUpdate.matchedCount === 0) {
+        // The coins come from system:issuance. The ledger posting and the
+        // payment status flip above commit or roll back together.
+        try {
+          await postTransaction(
+            {
+              type: "topup",
+              idempotencyKey: `payment:${paymentId}`,
+              entries: [
+                {
+                  accountId: SYSTEM_ACCOUNTS.ISSUANCE,
+                  amount: -updated.coinsPurchased,
+                },
+                {
+                  accountId: userAccount(updated.userId),
+                  amount: updated.coinsPurchased,
+                },
+              ],
+              meta: { paymentId },
+              createdBy: gateway.adminUserId ?? "system",
+            },
+            session,
+          );
+        } catch (err) {
           // Roll the status change back: nobody was credited.
-          throw new RollbackError("user_not_found");
+          if (err instanceof UnknownAccountError) {
+            throw new RollbackError("user_not_found");
+          }
+          throw err;
         }
 
         logger.info(
