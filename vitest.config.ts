@@ -10,5 +10,8 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    env: { LOG_LEVEL: "silent" },
+    // Payment integration tests start an in-memory MongoDB replica set.
+    hookTimeout: 180_000,
   },
 });
