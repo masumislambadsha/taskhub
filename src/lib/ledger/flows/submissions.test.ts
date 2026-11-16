@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import LedgerAccount from "@/models/LedgerAccount";
 import LedgerTransaction from "@/models/LedgerTransaction";
@@ -13,7 +14,8 @@ import {
   taskInput,
 } from "@/lib/payments/test-utils";
 import { createFundedTask, deleteFundedTask, updateFundedTask } from "@/lib/ledger/flows/tasks";
-import { approveSubmission, rejectSubmission } from "@/lib/ledger/flows/submissions";
+import { approveSubmission, rejectSubmission, submitWork } from "@/lib/ledger/flows/submissions";
+import { reconcile } from "@/lib/ledger/reconcile";
 import { escrowAccount } from "@/lib/ledger";
 
 let db: Awaited<ReturnType<typeof startTestDb>>;
@@ -279,5 +281,112 @@ describe("rejectSubmission", () => {
       expect(await escrowOf(task._id)).toBe(36);
       expect(await coinsOf(buyer._id)).toBe(48);
     });
+  });
+});
+
+describe("submitWork", () => {
+  const submit = (taskId: unknown, workerId: unknown) =>
+    submitWork({
+      taskId: String(taskId),
+      worker: { id: String(workerId), name: "Worker", email: "worker@example.test" },
+      data: { details: "All done, see the proof.", proofLinks: ["https://example.test/proof"] },
+    });
+
+  it("takes a slot and creates a pending submission", async () => {
+    const { task } = await fundedTask(100, 3, 10);
+    const worker = await createUser(0);
+    const res = await submit(task._id, worker._id);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.submission.status).toBe("pending");
+    expect(res.submission.payableAmount).toBe(10);
+    expect(res.task.title).toBe(task.title);
+    const t = await Task.findById(task._id);
+    expect(t?.filledWorkers).toBe(1);
+    expect(t?.status).toBe("open");
+    expect((await reconcile()).ok).toBe(true);
+  });
+
+  it("10 workers at once on 5 open slots: exactly 5 get in, the other 5 are refused", async () => {
+    const { task } = await fundedTask(1000, 5, 10);
+    const workers = await Promise.all(Array.from({ length: 10 }, () => createUser(0)));
+    const results = await Promise.all(workers.map((w) => submit(task._id, w._id)));
+    expect(results.filter((r) => r.ok)).toHaveLength(5);
+    const refused = results.filter((r) => !r.ok);
+    expect(refused).toHaveLength(5);
+    // The fifth submission closes the task, so the losers find it closed: the
+    // same "not available" a late worker always got on a closed task.
+    expect(refused.every((r) => !r.ok && r.reason === "not_available")).toBe(true);
+    const t = await Task.findById(task._id);
+    expect(t?.filledWorkers).toBe(5);
+    expect(t?.status).toBe("closed");
+    expect(await Submission.countDocuments({ taskId: task._id, status: "pending" })).toBe(5);
+    const report = await reconcile();
+    expect(report.escrowMismatches).toEqual([]);
+    expect(report.ok).toBe(true);
+  });
+
+  it("the same worker 5 times at once gets one submission", async () => {
+    const { task } = await fundedTask(100, 5, 10);
+    const worker = await createUser(0);
+    const results = await Promise.all(Array.from({ length: 5 }, () => submit(task._id, worker._id)));
+    expect(results.filter((r) => r.ok)).toHaveLength(1);
+    expect(
+      results.filter((r) => !r.ok).every((r) => !r.ok && r.reason === "pending_exists"),
+    ).toBe(true);
+    expect((await Task.findById(task._id))?.filledWorkers).toBe(1);
+    expect(await Submission.countDocuments({ taskId: task._id, workerId: worker._id })).toBe(1);
+    expect((await reconcile()).ok).toBe(true);
+  });
+
+  it("reports full for an open task with no slot left, and pending first for a worker who already submitted", async () => {
+    const buyer = await createUser(0);
+    const worker = await createUser(0);
+    const other = await createUser(0);
+    // Open but with every slot taken (not a state the app creates, but the check must hold).
+    const task = await createPreLedgerTask(buyer._id, { requiredWorkers: 2, filledWorkers: 2 });
+    expect(await submit(task._id, other._id)).toEqual({ ok: false, reason: "full" });
+    await createPendingSubmission(task, worker._id);
+    await Task.updateOne({ _id: task._id }, { filledWorkers: 2, status: "open" });
+    expect(await submit(task._id, worker._id)).toEqual({ ok: false, reason: "pending_exists" });
+  });
+
+  it.each(["closed", "blocked", "archived"] as const)("refuses a %s task as not available", async (status) => {
+    const buyer = await createUser(0);
+    const worker = await createUser(0);
+    const task = await createPreLedgerTask(buyer._id, { status });
+    expect(await submit(task._id, worker._id)).toEqual({ ok: false, reason: "not_available" });
+    expect(await Submission.countDocuments({})).toBe(0);
+    expect((await Task.findById(task._id))?.filledWorkers).toBe(0);
+  });
+
+  it("refuses a task that does not exist as not available", async () => {
+    const worker = await createUser(0);
+    expect(await submit(new mongoose.Types.ObjectId(), worker._id)).toEqual({
+      ok: false,
+      reason: "not_available",
+    });
+  });
+
+  it("accepts a new submission after a rejection frees a slot", async () => {
+    const { buyer, task } = await fundedTask(100, 1, 10);
+    const first = await createUser(0);
+    const second = await createUser(0);
+    const res = await submit(task._id, first._id);
+    if (!res.ok) throw new Error("setup failed");
+    expect(await submit(task._id, second._id)).toEqual({ ok: false, reason: "not_available" });
+
+    const rejected = await rejectSubmission({
+      submissionId: String(res.submission._id),
+      buyerId: String(buyer._id),
+    });
+    expect(rejected.ok).toBe(true);
+    expect((await Task.findById(task._id))?.status).toBe("open");
+
+    expect((await submit(task._id, second._id)).ok).toBe(true);
+    const t = await Task.findById(task._id);
+    expect(t?.filledWorkers).toBe(1);
+    expect(t?.status).toBe("closed");
+    expect((await reconcile()).ok).toBe(true);
   });
 });
