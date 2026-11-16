@@ -6,8 +6,16 @@ export const MONGO_CONNECT_TIMEOUT_MS = 5000;
 /** Budget for the MongoDB ping once connected. */
 export const MONGO_PING_TIMEOUT_MS = CHECK_TIMEOUT_MS;
 
+/**
+ * Build identifier: GIT_SHA, else the platform's commit SHA (Vercel, then
+ * Render), else "dev". Shortened to 7 characters.
+ */
 export function getVersion(): string {
-  return process.env.GIT_SHA || "dev";
+  const sha =
+    process.env.GIT_SHA ||
+    process.env.VERCEL_GIT_COMMIT_SHA ||
+    process.env.RENDER_GIT_COMMIT;
+  return sha ? sha.slice(0, 7) : "dev";
 }
 
 export function getUptimeSeconds(): number {
