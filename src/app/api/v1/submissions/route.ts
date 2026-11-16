@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
-import Task from "@/models/Task";
+import { submitWork } from "@/lib/ledger/flows/submissions";
 import { submissionSchema } from "@/lib/validators/submission";
 import { createNotification } from "@/lib/notifications";
 import { withRequestLogging } from "@/lib/with-request-logging";
@@ -55,41 +55,24 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
     );
 
   await connectDB();
-  const task = await Task.findById(body.taskId);
-  if (!task || task.status !== "open") {
-    return NextResponse.json({ error: "Task not available" }, { status: 400 });
-  }
-
-  const existing = await Submission.findOne({
+  const result = await submitWork({
     taskId: body.taskId,
-    workerId: session.user.id,
-    status: "pending",
+    worker: {
+      id: session.user.id,
+      name: session.user.name ?? "",
+      email: session.user.email ?? "",
+    },
+    data: parsed.data,
   });
-  if (existing)
-    return NextResponse.json(
-      { error: "Submission already pending review" },
-      { status: 400 },
-    );
-
-  const remaining = task.requiredWorkers - task.filledWorkers;
-  if (remaining <= 0)
-    return NextResponse.json({ error: "Task is full" }, { status: 400 });
-
-  const submission = await Submission.create({
-    taskId: task._id,
-    taskTitle: task.title,
-    taskBuyerId: task.buyerId,
-    taskBuyerName: task.buyerName,
-    workerId: session.user.id,
-    workerName: session.user.name ?? "",
-    workerEmail: session.user.email ?? "",
-    payableAmount: task.payableAmount,
-    ...parsed.data,
-  });
-
-  task.filledWorkers += 1;
-  if (task.filledWorkers >= task.requiredWorkers) task.status = "closed";
-  await task.save();
+  if (!result.ok) {
+    const error = {
+      not_available: "Task not available",
+      pending_exists: "Submission already pending review",
+      full: "Task is full",
+    }[result.reason];
+    return NextResponse.json({ error }, { status: 400 });
+  }
+  const { submission, task } = result;
 
   await createNotification({
     toUserId: task.buyerId.toString(),
