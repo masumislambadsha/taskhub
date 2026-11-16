@@ -368,6 +368,21 @@ describe("submitWork", () => {
     });
   });
 
+  it("refuses a task ID that is not an ObjectId, without touching any task", async () => {
+    const { task } = await fundedTask(100, 3, 10);
+    const worker = await createUser(0);
+    const data = { details: "All done, see the proof.", proofLinks: ["https://example.test/proof"] };
+    const w = { id: String(worker._id), name: "Worker", email: "worker@example.test" };
+    const injected = await submitWork({ taskId: { $ne: null } as unknown as string, worker: w, data });
+    expect(injected).toEqual({ ok: false, reason: "not_available" });
+    expect(await submitWork({ taskId: "not-an-id", worker: w, data })).toEqual({
+      ok: false,
+      reason: "not_available",
+    });
+    expect((await Task.findById(task._id))?.filledWorkers).toBe(0);
+    expect(await Submission.countDocuments({})).toBe(0);
+  });
+
   it("accepts a new submission after a rejection frees a slot", async () => {
     const { buyer, task } = await fundedTask(100, 1, 10);
     const first = await createUser(0);
