@@ -21,6 +21,7 @@ vi.mock("@/lib/db", () => ({ connectDB: async () => mongoose }));
 
 import { POST as successRoute } from "@/app/api/sslcommerz/success/route";
 import { POST as ipnRoute } from "@/app/api/sslcommerz/ipn/route";
+import { POST as failRoute } from "@/app/api/sslcommerz/fail/route";
 
 let db: Awaited<ReturnType<typeof startTestDb>>;
 // val_id -> what the (mocked) SSLCommerz validation API answers.
@@ -166,5 +167,37 @@ describe("SSLCommerz success and IPN", () => {
     await callIpn(b._id, "ONE");
     expect(await coinsOf(user._id)).toBe(150);
     expect((await Payment.findById(b._id))?.status).toBe("pending");
+  });
+});
+
+describe("SSLCommerz fail redirect", () => {
+  const callFail = (tran_id: unknown) =>
+    failRoute(formReq("/api/sslcommerz/fail", { tran_id: String(tran_id), status: "FAILED" }));
+
+  it("only redirects: a pending payment stays pending and a valid IPN still credits it once", async () => {
+    const user = await createUser(0);
+    const payment = await createPayment(user._id, { gateway: "sslcommerz", price: 10 });
+
+    const res = await callFail(payment._id);
+    expect(res.headers.get("location")).toBe("https://app.test/payment-return?status=cancelled");
+    expect((await Payment.findById(payment._id))?.status).toBe("pending");
+
+    valid(payment._id, "VALFAIL");
+    await callIpn(payment._id, "VALFAIL");
+    await callIpn(payment._id, "VALFAIL");
+    expect(await coinsOf(user._id)).toBe(150);
+    expect((await Payment.findById(payment._id))?.status).toBe("success");
+  });
+
+  it("leaves a payment that is already success untouched", async () => {
+    const user = await createUser(0);
+    const payment = await createPayment(user._id, { gateway: "sslcommerz", price: 10 });
+    valid(payment._id, "VALDONE");
+    await callIpn(payment._id, "VALDONE");
+    expect(await coinsOf(user._id)).toBe(150);
+
+    await callFail(payment._id);
+    expect((await Payment.findById(payment._id))?.status).toBe("success");
+    expect(await coinsOf(user._id)).toBe(150);
   });
 });
