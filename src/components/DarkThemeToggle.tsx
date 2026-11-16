@@ -1,23 +1,32 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { Sun, Moon } from "lucide-react";
+import {
+  getIsDarkServerSnapshot,
+  getIsDarkSnapshot,
+  notifyThemeChange,
+  subscribeTheme,
+} from "@/lib/theme-store";
 
 interface DarkThemeToggleProps {
   dark?: boolean;
 }
 
 export default function DarkThemeToggle({ dark }: DarkThemeToggleProps) {
-  const [isDark, setIsDark] = useState(false);
+  const isDark = useSyncExternalStore(
+    subscribeTheme,
+    getIsDarkSnapshot,
+    getIsDarkServerSnapshot,
+  );
 
-  // Initialize from localStorage on mount (default: light)
+  // Apply the saved theme to <html> on mount (default: light)
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const html = document.documentElement;
     if (savedTheme === "dark") {
       html.classList.add("dark");
       html.setAttribute("data-theme", "dark");
-      setIsDark(true);
     }
   }, []);
 
@@ -33,7 +42,7 @@ export default function DarkThemeToggle({ dark }: DarkThemeToggleProps) {
       html.removeAttribute("data-theme");
       localStorage.setItem("theme", "light");
     }
-    setIsDark(next);
+    notifyThemeChange();
   };
 
   return (
