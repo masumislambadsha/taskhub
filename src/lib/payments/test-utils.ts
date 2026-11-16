@@ -1,7 +1,12 @@
 import mongoose from "mongoose";
 import { MongoMemoryReplSet } from "mongodb-memory-server";
+import LedgerAccount from "@/models/LedgerAccount";
+import LedgerTransaction from "@/models/LedgerTransaction";
 import Payment from "@/models/Payment";
+import Submission from "@/models/Submission";
+import Task from "@/models/Task";
 import User from "@/models/User";
+import Withdrawal from "@/models/Withdrawal";
 
 /**
  * Starts the MongoDB used by the payment integration tests. Transactions need
@@ -23,7 +28,15 @@ export async function startTestDb(dbName: string) {
     uri = replSet.getUri();
   }
   await mongoose.connect(uri, { dbName });
-  await Promise.all([Payment.init(), User.init()]);
+  await Promise.all([
+    Payment.init(),
+    User.init(),
+    LedgerAccount.init(),
+    LedgerTransaction.init(),
+    Task.init(),
+    Submission.init(),
+    Withdrawal.init(),
+  ]);
   return {
     async stop() {
       if (process.env.MONGODB_TEST_URI) await mongoose.connection.dropDatabase();
@@ -31,7 +44,16 @@ export async function startTestDb(dbName: string) {
       await replSet?.stop();
     },
     async reset() {
-      await Promise.all([Payment.deleteMany({}), User.deleteMany({})]);
+      await Promise.all([
+        Payment.deleteMany({}),
+        User.deleteMany({}),
+        LedgerAccount.deleteMany({}),
+        Task.deleteMany({}),
+        Submission.deleteMany({}),
+        Withdrawal.deleteMany({}),
+        // The journal model is append-only, so clear it through the driver.
+        LedgerTransaction.collection.deleteMany({}),
+      ]);
     },
   };
 }
