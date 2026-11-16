@@ -9,6 +9,7 @@ import User from "@/models/User";
 import Submission from "@/models/Submission";
 import { coinsToUsdWithdraw } from "@/lib/coins";
 import Image from "next/image";
+import Link from "next/link";
 import { connection } from "next/server";
 
 export default async function LeaderboardPage() {
@@ -286,20 +287,20 @@ export default async function LeaderboardPage() {
             </p>
           </div>
           <div className="flex gap-3 shrink-0">
-            <a
+            <Link
               href="/register"
               className="inline-flex items-center gap-2 bg-secondary text-white p-3 md:px-6 md:py-3 rounded-lg font-bold sm:text-sm text-xs hover:bg-secondary/90 transition-colors"
             >
               <MdArrowForward className="text-base" />
               Join as Worker
-            </a>
-            <a
+            </Link>
+            <Link
               href="/tasks"
               className="inline-flex items-center gap-2 bg-white/10 text-white p-3 md:px-6 md:py-3 rounded-lg font-bold sm:text-sm text-xs hover:bg-white/20 transition-colors"
             >
               <MdTaskAlt className="text-base" />
               Browse Tasks
-            </a>
+            </Link>
           </div>
         </div>
       </section>
