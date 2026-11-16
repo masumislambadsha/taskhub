@@ -1,8 +1,9 @@
+import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Task from "@/models/Task";
-import User from "@/models/User";
+import { deleteFundedTask, updateFundedTask } from "@/lib/ledger/flows/tasks";
 import { taskSchema } from "@/lib/validators/task";
 
 export async function GET(
@@ -26,8 +27,8 @@ export async function PUT(
   }
   await connectDB();
   const { id } = await params;
-  const task = await Task.findOne({ _id: id, buyerId: session.user.id });
-  if (!task) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!mongoose.isValidObjectId(id))
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const body = await req.json();
   const parsed = taskSchema.safeParse(body);
@@ -37,9 +38,22 @@ export async function PUT(
       { status: 400 },
     );
 
-  Object.assign(task, parsed.data);
-  await task.save();
-  return NextResponse.json(task);
+  const result = await updateFundedTask({
+    taskId: id,
+    buyerId: session.user.id,
+    data: parsed.data,
+  });
+  if (!result.ok) {
+    if (result.reason === "insufficient_coins")
+      return NextResponse.json({ error: "Insufficient coins" }, { status: 400 });
+    if (result.reason === "escrow_insufficient")
+      return NextResponse.json(
+        { error: "Task escrow is out of balance; contact support" },
+        { status: 409 },
+      );
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  return NextResponse.json(result.task);
 }
 
 export async function DELETE(
@@ -52,24 +66,16 @@ export async function DELETE(
   }
   await connectDB();
   const { id } = await params;
-  const task = await Task.findOne({
-    _id: id,
-    buyerId: session.user.id,
-    status: "open",
-  });
-  if (!task)
+  if (!mongoose.isValidObjectId(id))
     return NextResponse.json(
       { error: "Not found or not deletable" },
       { status: 404 },
     );
-
-  const remaining = task.requiredWorkers - task.filledWorkers;
-  const refund = remaining * task.payableAmount;
-  if (refund > 0) {
-    await User.findByIdAndUpdate(session.user.id, { $inc: { coins: refund } });
-  }
-
-  task.status = "archived";
-  await task.save();
+  const result = await deleteFundedTask({ taskId: id, buyerId: session.user.id });
+  if (!result.ok)
+    return NextResponse.json(
+      { error: "Not found or not deletable" },
+      { status: 404 },
+    );
   return NextResponse.json({ ok: true });
 }

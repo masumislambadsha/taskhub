@@ -8,6 +8,7 @@ import { coinsToUsdWithdraw } from "@/lib/coins";
 import { format } from "date-fns";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
+import RecentCoinActivity from "@/components/ui/RecentCoinActivity";
 
 export default async function WorkerEarningsPage() {
   const session = await auth();
@@ -163,7 +164,8 @@ export default async function WorkerEarningsPage() {
         </div>
       </div>
 
-      
+      <RecentCoinActivity />
+
       <div>
         <div className="mb-5">
           <h2 className="font-headline text-xl font-bold text-primary">

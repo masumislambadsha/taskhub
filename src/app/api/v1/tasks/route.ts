@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Task from "@/models/Task";
-import User from "@/models/User";
+import { createFundedTask } from "@/lib/ledger/flows/tasks";
 import { taskSchema } from "@/lib/validators/task";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
@@ -62,24 +62,16 @@ export const POST = withRequestLogging("/api/v1/tasks", async function POST(req:
   }
 
   await connectDB();
-  const { requiredWorkers, payableAmount } = parsed.data;
-  const totalCost = requiredWorkers * payableAmount;
-
-  const buyer = await User.findById(session.user.id);
-  if (!buyer || buyer.coins < totalCost) {
-    return NextResponse.json({ error: "Insufficient coins" }, { status: 400 });
-  }
-
-  buyer.coins -= totalCost;
-  await buyer.save();
-
-  const task = await Task.create({
-    ...parsed.data,
+  const created = await createFundedTask({
     buyerId: session.user.id,
     buyerName: session.user.name || "Unknown",
     buyerEmail: session.user.email || "",
-    filledWorkers: 0,
+    data: parsed.data,
   });
+  if (!created.ok) {
+    return NextResponse.json({ error: "Insufficient coins" }, { status: 400 });
+  }
+  const task = created.task;
 
   return NextResponse.json(task, { status: 201 });
 });

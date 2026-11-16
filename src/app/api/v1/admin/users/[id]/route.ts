@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
+import { removeUser } from "@/lib/ledger/flows/users";
 
 export async function PATCH(
   req: NextRequest,
@@ -39,6 +40,6 @@ export async function DELETE(
 
   await connectDB();
   const { id } = await params;
-  await User.findByIdAndDelete(id);
+  await removeUser({ userId: id, adminId: session.user.id });
   return NextResponse.json({ ok: true });
 }
