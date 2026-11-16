@@ -11,6 +11,8 @@ ARG NODE_IMAGE=node:22-slim
 FROM ${NODE_IMAGE} AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
+# Tests download a mongod binary on install; the image build never runs them.
+ENV MONGOMS_DISABLE_POSTINSTALL=1
 RUN --mount=type=cache,target=/root/.npm \
     npm ci
 
