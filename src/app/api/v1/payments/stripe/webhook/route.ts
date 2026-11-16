@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import { connectDB } from "@/lib/db";
-import Payment from "@/models/Payment";
-import User from "@/models/User";
-import { logger } from "@/lib/logger";
+import { getStripe } from "@/lib/stripe";
+import { creditStripeSession } from "@/lib/payments/stripe";
 import { withRequestLogging } from "@/lib/with-request-logging";
-
-// Created on first use so `next build` doesn't need STRIPE_SECRET_KEY.
-let stripeClient: Stripe | undefined;
-function getStripe(): Stripe {
-  return (stripeClient ??= new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2026-02-25.clover",
-  }));
-}
 
 export const POST = withRequestLogging("/api/v1/payments/stripe/webhook", async function POST(req: NextRequest) {
   const body = await req.text();
@@ -29,29 +20,15 @@ export const POST = withRequestLogging("/api/v1/payments/stripe/webhook", async 
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
+  // `completed` can fire before an asynchronous payment has settled; only
+  // credit when Stripe says the session is paid, or when it later succeeds.
+  if (
+    event.type === "checkout.session.completed" ||
+    event.type === "checkout.session.async_payment_succeeded"
+  ) {
     const s = event.data.object as Stripe.Checkout.Session;
-    const paymentId = s.metadata?.paymentId;
-    if (!paymentId) return NextResponse.json({ ok: true });
-
     await connectDB();
-    const payment = await Payment.findById(paymentId);
-    if (payment && payment.status === "pending") {
-      payment.status = "success";
-      payment.gatewayTransactionId = s.payment_intent as string;
-      await payment.save();
-      await User.findByIdAndUpdate(payment.userId, {
-        $inc: { coins: payment.coinsPurchased },
-      });
-      logger.info(
-        {
-          paymentId: String(payment._id),
-          userId: String(payment.userId),
-          coins: payment.coinsPurchased,
-        },
-        "payment credited",
-      );
-    }
+    await creditStripeSession(s, event.type);
   }
 
   return NextResponse.json({ ok: true });

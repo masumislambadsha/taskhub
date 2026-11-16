@@ -2,19 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Payment, { IPaymentDoc } from "@/models/Payment";
-import Stripe from "stripe";
+import { getStripe } from "@/lib/stripe";
 import { COIN_PACKAGES } from "@/lib/constants";
 import { getBkashToken, createBkashPayment } from "@/lib/bkash";
 import { initSSLCommerz } from "@/lib/sslcommerz";
 import { withRequestLogging } from "@/lib/with-request-logging";
-
-// Created on first use so `next build` doesn't need STRIPE_SECRET_KEY.
-let stripeClient: Stripe | undefined;
-function getStripe(): Stripe {
-  return (stripeClient ??= new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2026-02-25.clover",
-  }));
-}
 
 export const POST = withRequestLogging("/api/v1/payments/create-session", async function POST(req: NextRequest) {
   const session = await auth();
@@ -59,7 +51,7 @@ export const POST = withRequestLogging("/api/v1/payments/create-session", async 
     });
 
     await Payment.findByIdAndUpdate(payment._id, {
-      gatewayTransactionId: stripeSession.id,
+      stripeSessionId: stripeSession.id,
     });
     return NextResponse.json({ url: stripeSession.url });
   }
