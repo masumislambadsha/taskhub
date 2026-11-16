@@ -17,6 +17,7 @@ export type CreditReason =
   | "not_found"
   | "already_processed"
   | "not_pending"
+  | "not_paid"
   | "gateway_mismatch"
   | "amount_mismatch"
   | "currency_mismatch"
