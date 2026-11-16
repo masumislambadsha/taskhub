@@ -313,6 +313,8 @@ The production compose file, host Nginx site, VPS bootstrap script, deploy scrip
 
 ## 1.1 Double-entry coin ledger
 
+**Status: done** (see [ADR 0002](docs/adr/0002-coin-ledger.md)); the nightly reconciliation job and the admin Ledger page wait for the worker in 1.3, until then `npm run ledger:reconcile` and `GET /api/v1/admin/ledger/reconcile` are the check.
+
 **Goal:** every coin has a traceable history, and balances can never drift or go negative, even under many requests at once.
 
 **Why it matters:** "How do you prevent double-spending?" is a classic interview question. This is your answer, backed by tests. It also covers your "transaction rollback" item: a failed step aborts the whole MongoDB transaction, and a business-level undo is a reversing entry.
