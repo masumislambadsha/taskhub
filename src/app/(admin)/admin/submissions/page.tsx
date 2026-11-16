@@ -1,4 +1,4 @@
-import { MdAccountBalanceWallet, MdAddCircle, MdAddPhotoAlternate, MdArrowBack, MdArrowForward, MdAssignment, MdChevronLeft, MdChevronRight, MdClose, MdEdit, MdGroup, MdPayments, MdReceiptLong, MdTaskAlt, MdToll } from 'react-icons/md';
+import { MdAssignment, MdToll } from 'react-icons/md';
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";

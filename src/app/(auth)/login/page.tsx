@@ -47,7 +47,7 @@ function LoginForm() {
               : "/worker/dashboard";
         window.location.href = dest;
       }
-    } catch (err) {
+    } catch {
       toast.error("Something went wrong");
     } finally {
       setLoading(false);

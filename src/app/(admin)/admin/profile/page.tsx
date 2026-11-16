@@ -5,7 +5,6 @@ import {
   MdEdit,
   MdGroup,
   MdRefresh,
-  MdShield,
   MdToll,
   MdUpload,
   MdVerified,

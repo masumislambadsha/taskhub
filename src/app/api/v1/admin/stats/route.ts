@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import Task from "@/models/Task";
 import Payment from "@/models/Payment";
 import Withdrawal from "@/models/Withdrawal";
 

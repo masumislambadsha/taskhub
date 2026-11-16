@@ -55,7 +55,7 @@ export default function WorkerWithdrawalsPage() {
     formState: { errors },
   } = useForm<WithdrawalFormData>({
     
-    resolver: zodResolver(withdrawalSchema) as any,
+    resolver: zodResolver(withdrawalSchema),
     defaultValues: {
       coinRequested: MIN_WITHDRAWAL_COINS,
       paymentSystem: "stripe",
@@ -135,7 +135,7 @@ export default function WorkerWithdrawalsPage() {
         <div className="bg-white rounded-xl border border-primary/5 shadow-sm p-4 sm:p-6">
           <h2 className="font-bold text-primary mb-5">Request Withdrawal</h2>
           
-          <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-primary mb-1.5">
