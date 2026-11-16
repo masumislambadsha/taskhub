@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/db";
 import Payment, { IPaymentDoc } from "@/models/Payment";
 import { getStripe } from "@/lib/stripe";
 import { COIN_PACKAGES } from "@/lib/constants";
-import { getBkashToken, createBkashPayment } from "@/lib/bkash";
+import { createBkashPayment } from "@/lib/bkash";
 import { initSSLCommerz } from "@/lib/sslcommerz";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
@@ -71,9 +71,7 @@ export const POST = withRequestLogging("/api/v1/payments/create-session", async 
     const amountBDT = (pkg.price * 110).toFixed(2);
 
     try {
-      const token = await getBkashToken();
       const bkashURL = await createBkashPayment(
-        token,
         amountBDT,
         payment._id.toString(),
       );
