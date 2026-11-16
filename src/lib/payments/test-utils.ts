@@ -107,3 +107,77 @@ export function jsonResponse(body: unknown, status = 200) {
     headers: { "content-type": "application/json" },
   });
 }
+
+/**
+ * A task exactly as the app stored it before the ledger existed: coins were
+ * taken from the buyer when it was created and no ledger account was made.
+ */
+export async function createPreLedgerTask(
+  buyerId: mongoose.Types.ObjectId | string,
+  opts: {
+    requiredWorkers?: number;
+    filledWorkers?: number;
+    payableAmount?: number;
+    status?: "open" | "closed" | "blocked" | "archived";
+    escrowReleasedAt?: Date;
+  } = {},
+) {
+  counter += 1;
+  return Task.create({
+    title: `Pre-ledger task ${counter}`,
+    details: "A task created before the coin ledger existed.",
+    buyerId,
+    buyerName: "Buyer",
+    buyerEmail: "buyer@example.test",
+    requiredWorkers: opts.requiredWorkers ?? 5,
+    filledWorkers: opts.filledWorkers ?? 0,
+    payableAmount: opts.payableAmount ?? 10,
+    completionDate: new Date(Date.now() + 86_400_000),
+    submissionInfo: "Send a screenshot.",
+    status: opts.status ?? "open",
+    escrowReleasedAt: opts.escrowReleasedAt,
+  });
+}
+
+/**
+ * A worker submission as `POST /api/v1/submissions` stores it: a pending
+ * submission, one more filled slot, and the task closed once it is full.
+ */
+export async function createPendingSubmission(
+  task: { _id: mongoose.Types.ObjectId; buyerId: mongoose.Types.ObjectId },
+  workerId: mongoose.Types.ObjectId | string,
+) {
+  const t = await Task.findById(task._id);
+  if (!t) throw new Error("task not found");
+  const submission = await Submission.create({
+    taskId: t._id,
+    taskTitle: t.title,
+    taskBuyerId: t.buyerId,
+    taskBuyerName: t.buyerName,
+    workerId,
+    workerName: "Worker",
+    workerEmail: "worker@example.test",
+    payableAmount: t.payableAmount,
+    details: "Done.",
+  });
+  t.filledWorkers += 1;
+  if (t.filledWorkers >= t.requiredWorkers) t.status = "closed";
+  await t.save();
+  return submission;
+}
+
+export function taskInput(
+  overrides: Partial<{
+    requiredWorkers: number;
+    payableAmount: number;
+  }> = {},
+) {
+  return {
+    title: "A task title",
+    details: "Details that are long enough to pass validation.",
+    requiredWorkers: overrides.requiredWorkers ?? 5,
+    payableAmount: overrides.payableAmount ?? 10,
+    completionDate: "2030-01-01",
+    submissionInfo: "Send a screenshot of it",
+  };
+}
