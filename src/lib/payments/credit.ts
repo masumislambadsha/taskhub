@@ -158,7 +158,7 @@ export async function creditPayment(input: CreditInput): Promise<CreditResult> {
         const updated = await Payment.findOneAndUpdate(
           { _id: paymentId, status: "pending" },
           { $set },
-          { session, new: true },
+          { session, returnDocument: "after" },
         );
         if (!updated) return refuse("already_processed");
 
