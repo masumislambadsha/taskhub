@@ -1,6 +1,10 @@
 import Redis from "ioredis";
 
 export const CHECK_TIMEOUT_MS = 1000;
+/** Budget for establishing the first MongoDB connection (serverless cold start). */
+export const MONGO_CONNECT_TIMEOUT_MS = 5000;
+/** Budget for the MongoDB ping once connected. */
+export const MONGO_PING_TIMEOUT_MS = CHECK_TIMEOUT_MS;
 
 export function getVersion(): string {
   return process.env.GIT_SHA || "dev";
@@ -35,6 +39,31 @@ export async function timedCheck(
   const start = Date.now();
   try {
     await withTimeout(fn());
+    return { ok: true, ms: Date.now() - start };
+  } catch {
+    return { ok: false, ms: Date.now() - start };
+  }
+}
+
+/**
+ * Checks MongoDB in two steps: up to MONGO_CONNECT_TIMEOUT_MS to connect, then
+ * up to MONGO_PING_TIMEOUT_MS for the ping. `ms` covers both. A connect that
+ * times out is not cancelled: `connect` is expected to cache its in-flight
+ * promise (connectDB does), so the next call reuses it instead of starting a
+ * second connection attempt.
+ */
+export async function checkMongo(
+  connect: () => Promise<unknown>,
+  ping: () => Promise<unknown>,
+  {
+    connectTimeoutMs = MONGO_CONNECT_TIMEOUT_MS,
+    pingTimeoutMs = MONGO_PING_TIMEOUT_MS,
+  }: { connectTimeoutMs?: number; pingTimeoutMs?: number } = {},
+): Promise<{ ok: boolean; ms: number }> {
+  const start = Date.now();
+  try {
+    await withTimeout(connect(), connectTimeoutMs);
+    await withTimeout(ping(), pingTimeoutMs);
     return { ok: true, ms: Date.now() - start };
   } catch {
     return { ok: false, ms: Date.now() - start };
