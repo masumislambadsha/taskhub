@@ -1,4 +1,4 @@
-# 0002. Deploy to a VPS with Docker Hub, host Nginx and an SSH deploy job
+# 0001. Deploy to a VPS with Docker Hub, host Nginx and an SSH deploy job
 
 - Status: accepted
 - Date: 2026-11-15
