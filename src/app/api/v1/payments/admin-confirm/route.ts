@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import Payment from "@/models/Payment";
-import User from "@/models/User";
+import { creditPayment } from "@/lib/payments/credit";
+import { logger } from "@/lib/logger";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
 export const POST = withRequestLogging("/api/v1/payments/admin-confirm", async function POST(req: NextRequest) {
@@ -14,19 +14,24 @@ export const POST = withRequestLogging("/api/v1/payments/admin-confirm", async f
   const { paymentId } = await req.json();
   await connectDB();
 
-  const payment = await Payment.findOne({ _id: paymentId, status: "pending" });
-  if (!payment) {
+  const result = await creditPayment({
+    paymentId: String(paymentId),
+    gateway: { name: "admin", adminUserId: session.user.id },
+  });
+  if (!result.credited) {
+    logger.warn(
+      { paymentId: String(paymentId), adminUserId: session.user.id, reason: result.reason },
+      "admin payment confirmation refused",
+    );
     return NextResponse.json(
       { error: "Payment not found or already confirmed" },
       { status: 404 },
     );
   }
 
-  payment.status = "success";
-  await payment.save();
-  await User.findByIdAndUpdate(payment.userId, {
-    $inc: { coins: payment.coinsPurchased },
-  });
-
+  logger.info(
+    { paymentId: String(paymentId), adminUserId: session.user.id },
+    "payment confirmed by admin",
+  );
   return NextResponse.json({ ok: true });
 });

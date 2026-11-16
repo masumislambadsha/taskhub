@@ -38,18 +38,32 @@ export default function BuyCoinsPage() {
           router.replace("/buyer/coins");
         });
       } else {
-        axios
-          .post("/api/v1/payments/confirm", { paymentId })
-          .then((r) => {
-            toast.success(`${r.data.coins} coins added to your account!`);
-            update();
-            router.replace("/buyer/coins");
-          })
-          .catch(() => {
-            toast.success("Payment successful! Coins added.");
-            update();
-            router.replace("/buyer/coins");
-          });
+        // The server checks the payment with the gateway; the client only
+        // asks for the status. A payment still pending is re-checked a few
+        // times, since a gateway callback or webhook may land a moment later.
+        const check = (attempt: number): Promise<void> =>
+          axios
+            .post("/api/v1/payments/confirm", { paymentId })
+            .then((r) => {
+              if (r.data.status === "success") {
+                toast.success(`${r.data.coins} coins added to your account!`);
+                update();
+                router.replace("/buyer/coins");
+              } else if (attempt < 5) {
+                return new Promise<void>((resolve) =>
+                  setTimeout(resolve, 2000),
+                ).then(() => check(attempt + 1));
+              } else {
+                toast("Payment is still being confirmed. Your coins will appear shortly.");
+                update();
+                router.replace("/buyer/coins");
+              }
+            })
+            .catch(() => {
+              toast.error("Could not confirm your payment. Check your payment history.");
+              router.replace("/buyer/coins");
+            });
+        check(0);
       }
     } else if (params.get("cancelled")) {
       handled.current = true;
