@@ -9,7 +9,7 @@
 ![Socket.io](https://img.shields.io/badge/Socket.io-Realtime-010101)
 ![NextAuth](https://img.shields.io/badge/NextAuth-v5-purple)
 
-> A production-style SaaS platform connecting Buyers who need small online tasks done with Workers who earn coins by completing them. Features a full coin economy, Stripe payments, real-time Socket.io messaging & notifications, and role-based dashboards — built to demonstrate real-world full-stack architecture.
+> A SaaS-style platform connecting Buyers who need small online tasks done with Workers who earn coins by completing them. Features a full coin economy, Stripe payments, real-time Socket.io messaging & notifications, and role-based dashboards — built to demonstrate full-stack architecture.
 
 ---
 
@@ -19,14 +19,14 @@ TaskHub is a comprehensive micro-task marketplace where Buyers post tasks (watch
 
 The platform runs on a transparent coin economy — Buyers purchase coins to fund tasks, Workers earn coins on approval and cash out via withdrawal requests.
 
-Unlike a basic CRUD app, TaskHub is designed as a production-style SaaS:
+Unlike a basic CRUD app, TaskHub is designed as a SaaS-style platform:
 
-- **3 distinct user roles** with real-world responsibilities and separate dashboards
+- **3 distinct user roles** with distinct responsibilities and separate dashboards
 - **Real-time messaging** — Socket.io direct chat between Workers and Buyers, scoped to tasks, with typing indicators and read receipts
 - **Live notifications** — bell icon with unread badge, action routing, and server-side triggers on key events
 - **Coin economy with monetization logic** — buy rate vs withdrawal rate spread is the platform's revenue
 - **Secure auth** with Google OAuth and email/password via NextAuth v5
-- **Real payment integration** via Stripe Checkout with webhook verification
+- **Payment integration** via Stripe Checkout with webhook verification, plus bKash and SSLCommerz (run with test keys)
 - **Admin panel** with advanced analytics, charts, and full platform management
 - **Public leaderboard** showing top earners ranked by approved coins
 - **Fully responsive** — mobile, tablet, and desktop layouts throughout
@@ -35,7 +35,7 @@ Unlike a basic CRUD app, TaskHub is designed as a production-style SaaS:
 
 ## 🧱 Engineering
 
-TaskHub moves real money, so most recent work went into making coin flows correct under load, and into tests, monitoring and deployment. This section shows what was found, how it was fixed and how each fix is checked.
+TaskHub sells coins through Stripe, bKash and SSLCommerz and keeps a coin balance for every user, so most recent work went into making coin flows correct under load, and into tests, monitoring and deployment. This section shows what was found, how it was fixed and how each fix is checked.
 
 ### Architecture
 
@@ -57,7 +57,6 @@ flowchart LR
     Browser --> Next
     Mobile --> Next
     Browser -->|signed token| Realtime
-    Mobile -->|signed token| Realtime
     Next -->|issues token| Browser
     Next -->|transactions| Mongo
     Realtime --> Mongo
@@ -70,7 +69,7 @@ flowchart LR
     Images --> VPS
 ```
 
-The web app and its API routes run on Vercel and talk to MongoDB Atlas. Atlas runs as a replica set, so money flows use multi-document transactions. Chat runs in a separate Socket.io server on Render. The browser first asks `/api/v1/socket-token` for a signed token that lasts 10 minutes, then joins the chat server with it. Stripe, bKash and SSLCommerz are used for coin purchases, and Sentry receives errors from the web app, the worker and the chat server. CI lints, tests and builds every push and builds the Docker images. On a push to `main`, an optional job publishes the images and deploys them to a VPS. It stays off until the repository secrets are set. See [ADR 0001](docs/adr/0001-vps-deployment.md).
+The web app and its API routes run on Vercel and talk to MongoDB Atlas. Atlas runs as a replica set, so money flows use multi-document transactions. Chat runs in a separate Socket.io server on Render. The browser first asks `/api/v1/socket-token` for a signed token that lasts 10 minutes, then joins the chat server with it. Stripe, bKash and SSLCommerz are used for coin purchases, and The web app and the chat server report errors to Sentry, and the background worker is set up for it too. CI lints, tests and builds every push and builds the Docker images. On a push to `main`, an optional job publishes the images and deploys them to a VPS. It stays off until the repository secrets are set. See [ADR 0001](docs/adr/0001-vps-deployment.md).
 
 ### Problems found and fixed
 
@@ -79,7 +78,7 @@ The web app and its API routes run on Vercel and talk to MongoDB Atlas. Atlas ru
 | Anyone could pretend to be another user in chat. The chat server trusted a user ID sent by the client, and any socket could join any conversation. | The chat server now checks a signed, short-lived token and only lets the two people in a conversation join, send, type or mark messages read. | Tests for token signing and checking and for the conversation rules (`src/lib/socket-token.test.ts`, `server/test/`), run in CI. | [#2](https://github.com/masumislambadsha/taskhub/pull/2) |
 | Any signed-in user could read the chat history of a conversation that had no messages yet. | The history route now checks that the caller is one of the two people in the conversation. It returns 400 for a malformed ID and 403 for anyone else. | Tests for the conversation ID helpers (`src/lib/conversation.test.ts`). | [#4](https://github.com/masumislambadsha/taskhub/pull/4) |
 | Payments: a user could get free coins by calling confirm without paying. One SSLCommerz receipt could credit several payments. Two callbacks at once could credit twice. bKash merchant tokens were handed to anyone who asked, and some payment routes needed no login. A failed-payment redirect could block someone else's payment. | One function, `creditPayment`, is the only place that adds purchased coins. It checks the provider's answer, the amount and the currency, and credits once inside a transaction. Unique indexes stop a receipt from being used twice. The unsafe bKash and SSLCommerz routes were deleted, and the SSLCommerz fail route now only redirects. | `src/lib/payments/*.test.ts`. Ten concurrent credits for one payment give one credit. Reused receipts, wrong amounts and the fail route are covered too. | [#5](https://github.com/masumislambadsha/taskhub/pull/5) |
-| Coins could be spent twice, a buyer could raise a task's payout and then delete the task for a bigger refund, a submission could be paid twice, withdrawals could be overdrawn, and a double sign-up gave two bonuses. There was no coin history. | A double-entry coin ledger. Every coin movement is one journal entry, written in the same transaction as the balance change. Users get a coin history page. See [ADR 0002](docs/adr/0002-coin-ledger.md). | `src/lib/ledger/**/*.test.ts`. 20 parallel task creations from a buyer who can afford 2 give exactly 2. The tests also cover 10 parallel approvals, parallel withdrawals, the payout edit and double sign-up. A randomized test checks the ledger rules after every step. | [#8](https://github.com/masumislambadsha/taskhub/pull/8) |
+| Coins could be spent twice, a buyer could raise a task's payout and then delete the task for a bigger refund, a submission could be paid twice, withdrawals could be overdrawn, and a double sign-up gave two bonuses. There was no coin history. | A double-entry coin ledger. Every coin movement is one journal entry, written in the same transaction as the balance change. Buyers and workers see their recent coin activity on the coins and earnings pages. See [ADR 0002](docs/adr/0002-coin-ledger.md). | `src/lib/ledger/**/*.test.ts`. 20 parallel task creations from a buyer who can afford 2 give exactly 2. The tests also cover 10 parallel approvals, parallel withdrawals, the payout edit and double sign-up. A randomized test checks the ledger rules after every step. | [#8](https://github.com/masumislambadsha/taskhub/pull/8) |
 | Every bKash payment asked bKash for two new tokens. | The bKash grant token is reused for 50 minutes and shared by all serverless instances through one MongoDB document. A 401 from bKash clears it and the request is retried once. | 7 tests in `src/lib/bkash.test.ts`: reuse, expiry at 50 minutes, a second instance, concurrent calls, one retry on a 401, and a failing token store. | [#9](https://github.com/masumislambadsha/taskhub/pull/9) |
 | Two workers could take the last task slot at once, and one worker could submit twice at once. A task ID that was not a valid ObjectId was passed into the query. | `submitWork` takes the slot with a conditional update inside one transaction, and the route refuses a task ID that is not an ObjectId. | `src/lib/ledger/flows/submissions.test.ts`. 10 parallel submissions on 5 slots give exactly 5. One worker submitting 5 times at once gets 1. Bad IDs are refused. | [#10](https://github.com/masumislambadsha/taskhub/pull/10) |
 | Lint errors were ignored in CI. | The lint errors were fixed without turning rules off, and the CI lint step now fails the build on errors. | `npm run lint` reports 0 errors (19 warnings remain). The CI Lint step runs before the tests. | [#11](https://github.com/masumislambadsha/taskhub/pull/11) |
@@ -195,7 +194,7 @@ Stop with `docker compose down` (add `-v` to also delete the database and Redis 
 
 ## Deploy to a VPS
 
-Production runs from prebuilt Docker Hub images on a VPS with Nginx on the host, HTTPS from certbot and an SSH deploy job in GitHub Actions. It stays off until the GitHub secrets are added. The full runbook (setup, secrets, first deploy, rollback, switch-over from Vercel and Render) is in [deploy/README.md](deploy/README.md).
+The VPS setup runs from prebuilt Docker Hub images on a VPS with Nginx on the host, HTTPS from certbot and an SSH deploy job in GitHub Actions. It stays off until the GitHub secrets are added. The full runbook (setup, secrets, first deploy, rollback, switch-over from Vercel and Render) is in [deploy/README.md](deploy/README.md).
 
 ---
 
@@ -787,6 +786,11 @@ Other routes exist for categories, contact, the leaderboard, profile, password c
 | `/terms`        | Terms of service                                                                        |
 | `/privacy`      | Privacy policy                                                                          |
 | `/support`      | Support contact                                                                         |
+| `/contact`      | Contact form                                                                            |
+| `/blog`         | Blog post list                                                                          |
+| `/blog/[slug]`  | A single blog post                                                                      |
+| `/tasks/[id]`   | Public task detail page                                                                 |
+| `/payment-return` | Landing page after a gateway payment (SSLCommerz redirects here)                      |
 
 ### Auth:
 
@@ -796,6 +800,7 @@ Other routes exist for categories, contact, the leaderboard, profile, password c
 | `/register`        | 2-step registration — choose role, then fill details |
 | `/forgot-password` | Request password reset email                         |
 | `/reset-password`  | Set new password via token                           |
+| `/auth/mobile-google` | Hands a Google sign-in back to the mobile app through a `taskhub://` link (not for direct use) |
 
 ### Worker Dashboard:
 
@@ -840,6 +845,7 @@ Other routes exist for categories, contact, the leaderboard, profile, password c
 | `/admin/stats`       | Advanced analytics — KPI cards, revenue chart, task volume, category split, submission funnel, gateway breakdown, top workers, recent payments |
 | `/admin/categories`  | Category management                                                                                                                            |
 | `/admin/activity`    | Platform activity log                                                                                                                          |
+| `/admin/profile`     | Admin profile                                                                                                                                  |
 
 ## Assignment Submission Notes
 
