@@ -11,6 +11,7 @@ export const LEDGER_TX_TYPES = [
   "signup_bonus",
   "task_fund",
   "task_adjust",
+  "task_reprice",
   "task_refund",
   "submission_payout",
   "submission_reject_refund",

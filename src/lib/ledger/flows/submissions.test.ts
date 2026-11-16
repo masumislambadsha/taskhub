@@ -12,7 +12,7 @@ import {
   startTestDb,
   taskInput,
 } from "@/lib/payments/test-utils";
-import { createFundedTask, deleteFundedTask } from "@/lib/ledger/flows/tasks";
+import { createFundedTask, deleteFundedTask, updateFundedTask } from "@/lib/ledger/flows/tasks";
 import { approveSubmission, rejectSubmission } from "@/lib/ledger/flows/submissions";
 import { escrowAccount } from "@/lib/ledger";
 
@@ -214,5 +214,70 @@ describe("rejectSubmission", () => {
     const t = await Task.findById(task._id);
     expect(t?.status).toBe("archived");
     expect(t?.escrowReleasedAt).toBeInstanceOf(Date);
+  });
+
+  describe("when the task's payout changed after the submission", () => {
+    const reprice = (buyer: { _id: unknown }, task: { _id: unknown }, payableAmount: number) =>
+      updateFundedTask({
+        taskId: String(task._id),
+        buyerId: String(buyer._id),
+        data: taskInput({ requiredWorkers: 3, payableAmount }),
+      });
+
+    it("charges the buyer the difference to reopen the slot at the new, higher payout", async () => {
+      const { buyer, task } = await fundedTask(100, 3, 10); // buyer 70, escrow 30
+      const worker = await createUser(0);
+      const sub = await createPendingSubmission(task, worker._id); // reward 10, F=1
+      await reprice(buyer, task, 15); // the 2 open slots now cost 15: +10
+      expect(await escrowOf(task._id)).toBe(40); // 2 x 15 + 10 pending
+      expect(await coinsOf(buyer._id)).toBe(60);
+
+      const res = await rejectSubmission({ submissionId: String(sub._id), buyerId: String(buyer._id) });
+      expect(res.ok).toBe(true);
+      // The reopened slot is worth 15, not the rejected submission's 10.
+      expect(await escrowOf(task._id)).toBe(45); // 3 x 15
+      expect(await coinsOf(buyer._id)).toBe(55);
+      const row = await LedgerTransaction.findOne({ idempotencyKey: `reject-reprice:${sub._id}` });
+      expect(row?.type).toBe("task_reprice");
+    });
+
+    it("refunds the difference when the payout went down", async () => {
+      const { buyer, task } = await fundedTask(100, 3, 10);
+      const worker = await createUser(0);
+      const sub = await createPendingSubmission(task, worker._id);
+      await reprice(buyer, task, 4); // 2 open slots: -12
+      expect(await escrowOf(task._id)).toBe(18); // 2 x 4 + 10
+      const res = await rejectSubmission({ submissionId: String(sub._id), buyerId: String(buyer._id) });
+      expect(res.ok).toBe(true);
+      expect(await escrowOf(task._id)).toBe(12); // 3 x 4
+      expect(await coinsOf(buyer._id)).toBe(70 + 12 + 6);
+    });
+
+    it("refuses the rejection when the buyer cannot afford the higher payout", async () => {
+      const { buyer, task } = await fundedTask(42, 3, 10); // buyer 12 left
+      const worker = await createUser(0);
+      const sub = await createPendingSubmission(task, worker._id);
+      await reprice(buyer, task, 15); // charges 10: buyer 2 left, escrow 40
+      const res = await rejectSubmission({ submissionId: String(sub._id), buyerId: String(buyer._id) });
+      expect(res).toEqual({ ok: false, reason: "insufficient_coins" });
+      expect((await Submission.findById(sub._id))?.status).toBe("pending");
+      expect((await Task.findById(task._id))?.filledWorkers).toBe(1);
+      expect(await escrowOf(task._id)).toBe(40);
+      expect(await coinsOf(buyer._id)).toBe(2);
+    });
+
+    it("opens a pre-ledger escrow first, then reprices", async () => {
+      const buyer = await createUser(50);
+      const worker = await createUser(0);
+      const task = await createPreLedgerTask(buyer._id, { requiredWorkers: 3, payableAmount: 10 });
+      const sub = await createPendingSubmission(task, worker._id);
+      await Task.updateOne({ _id: task._id }, { payableAmount: 12 }); // edited before the ledger existed
+      // Opening values the task at today's state: 2 open slots at 12 + 10 pending = 34.
+      const res = await rejectSubmission({ submissionId: String(sub._id), buyerId: String(buyer._id) });
+      expect(res.ok).toBe(true);
+      // The reopened slot is worth 12, not 10: 3 x 12.
+      expect(await escrowOf(task._id)).toBe(36);
+      expect(await coinsOf(buyer._id)).toBe(48);
+    });
   });
 });

@@ -73,15 +73,24 @@ export async function approveSubmission(args: {
 
 export type RejectSubmissionResult =
   | { ok: true; submission: ISubmissionDoc }
-  | { ok: false; reason: "not_found" | "escrow_insufficient" };
+  | { ok: false; reason: "not_found" | "escrow_insufficient" | "insufficient_coins" };
 
 /**
  * Rejects a pending submission (conditional on `pending`) and gives its slot
- * back to the task. No coins move, because the reward stays in escrow for the
- * reopened slot, with one exception: if the buyer already deleted the task
- * (its open slots were refunded), the slot is not reopened and the reward is
- * refunded to the buyer (`escrow -R, buyer +R`, key
- * `reject-refund:<submissionId>`).
+ * back to the task.
+ *
+ * Normally no coins move, because the reward stays in escrow for the reopened
+ * slot. Two cases move coins, in the same transaction:
+ *
+ * - The buyer already deleted the task (its open slots were refunded): the
+ *   slot is not reopened and the reward is refunded to the buyer
+ *   (`escrow -R, buyer +R`, key `reject-refund:<submissionId>`).
+ * - The task's payout was changed after the submission was made: the reopened
+ *   slot is worth the task's current payout, not the submission's, so the
+ *   difference is charged to or refunded to the buyer (key
+ *   `reject-reprice:<submissionId>`). If the buyer cannot afford a higher
+ *   payout, the rejection is refused with `insufficient_coins` (an unfunded
+ *   slot would otherwise be opened).
  */
 export async function rejectSubmission(args: {
   submissionId: string;
@@ -99,8 +108,13 @@ export async function rejectSubmission(args: {
       if (!pending) return { ok: false, reason: "not_found" };
 
       const task = await Task.findById(pending.taskId).session(session).lean();
+      const priceDelta = task ? task.payableAmount - pending.payableAmount : 0;
       let released = false;
-      if (task && (task.status === "archived" || task.escrowReleasedAt)) {
+      if (
+        task &&
+        (task.status === "archived" || task.escrowReleasedAt || priceDelta !== 0)
+      ) {
+        // Pre-ledger task: open its escrow from the state before this rejection.
         released = (await ensureEscrowOpen(pending.taskId, session)).released;
       }
 
@@ -121,15 +135,37 @@ export async function rejectSubmission(args: {
             : { $inc: { filledWorkers: -1 }, $set: { status: "open" } },
           { session },
         );
+        const escrow = escrowAccount(task._id);
+        const buyer = userAccount(buyerId);
         if (released) {
           await postTransaction(
             {
               type: "submission_reject_refund",
               idempotencyKey: `reject-refund:${submissionId}`,
               entries: [
-                { accountId: escrowAccount(task._id), amount: -submission.payableAmount },
-                { accountId: userAccount(buyerId), amount: submission.payableAmount },
+                { accountId: escrow, amount: -submission.payableAmount },
+                { accountId: buyer, amount: submission.payableAmount },
               ],
+              meta: { taskId: String(task._id), submissionId },
+              createdBy: buyerId,
+            },
+            session,
+          );
+        } else if (priceDelta !== 0) {
+          await postTransaction(
+            {
+              type: "task_reprice",
+              idempotencyKey: `reject-reprice:${submissionId}`,
+              entries:
+                priceDelta > 0
+                  ? [
+                      { accountId: buyer, amount: -priceDelta },
+                      { accountId: escrow, amount: priceDelta },
+                    ]
+                  : [
+                      { accountId: escrow, amount: priceDelta },
+                      { accountId: buyer, amount: -priceDelta },
+                    ],
               meta: { taskId: String(task._id), submissionId },
               createdBy: buyerId,
             },
@@ -140,9 +176,13 @@ export async function rejectSubmission(args: {
       return { ok: true, submission };
     });
   } catch (err) {
-    if (err instanceof InsufficientCoinsError || err instanceof UnknownAccountError) {
-      return { ok: false, reason: "escrow_insufficient" };
+    if (err instanceof InsufficientCoinsError) {
+      return {
+        ok: false,
+        reason: err.accountId.startsWith("user:") ? "insufficient_coins" : "escrow_insufficient",
+      };
     }
+    if (err instanceof UnknownAccountError) return { ok: false, reason: "escrow_insufficient" };
     throw err;
   }
 }
