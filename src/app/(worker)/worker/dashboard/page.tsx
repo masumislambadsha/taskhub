@@ -10,7 +10,6 @@ import {
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
-import Withdrawal from "@/models/Withdrawal";
 import mongoose from "mongoose";
 import { coinsToUsdWithdraw } from "@/lib/coins";
 import { format, subDays, startOfDay } from "date-fns";

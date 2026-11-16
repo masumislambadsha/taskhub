@@ -1,7 +1,7 @@
 "use client";
 import { MdAddTask, MdArrowForward, MdBolt, MdCheckCircle, MdGroup, MdRateReview, MdShare } from 'react-icons/md';
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ITask } from "@/types";
@@ -9,7 +9,6 @@ import Link from "next/link";
 
 export default function TaskSuccessPage() {
   const { id } = useParams<{ id: string }>();
-  const router = useRouter();
 
   const { data: task } = useQuery<ITask>({
     queryKey: ["task-success", id],
