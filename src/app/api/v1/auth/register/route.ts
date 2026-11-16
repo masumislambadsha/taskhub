@@ -3,6 +3,10 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import { registerSchema } from "@/lib/validators/auth";
+import {
+  createUserWithBonus,
+  isDuplicateKeyError,
+} from "@/lib/ledger/flows/users";
 import { WORKER_INITIAL_COINS, BUYER_INITIAL_COINS } from "@/lib/constants";
 
 export async function POST(req: NextRequest) {
@@ -29,6 +33,20 @@ export async function POST(req: NextRequest) {
   const passwordHash = await bcrypt.hash(password, 12);
   const coins = role === "buyer" ? BUYER_INITIAL_COINS : WORKER_INITIAL_COINS;
 
-  await User.create({ name, email, passwordHash, photoUrl, role, coins });
+  try {
+    await createUserWithBonus({
+      data: { name, email, passwordHash, photoUrl, role },
+      bonus: coins,
+    });
+  } catch (err) {
+    // Two sign-ups with the same email at once: the unique index picks one.
+    if (isDuplicateKeyError(err)) {
+      return NextResponse.json(
+        { error: "Email already registered" },
+        { status: 409 },
+      );
+    }
+    throw err;
+  }
   return NextResponse.json({ ok: true }, { status: 201 });
 }

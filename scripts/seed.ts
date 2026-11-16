@@ -3,8 +3,10 @@
  *
  * Creates 1 admin, 3 buyers, 10 workers, the default categories, 20 tasks and
  * some submissions. Everything is upserted by a fixed key, so re-running does
- * not duplicate anything. Seeded documents carry `isSeed: true` and use
- * @seed.taskhub.local emails. The script never deletes anything.
+ * not duplicate anything. Coin balances are only set when a user is first
+ * created (the ledger owns them afterwards, so re-running never overwrites them;
+ * a fresh seed is "pre-ledger" data that the ledger opens on first use).
+ * Seeded documents carry `isSeed: true` and use @seed.taskhub.local emails. The script never deletes anything.
  *
  * Safety: refuses to run when NODE_ENV=production, and refuses a MongoDB host
  * other than localhost, 127.0.0.1 or mongo unless SEED_ALLOW_REMOTE=1.
@@ -201,7 +203,8 @@ async function main() {
   await User.updateOne(
     { email: email("admin") },
     {
-      $set: { name: "Seed Admin", role: "admin", passwordHash, status: "active", coins: 0, ...SEED },
+      $set: { name: "Seed Admin", role: "admin", passwordHash, status: "active", ...SEED },
+      $setOnInsert: { coins: 0 },
     },
     UPSERT,
   );
@@ -209,7 +212,7 @@ async function main() {
     const coins = Math.max(BUYER_START_COINS - (escrowByBuyer.get(b.id.toString()) ?? 0), BUYER_INITIAL_COINS);
     await User.updateOne(
       { email: b.email },
-      { $set: { name: b.name, role: "buyer", passwordHash, status: "active", coins, ...SEED }, $setOnInsert: { _id: b.id } },
+      { $set: { name: b.name, role: "buyer", passwordHash, status: "active", ...SEED }, $setOnInsert: { _id: b.id, coins } },
       UPSERT,
     );
   }
@@ -220,7 +223,7 @@ async function main() {
       (i < 4 ? WORKER_BONUS_COINS : 0);
     await User.updateOne(
       { email: w.email },
-      { $set: { name: w.name, role: "worker", passwordHash, status: "active", coins, ...SEED }, $setOnInsert: { _id: w.id } },
+      { $set: { name: w.name, role: "worker", passwordHash, status: "active", ...SEED }, $setOnInsert: { _id: w.id, coins } },
       UPSERT,
     );
   }
