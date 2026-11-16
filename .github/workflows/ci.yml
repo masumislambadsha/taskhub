@@ -23,8 +23,23 @@ jobs:
             package-lock.json
             server/package-lock.json
 
+      # mongodb-memory-server downloads the mongod binary when `npm ci` runs.
+      # Keep it outside node_modules (npm ci deletes that) and cache it, keyed
+      # on the version package-lock.json resolves.
+      - name: Read mongodb-memory-server version
+        id: mms
+        run: echo "version=$(node -p "require('./package-lock.json').packages['node_modules/mongodb-memory-server-core'].version")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache MongoDB binary
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/mongodb-binaries
+          key: mongodb-binaries-${{ runner.os }}-${{ steps.mms.outputs.version }}
+
       - name: Install dependencies
         run: npm ci
+        env:
+          MONGOMS_DOWNLOAD_DIR: ${{ runner.temp }}/mongodb-binaries
 
       # Not blocking yet: `npm run lint` still reports a few existing errors
       # (explicit any, setState in effects, an <a> link). This step becomes
@@ -38,6 +53,8 @@ jobs:
 
       - name: Unit tests
         run: npm test
+        env:
+          MONGOMS_DOWNLOAD_DIR: ${{ runner.temp }}/mongodb-binaries
 
       # Plain production build: no secrets and no database are needed.
       - name: Build web app

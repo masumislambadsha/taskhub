@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import Payment from "@/models/Payment";
-import User from "@/models/User";
-import { validateSSLPayment } from "@/lib/sslcommerz";
+import { verifyAndCreditSSL } from "@/lib/payments/sslcommerz";
+import { logger } from "@/lib/logger";
 
 const BASE = process.env.NEXTAUTH_URL!;
 
@@ -17,32 +16,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.redirect(`${BASE}/payment-return?status=cancelled`);
     }
 
-    const valid = await validateSSLPayment(val_id);
-    if (!valid) {
+    await connectDB();
+    const result = await verifyAndCreditSSL(tran_id, val_id, "success");
+
+    // "already_processed": the IPN (or an earlier call) credited it first.
+    if (!result.credited && result.reason !== "already_processed") {
       return NextResponse.redirect(`${BASE}/payment-return?status=cancelled`);
     }
 
-    await connectDB();
-    const payment = await Payment.findOne({ _id: tran_id, status: "pending" });
-
-    if (payment) {
-      payment.status = "success";
-      payment.gatewayTransactionId = data.bank_tran_id;
-      payment.meta = data;
-      await payment.save();
-      await User.findByIdAndUpdate(payment.userId, {
-        $inc: { coins: payment.coinsPurchased },
-      });
-    }
-
-    
-    
-    
     return NextResponse.redirect(
       `${BASE}/payment-return?status=success&paymentId=${tran_id}`,
     );
   } catch (err) {
-    console.error("SSLCommerz success error:", err);
+    logger.error({ err }, "SSLCommerz success error");
     return NextResponse.redirect(`${BASE}/payment-return?status=cancelled`);
   }
 }

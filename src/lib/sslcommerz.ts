@@ -47,10 +47,36 @@ export async function initSSLCommerz(
   return result.GatewayPageURL;
 }
 
-export async function validateSSLPayment(valId: string): Promise<boolean> {
+/** Fields of the SSLCommerz validation API response that we rely on. */
+export interface SSLValidationData {
+  status?: string;
+  tran_id?: string;
+  val_id?: string;
+  amount?: string;
+  currency?: string;
+  currency_type?: string;
+  currency_amount?: string;
+  bank_tran_id?: string;
+  [key: string]: unknown;
+}
+
+/**
+ * Asks SSLCommerz about a val_id and returns its answer. This only says what
+ * SSLCommerz knows about that val_id: the caller must still check that the
+ * status, tran_id, amount and currency belong to the payment being credited.
+ */
+export async function validateSSLPayment(
+  valId: string,
+): Promise<SSLValidationData> {
+  const query = new URLSearchParams({
+    val_id: valId,
+    store_id: process.env.SSLCOMMERZ_STORE_ID!,
+    store_passwd: process.env.SSLCOMMERZ_STORE_PASSWORD!,
+    format: "json",
+  });
   const res = await fetch(
-    `${process.env.SSLCOMMERZ_BASE_URL}/validator/api/validationserverAPI.php?val_id=${valId}&store_id=${process.env.SSLCOMMERZ_STORE_ID}&store_passwd=${process.env.SSLCOMMERZ_STORE_PASSWORD}&format=json`,
+    `${process.env.SSLCOMMERZ_BASE_URL}/validator/api/validationserverAPI.php?${query}`,
   );
-  const data = await res.json();
-  return data.status === "VALID" || data.status === "VALIDATED";
+  if (!res.ok) throw new Error(`SSLCommerz validation failed (${res.status})`);
+  return (await res.json()) as SSLValidationData;
 }
