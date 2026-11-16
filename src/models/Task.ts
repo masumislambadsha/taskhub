@@ -14,6 +14,13 @@ export interface ITaskDoc extends Document {
   submissionInfo: string;
   imageUrl?: string;
   status: "open" | "closed" | "blocked" | "archived";
+  /**
+   * Set when the buyer deleted the task and the coins for its unfilled slots
+   * were refunded from escrow (or, for tasks archived before the ledger, when
+   * the ledger assumed they were). From then on the task's open slots are no
+   * longer backed by escrow.
+   */
+  escrowReleasedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +44,7 @@ const TaskSchema = new Schema<ITaskDoc>(
       enum: ["open", "closed", "blocked", "archived"],
       default: "open",
     },
+    escrowReleasedAt: { type: Date },
   },
   { timestamps: true },
 );

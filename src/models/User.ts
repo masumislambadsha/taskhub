@@ -7,7 +7,17 @@ export interface IUserDoc extends Document {
   photoUrl?: string;
   about?: string;
   role: "worker" | "buyer" | "admin";
+  /**
+   * Cached balance of the ledger account `user:<id>`. Only
+   * `postTransaction` (src/lib/ledger) may change it.
+   */
   coins: number;
+  /**
+   * Set when the user's account was opened in the ledger (an opening entry
+   * posted for any coins held before the ledger existed). New users get it at
+   * creation.
+   */
+  ledgerOpenedAt?: Date;
   status: "active" | "suspended";
   createdAt: Date;
   updatedAt: Date;
@@ -26,6 +36,7 @@ const UserSchema = new Schema<IUserDoc>(
       default: "worker",
     },
     coins: { type: Number, default: 0 },
+    ledgerOpenedAt: { type: Date },
     status: { type: String, enum: ["active", "suspended"], default: "active" },
   },
   { timestamps: true },

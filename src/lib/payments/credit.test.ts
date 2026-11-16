@@ -2,6 +2,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import mongoose from "mongoose";
 import Payment from "@/models/Payment";
 import User from "@/models/User";
+import LedgerAccount from "@/models/LedgerAccount";
+import LedgerTransaction from "@/models/LedgerTransaction";
 import { creditPayment, expectedCharge } from "@/lib/payments/credit";
 import {
   coinsOf,
@@ -23,6 +25,55 @@ beforeEach(async () => {
 });
 
 describe("creditPayment", () => {
+  it("posts system:issuance -N, user +N to the ledger, once", async () => {
+    const user = await createUser(0);
+    const payment = await createPayment(user._id, { coins: 500, price: 20 });
+    await creditPayment({
+      paymentId: String(payment._id),
+      gateway: { name: "sslcommerz", transactionId: "L1", validationId: "LV1" },
+    });
+    await creditPayment({
+      paymentId: String(payment._id),
+      gateway: { name: "sslcommerz", transactionId: "L1", validationId: "LV1" },
+    });
+
+    const rows = await LedgerTransaction.find({ type: "topup" });
+    expect(rows).toHaveLength(1);
+    expect(rows[0].idempotencyKey).toBe(`payment:${payment._id}`);
+    expect(rows[0].meta.paymentId).toBe(String(payment._id));
+    expect(rows[0].createdBy).toBe("system");
+    expect(
+      rows[0].entries.find((e) => e.accountId === "system:issuance")?.amount,
+    ).toBe(-500);
+    expect((await LedgerAccount.findById("system:issuance"))?.balance).toBe(-500);
+    expect(await coinsOf(user._id)).toBe(500);
+  });
+
+  it("records the admin as the creator of a manual confirmation", async () => {
+    const user = await createUser(0);
+    const payment = await createPayment(user._id);
+    const adminId = String(new mongoose.Types.ObjectId());
+    await creditPayment({
+      paymentId: String(payment._id),
+      gateway: { name: "admin", adminUserId: adminId },
+    });
+    const row = await LedgerTransaction.findOne({ type: "topup" });
+    expect(row?.createdBy).toBe(adminId);
+  });
+
+  it("leaves no ledger row and no credit when the user is gone", async () => {
+    const user = await createUser(0);
+    const payment = await createPayment(user._id);
+    await User.deleteOne({ _id: user._id });
+    const res = await creditPayment({
+      paymentId: String(payment._id),
+      gateway: { name: "sslcommerz", transactionId: "G1", validationId: "GV1" },
+    });
+    expect(res).toEqual({ credited: false, reason: "user_not_found" });
+    expect(await LedgerTransaction.countDocuments({})).toBe(0);
+    expect((await Payment.findById(payment._id))?.status).toBe("pending");
+  });
+
   it("credits coins exactly once for 10 concurrent calls", async () => {
     const user = await createUser(50);
     const payment = await createPayment(user._id, { gateway: "bkash" });

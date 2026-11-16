@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import Withdrawal from "@/models/Withdrawal";
-import User from "@/models/User";
+import {
+  approveWithdrawal,
+  rejectWithdrawal,
+} from "@/lib/ledger/flows/withdrawals";
 import { createNotification } from "@/lib/notifications";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
@@ -17,25 +19,23 @@ export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", asyn
 
   await connectDB();
   const { id } = await params;
-  const { action, reason } = await req.json(); 
+  const { action, reason } = await req.json();
 
-  const withdrawal = await Withdrawal.findOne({ _id: id, status: "pending" });
-  if (!withdrawal)
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
-
+  let withdrawal;
   if (action === "approve") {
-    const worker = await User.findById(withdrawal.workerId);
-    if (!worker || worker.coins < withdrawal.coinRequested) {
-      return NextResponse.json(
-        { error: "Worker has insufficient coins" },
-        { status: 400 },
-      );
+    const result = await approveWithdrawal({
+      withdrawalId: id,
+      adminId: session.user.id,
+    });
+    if (!result.ok) {
+      if (result.reason === "insufficient_coins")
+        return NextResponse.json(
+          { error: "Worker has insufficient coins" },
+          { status: 400 },
+        );
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    worker.coins -= withdrawal.coinRequested;
-    await worker.save();
-    withdrawal.status = "approved";
-    withdrawal.processedAt = new Date();
-    await withdrawal.save();
+    withdrawal = result.withdrawal;
     await createNotification({
       toUserId: withdrawal.workerId.toString(),
       toEmail: withdrawal.workerEmail,
@@ -44,9 +44,10 @@ export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", asyn
       type: "success",
     });
   } else {
-    withdrawal.status = "rejected";
-    withdrawal.processedAt = new Date();
-    await withdrawal.save();
+    const result = await rejectWithdrawal({ withdrawalId: id });
+    if (!result.ok)
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    withdrawal = result.withdrawal;
     await createNotification({
       toUserId: withdrawal.workerId.toString(),
       toEmail: withdrawal.workerEmail,
