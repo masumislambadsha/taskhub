@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { timedCheck, withTimeout } from "./health";
+import { describe, expect, it, vi } from "vitest";
+import { checkMongo, timedCheck, withTimeout } from "./health";
 
 describe("withTimeout", () => {
   it("resolves with the value when the promise finishes in time", async () => {
@@ -52,4 +52,55 @@ describe("timedCheck", () => {
     expect(result.ok).toBe(false);
     expect(result.ms).toBeGreaterThanOrEqual(900);
   }, 5000);
+});
+
+describe("checkMongo", () => {
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  it("is ok when connect and ping succeed", async () => {
+    const result = await checkMongo(async () => {}, async () => {});
+    expect(result.ok).toBe(true);
+    expect(Object.keys(result).sort()).toEqual(["ms", "ok"]);
+  });
+
+  it("allows a connect slower than the 1 second ping budget", async () => {
+    const result = await checkMongo(
+      () => sleep(150),
+      async () => {},
+      { connectTimeoutMs: 500, pingTimeoutMs: 50 },
+    );
+    expect(result.ok).toBe(true);
+    expect(result.ms).toBeGreaterThanOrEqual(140);
+  });
+
+  it("fails when connect exceeds the connect budget, without waiting for it", async () => {
+    const ping = vi.fn(async () => {});
+    const result = await checkMongo(() => sleep(500), ping, {
+      connectTimeoutMs: 50,
+      pingTimeoutMs: 50,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.ms).toBeLessThan(300);
+    expect(ping).not.toHaveBeenCalled();
+  });
+
+  it("fails when the ping exceeds the ping budget", async () => {
+    const result = await checkMongo(async () => {}, () => sleep(500), {
+      connectTimeoutMs: 500,
+      pingTimeoutMs: 50,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.ms).toBeLessThan(300);
+  });
+
+  it("fails without leaking the error when connect rejects", async () => {
+    const result = await checkMongo(
+      async () => {
+        throw new Error("mongodb://user:secret@host refused");
+      },
+      async () => {},
+    );
+    expect(result.ok).toBe(false);
+    expect(JSON.stringify(result)).not.toContain("secret");
+  });
 });
