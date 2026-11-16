@@ -5,20 +5,21 @@ import {
   checkRedis,
   getUptimeSeconds,
   getVersion,
-  timedCheck,
+  checkMongo,
 } from "@/lib/health";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-// Readiness: pings MongoDB and, when REDIS_URL is set, Redis (1 second each).
+// Readiness: checks MongoDB (up to 5 seconds to connect, 1 second to ping) and,
+// when REDIS_URL is set, Redis (1 second).
 // Responses never include error messages or stack traces.
 export async function GET() {
   const [mongo, redis] = await Promise.all([
-    timedCheck(async () => {
-      await connectDB();
-      await mongoose.connection.db!.admin().ping();
-    }),
+    checkMongo(
+      () => connectDB(),
+      () => mongoose.connection.db!.admin().ping(),
+    ),
     checkRedis(),
   ]);
 

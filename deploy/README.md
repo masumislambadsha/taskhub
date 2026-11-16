@@ -21,7 +21,7 @@ Files:
 | `deploy/deploy.sh` | Deploys one image tag, checks health, rolls back on failure. |
 | `scripts/set-github-secrets.sh` / `.ps1` | Uploads the GitHub secrets and variables. |
 | `.github/workflows/ci.yml` | Jobs `publish` (Docker Hub) and `deploy` (SSH to the VPS). |
-| `docs/adr/0002-vps-deployment.md` | Why it is built this way. |
+| `docs/adr/0001-vps-deployment.md` | Why it is built this way. |
 
 ## 1. What runs where
 

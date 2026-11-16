@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { timedCheck, withTimeout } from "./health";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { checkMongo, getVersion, timedCheck, withTimeout } from "./health";
 
 describe("withTimeout", () => {
   it("resolves with the value when the promise finishes in time", async () => {
@@ -52,4 +52,94 @@ describe("timedCheck", () => {
     expect(result.ok).toBe(false);
     expect(result.ms).toBeGreaterThanOrEqual(900);
   }, 5000);
+});
+
+describe("checkMongo", () => {
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  it("is ok when connect and ping succeed", async () => {
+    const result = await checkMongo(async () => {}, async () => {});
+    expect(result.ok).toBe(true);
+    expect(Object.keys(result).sort()).toEqual(["ms", "ok"]);
+  });
+
+  it("allows a connect slower than the 1 second ping budget", async () => {
+    const result = await checkMongo(
+      () => sleep(150),
+      async () => {},
+      { connectTimeoutMs: 500, pingTimeoutMs: 50 },
+    );
+    expect(result.ok).toBe(true);
+    expect(result.ms).toBeGreaterThanOrEqual(140);
+  });
+
+  it("fails when connect exceeds the connect budget, without waiting for it", async () => {
+    const ping = vi.fn(async () => {});
+    const result = await checkMongo(() => sleep(500), ping, {
+      connectTimeoutMs: 50,
+      pingTimeoutMs: 50,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.ms).toBeLessThan(300);
+    expect(ping).not.toHaveBeenCalled();
+  });
+
+  it("fails when the ping exceeds the ping budget", async () => {
+    const result = await checkMongo(async () => {}, () => sleep(500), {
+      connectTimeoutMs: 500,
+      pingTimeoutMs: 50,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.ms).toBeLessThan(300);
+  });
+
+  it("fails without leaking the error when connect rejects", async () => {
+    const result = await checkMongo(
+      async () => {
+        throw new Error("mongodb://user:secret@host refused");
+      },
+      async () => {},
+    );
+    expect(result.ok).toBe(false);
+    expect(JSON.stringify(result)).not.toContain("secret");
+  });
+});
+
+describe("getVersion", () => {
+  const FULL = "0123456789abcdef0123456789abcdef01234567";
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  function stub(env: Record<string, string>) {
+    for (const k of ["GIT_SHA", "VERCEL_GIT_COMMIT_SHA", "RENDER_GIT_COMMIT"]) {
+      vi.stubEnv(k, env[k] ?? "");
+    }
+  }
+
+  it("returns dev when nothing is set", () => {
+    stub({});
+    expect(getVersion()).toBe("dev");
+  });
+
+  it("prefers GIT_SHA and shortens it to 7 characters", () => {
+    stub({ GIT_SHA: FULL, VERCEL_GIT_COMMIT_SHA: "bbbbbbbbbb" });
+    expect(getVersion()).toBe("0123456");
+  });
+
+  it("falls back to VERCEL_GIT_COMMIT_SHA", () => {
+    stub({ VERCEL_GIT_COMMIT_SHA: FULL, RENDER_GIT_COMMIT: "cccccccccc" });
+    expect(getVersion()).toBe("0123456");
+  });
+
+  it("falls back to RENDER_GIT_COMMIT", () => {
+    stub({ RENDER_GIT_COMMIT: FULL });
+    expect(getVersion()).toBe("0123456");
+  });
+
+  it("keeps values shorter than 7 characters as they are", () => {
+    stub({ GIT_SHA: "abc" });
+    expect(getVersion()).toBe("abc");
+  });
 });
