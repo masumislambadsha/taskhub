@@ -1,10 +1,100 @@
+import mongoose from "mongoose";
 import Submission, { type ISubmissionDoc } from "@/models/Submission";
-import Task from "@/models/Task";
+import Task, { type ITaskDoc } from "@/models/Task";
 import { escrowAccount, userAccount } from "../accounts";
 import { InsufficientCoinsError, UnknownAccountError } from "../errors";
 import { ensureEscrowOpen } from "../escrow";
 import { postTransaction } from "../post";
 import { inLedgerTransaction } from "../run";
+
+export type SubmitWorkResult =
+  | { ok: true; submission: ISubmissionDoc; task: ITaskDoc }
+  | { ok: false; reason: "not_available" | "pending_exists" | "full" };
+
+/**
+ * Takes a slot on a task and creates the worker's pending submission, in one
+ * transaction. No coins move: the slot's reward is already in escrow, and the
+ * submission turns an open slot into a pending one.
+ *
+ * The slot is taken with a conditional update (task open and
+ * `filledWorkers < requiredWorkers`), so concurrent workers cannot take more
+ * slots than the task has. Every submitter writes the same task document, so
+ * concurrent transactions conflict and are retried one after the other; the
+ * retried one then sees the other's pending submission, which makes the
+ * "already pending" check safe without a unique index. The caller sends any
+ * notification after this returns, never inside the transaction.
+ */
+export async function submitWork(args: {
+  taskId: string;
+  worker: { id: string; name: string; email: string };
+  data: { details: string; proofLinks?: string[]; proofImageUrl?: string };
+}): Promise<SubmitWorkResult> {
+  const { taskId, worker, data } = args;
+  // `taskId` comes from request JSON, so it can be any value at runtime: an
+  // operator object would otherwise reach the query filter, and a malformed
+  // string would throw a CastError.
+  if (typeof taskId !== "string" || !mongoose.isValidObjectId(taskId)) {
+    return { ok: false, reason: "not_available" };
+  }
+  return inLedgerTransaction(async (session): Promise<SubmitWorkResult> => {
+    const task = await Task.findOneAndUpdate(
+      {
+        _id: taskId,
+        status: "open",
+        $expr: { $lt: ["$filledWorkers", "$requiredWorkers"] },
+      },
+      { $inc: { filledWorkers: 1 } },
+      { session, returnDocument: "after" },
+    );
+
+    if (!task) {
+      const current = await Task.findById(taskId).session(session).lean();
+      if (!current || current.status !== "open") return { ok: false, reason: "not_available" };
+      // Same precedence as before: a worker with a pending submission hears that first.
+      const pending = await Submission.exists({
+        taskId: current._id,
+        workerId: worker.id,
+        status: "pending",
+      }).session(session);
+      return { ok: false, reason: pending ? "pending_exists" : "full" };
+    }
+
+    // A second slot for the same worker is refused: give the slot just taken
+    // back inside this transaction, so the net change is zero.
+    const existing = await Submission.findOne({
+      taskId: task._id,
+      workerId: worker.id,
+      status: "pending",
+    }).session(session);
+    if (existing) {
+      await Task.updateOne({ _id: task._id }, { $inc: { filledWorkers: -1 } }, { session });
+      return { ok: false, reason: "pending_exists" };
+    }
+
+    if (task.filledWorkers >= task.requiredWorkers) {
+      await Task.updateOne({ _id: task._id }, { $set: { status: "closed" } }, { session });
+      task.status = "closed";
+    }
+
+    const [submission] = await Submission.create(
+      [
+        {
+          taskId: task._id,
+          taskTitle: task.title,
+          taskBuyerId: task.buyerId,
+          taskBuyerName: task.buyerName,
+          workerId: worker.id,
+          workerName: worker.name,
+          workerEmail: worker.email,
+          payableAmount: task.payableAmount,
+          ...data,
+        },
+      ],
+      { session },
+    );
+    return { ok: true, submission, task };
+  });
+}
 
 export type ApproveSubmissionResult =
   | { ok: true; submission: ISubmissionDoc }
