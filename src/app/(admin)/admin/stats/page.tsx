@@ -648,11 +648,6 @@ export default async function AdminStatsPage({ searchParams }: Props) {
             <div className="space-y-5">
               {gatewayStats.map((g) => {
                 const pct = (g.total / totalGatewayRev) * 100;
-                const icons: Record<string, string> = {
-                  stripe: "credit_card",
-                  bkash: "phone_android",
-                  sslcommerz: "account_balance",
-                };
                 return (
                   <div key={String(g._id)}>
                     <div className="flex items-center justify-between mb-2">
@@ -757,11 +752,6 @@ export default async function AdminStatsPage({ searchParams }: Props) {
               </p>
             )}
             {recentPayments.map((p) => {
-              const gatewayIcons: Record<string, string> = {
-                stripe: "credit_card",
-                bkash: "phone_android",
-                sslcommerz: "account_balance",
-              };
               const date = new Date(p.createdAt);
               return (
                 <div

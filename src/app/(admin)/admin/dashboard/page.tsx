@@ -1,24 +1,11 @@
 import {
   MdAccountBalanceWallet,
-  MdAddCircle,
-  MdAddPhotoAlternate,
-  MdArrowBack,
   MdArrowForward,
-  MdAssignment,
-  MdChevronLeft,
-  MdChevronRight,
-  MdClose,
-  MdEdit,
-  MdGroup,
   MdPayments,
-  MdReceiptLong,
-  MdTaskAlt,
-  MdToll,
 } from "react-icons/md";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
-import Task from "@/models/Task";
 import Payment from "@/models/Payment";
 import Withdrawal from "@/models/Withdrawal";
 import StatCard from "@/components/shared/StatCard";
@@ -32,13 +19,11 @@ export default async function AdminDashboard() {
   const [
     totalWorkers,
     totalBuyers,
-    pendingWithdrawals,
     recentUsers,
     recentWithdrawals,
   ] = await Promise.all([
     User.countDocuments({ role: "worker" }),
     User.countDocuments({ role: "buyer" }),
-    Withdrawal.countDocuments({ status: "pending" }),
     User.find().sort("-createdAt").limit(5).select("-passwordHash").lean(),
     Withdrawal.find({ status: "pending" }).sort("-createdAt").limit(5).lean(),
   ]);

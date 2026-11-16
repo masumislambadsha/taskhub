@@ -24,12 +24,11 @@ export default async function BuyerTaskDetailPage({ params }: Props) {
   }).lean();
   if (!task) notFound();
 
-  const [totalSubs, pendingSubs, approvedSubs, rejectedSubs] =
+  const [totalSubs, pendingSubs, approvedSubs] =
     await Promise.all([
       Submission.countDocuments({ taskId: id }),
       Submission.countDocuments({ taskId: id, status: "pending" }),
       Submission.countDocuments({ taskId: id, status: "approved" }),
-      Submission.countDocuments({ taskId: id, status: "rejected" }),
     ]);
 
   const submissions = await Submission.find({ taskId: id })

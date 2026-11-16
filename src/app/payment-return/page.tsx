@@ -23,7 +23,7 @@ export default function PaymentReturnPage() {
     } else {
       router.replace("/buyer/coins?cancelled=1");
     }
-  }, []);
+  }, [params, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
