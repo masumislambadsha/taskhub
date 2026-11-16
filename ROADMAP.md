@@ -16,15 +16,18 @@ Version 1, 9 November 2026. Goal: turn TaskHub into a flagship project that prov
 
 - Next.js 16 (App Router) and TypeScript at the repo root, deployed on Vercel at task-hub-io.vercel.app.
 - Auth.js (next-auth v5 beta) with Google and email/password sign-in and JWT sessions. `@auth/mongodb-adapter` is installed but not used: users are stored in the `User` model.
-- MongoDB through Mongoose. Models in `src/models`: Category, Contact, Message, Notification, PasswordResetToken, Payment, Submission, Task, User and Withdrawal.
+- MongoDB through Mongoose. Models in `src/models`: BkashToken, Category, Contact, LedgerAccount, LedgerTransaction, Message, Notification, PasswordResetToken, Payment, Submission, Task, User and Withdrawal.
 - Three roles: buyer, worker, admin.
-- Payments: Stripe Checkout with a webhook, bKash, and SSLCommerz (with IPN).
-- Coins are stored in the `coins` field on the user document and the code increases and decreases it directly. Buy and withdrawal rates are in `src/lib/coins.ts` (with the constants in `src/lib/constants.ts`), and the minimum withdrawal is 200 coins.
+- Payments: Stripe Checkout with a webhook, bKash, and SSLCommerz (with IPN). Coins are credited only after the provider confirms, through one function (`creditPayment`) in a MongoDB transaction ([#5](https://github.com/masumislambadsha/taskhub/pull/5)).
+- Every coin movement is a double-entry journal entry posted by `postTransaction`; the `coins` field on the user document is the cached balance ([#8](https://github.com/masumislambadsha/taskhub/pull/8)). Buy and withdrawal rates are in `src/lib/coins.ts` (with the constants in `src/lib/constants.ts`), and the minimum withdrawal is 200 coins.
 - A separate Express + Socket.io realtime server in `server/` (JavaScript, its own package.json, its own Message model). The realtime server verifies a short-lived signed token from `/api/v1/socket-token` and only allows users into their own conversations. It is deployed on Render's free plan (`server/render.yaml`), which sleeps when idle.
 - Image uploads go through imgbb (public URLs).
 - Email goes through Resend.
-- The Expo app lives in a separate repo, `taskhub-mobile-app`.
-- There are no tests and no CI. The only check is `npm run lint`.
+- The Expo app lives in a separate repo, `taskhub-mobile-app`. It has not been updated yet to fetch the signed socket token, so its chat connections are rejected until it is.
+- Tests and CI: 229 tests (210 in the web app with `npm test`, 19 in the realtime server with `cd server && npm test`). The integration tests run against a real MongoDB replica set from `mongodb-memory-server`. CI (`.github/workflows/ci.yml`) runs lint (errors fail the build), typecheck, the tests, the builds and the Docker image builds ([#11](https://github.com/masumislambadsha/taskhub/pull/11)).
+- Also in place: the Docker stack, health endpoints, structured logs and Sentry (Phase 0), and an optional VPS deploy job that stays off until its secrets are set.
+
+**Shipped so far:** Phase 0 ([#1](https://github.com/masumislambadsha/taskhub/pull/1), [#3](https://github.com/masumislambadsha/taskhub/pull/3), [#4](https://github.com/masumislambadsha/taskhub/pull/4)); signed socket tokens and conversation checks ([#2](https://github.com/masumislambadsha/taskhub/pull/2)); payment verification ([#5](https://github.com/masumislambadsha/taskhub/pull/5)); the coin ledger, item 1.1 ([#8](https://github.com/masumislambadsha/taskhub/pull/8)); bKash grant token reuse ([#9](https://github.com/masumislambadsha/taskhub/pull/9)); the atomic submission slot ([#10](https://github.com/masumislambadsha/taskhub/pull/10)); lint errors fixed and blocking in CI ([#11](https://github.com/masumislambadsha/taskhub/pull/11)).
 
 ## Decide these before Phase 0
 
@@ -74,6 +77,8 @@ taskhub/
 ---
 
 # Phase 0: Foundation (week 1)
+
+**Status: done** ([#1](https://github.com/masumislambadsha/taskhub/pull/1), [#3](https://github.com/masumislambadsha/taskhub/pull/3), [#4](https://github.com/masumislambadsha/taskhub/pull/4)).
 
 **Phase goal:** one command (`docker compose up`) starts the whole app the same way on any machine, and you can see when something breaks.
 
@@ -313,7 +318,7 @@ The production compose file, host Nginx site, VPS bootstrap script, deploy scrip
 
 ## 1.1 Double-entry coin ledger
 
-**Status: done** (see [ADR 0002](docs/adr/0002-coin-ledger.md)); the nightly reconciliation job and the admin Ledger page wait for the worker in 1.3, until then `npm run ledger:reconcile` and `GET /api/v1/admin/ledger/reconcile` are the check.
+**Status: done** ([#8](https://github.com/masumislambadsha/taskhub/pull/8), see [ADR 0002](docs/adr/0002-coin-ledger.md)); the nightly reconciliation job and the admin Ledger page wait for the worker in 1.3, until then `npm run ledger:reconcile` and `GET /api/v1/admin/ledger/reconcile` are the check.
 
 **Goal:** every coin has a traceable history, and balances can never drift or go negative, even under many requests at once.
 
