@@ -295,7 +295,7 @@ Later phases add integration tests (Phase 1), E2E (4.3), and image push plus dep
 
 **Goal:** a ready-to-use VPS deployment that stays switched off until you add the secrets.
 
-The production compose file, host Nginx site, VPS bootstrap script, deploy script with health check and rollback, Docker Hub publish job and SSH deploy job are in place. The runbook, GitHub secrets and the switch-over checklist from Vercel and Render are in [deploy/README.md](deploy/README.md). The reasoning is in `docs/adr/0002-vps-deployment.md`.
+The production compose file, host Nginx site, VPS bootstrap script, deploy script with health check and rollback, Docker Hub publish job and SSH deploy job are in place. The runbook, GitHub secrets and the switch-over checklist from Vercel and Render are in [deploy/README.md](deploy/README.md). The reasoning is in `docs/adr/0001-vps-deployment.md`.
 
 **Done when:** `publish` and `deploy` are skipped in CI until you set the variables, and a manual `deploy/deploy.sh <sha>` on a VPS passes its health check.
 
