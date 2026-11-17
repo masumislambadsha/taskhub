@@ -5,6 +5,7 @@ import Withdrawal from "@/models/Withdrawal";
 import User from "@/models/User";
 import { withdrawalSchema } from "@/lib/validators/withdrawal";
 import { coinsToUsdWithdraw } from "@/lib/coins";
+import { maskEmailFields } from "@/lib/privacy";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
 export async function GET(req: NextRequest) {
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    withdrawals,
+    withdrawals: maskEmailFields(withdrawals, ["workerEmail"], session.user),
     total,
     page,
     pages: Math.ceil(total / limit),

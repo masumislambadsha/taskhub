@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/roles";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
+import { maskEmailFields } from "@/lib/privacy";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!session || session.user.role !== "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const guard = requireAdmin(session, "read");
+  if (!guard.ok) return guard.response;
 
   await connectDB();
   const { searchParams } = new URL(req.url);
@@ -31,7 +32,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    users,
+    users: maskEmailFields(users, ["email"], guard.viewer),
     total,
     page,
     pages: Math.ceil(total / limit),

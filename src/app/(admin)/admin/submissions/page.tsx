@@ -1,5 +1,6 @@
 import { MdAssignment, MdToll } from 'react-icons/md';
-import { auth } from "@/lib/auth";
+import { getAdminViewer } from "@/lib/admin-page";
+import { maskEmailFields } from "@/lib/privacy";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
 import Badge from "@/components/ui/Badge";
@@ -7,7 +8,7 @@ import { format } from "date-fns";
 import StatCard from "@/components/shared/StatCard";
 
 export default async function AdminSubmissionsPage() {
-  await auth();
+  const viewer = await getAdminViewer();
   await connectDB();
 
   const [all, pending, approved, rejected] = await Promise.all([
@@ -80,7 +81,7 @@ export default async function AdminSubmissionsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-primary/5">
-                  {submissions.map((s) => (
+                  {maskEmailFields(submissions, ["workerEmail"], viewer).map((s) => (
                     <tr
                       key={String(s._id)}
                       className="hover:bg-background/50 transition-colors"
@@ -126,7 +127,7 @@ export default async function AdminSubmissionsPage() {
 
             
             <div className="md:hidden divide-y divide-primary/5">
-              {submissions.map((s) => (
+              {maskEmailFields(submissions, ["workerEmail"], viewer).map((s) => (
                 <div
                   key={String(s._id)}
                   className="px-4 py-4 space-y-2 hover:bg-background/60 transition-colors"
