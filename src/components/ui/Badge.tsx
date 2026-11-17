@@ -4,6 +4,7 @@ import {
   TaskStatus,
   PaymentStatus,
 } from "@/types";
+import { ROLE_LABELS } from "@/lib/roles";
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -17,6 +18,8 @@ const statusColors: Record<string, string> = {
   failed: "bg-red-100 text-red-800",
   active: "bg-green-100 text-green-800",
   suspended: "bg-red-100 text-red-800",
+  admin: "bg-purple-100 text-purple-800",
+  demo_admin: "bg-amber-100 text-amber-800",
 };
 
 interface BadgeProps {
@@ -35,7 +38,7 @@ export default function Badge({ status, className = "" }: BadgeProps) {
     <span
       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${color} ${className}`}
     >
-      {status}
+      {ROLE_LABELS[status] ?? status}
     </span>
   );
 }

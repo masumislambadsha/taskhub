@@ -12,6 +12,8 @@ import {
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { apiErrorMessage } from "@/lib/api-error";
+import { useReadOnly } from "@/hooks/useReadOnly";
 import { ITask } from "@/types";
 import Badge from "@/components/ui/Badge";
 import { format } from "date-fns";
@@ -48,6 +50,7 @@ export default function AdminTasksPage() {
   const [status, setStatus] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const qc = useQueryClient();
+  const { readOnly, readOnlyTitle } = useReadOnly();
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-tasks", page, status],
@@ -63,7 +66,7 @@ export default function AdminTasksPage() {
   const blockMutation = useMutation({
     mutationFn: ({ id, newStatus }: { id: string; newStatus: string }) =>
       axios.patch("/api/v1/admin/tasks", { id, status: newStatus }),
-    onError: () => toast.error("Update failed"),
+    onError: (err) => toast.error(apiErrorMessage(err, "Update failed")),
   });
 
   const handleBlockToggle = (t: ITask) => {
@@ -255,7 +258,9 @@ export default function AdminTasksPage() {
                         </button>
                         <button
                           onClick={() => handleBlockToggle(t)}
-                          className={`flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-lg font-medium transition-colors border ${
+ disabled={readOnly}
+ title={readOnly ? readOnlyTitle : undefined}
+                                                    className={`disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-lg font-medium transition-colors border ${
                             t.status === "blocked"
                               ? "bg-green-50 text-green-700 hover:bg-green-100 border-green-200"
                               : "bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
@@ -265,7 +270,9 @@ export default function AdminTasksPage() {
                         </button>
                         <button
                           onClick={() => handleArchiveToggle(t)}
-                          className={`flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-lg font-medium transition-colors border ${
+ disabled={readOnly}
+ title={readOnly ? readOnlyTitle : undefined}
+                                                    className={`disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none text-xs px-3 py-1.5 rounded-lg font-medium transition-colors border ${
                             t.status === "archived"
                               ? "bg-secondary/10 text-secondary hover:bg-secondary/20 border-secondary/20"
                               : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border-yellow-200"

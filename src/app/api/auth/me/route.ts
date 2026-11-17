@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { isAdminRole } from "@/lib/roles";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
 
   if (shouldRedirect) {
     const dest =
-      role === "admin"
+      isAdminRole(role)
         ? "/admin/dashboard"
         : role === "buyer"
           ? "/buyer/dashboard"

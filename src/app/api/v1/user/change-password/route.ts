@@ -2,12 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
+import { refuseDemoAdmin } from "@/lib/roles";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // The demo account is shared: nobody may change its password.
+  const refused = refuseDemoAdmin(session);
+  if (refused) return refused;
 
   const { currentPassword, newPassword } = await req.json();
 

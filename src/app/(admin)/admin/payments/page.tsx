@@ -14,11 +14,14 @@ import Badge from "@/components/ui/Badge";
 import { format } from "date-fns";
 import CountUp from "@/components/ui/CountUp";
 import toast from "react-hot-toast";
+import { apiErrorMessage } from "@/lib/api-error";
+import { useReadOnly } from "@/hooks/useReadOnly";
 
 export default function AdminPaymentsPage() {
   const [page, setPage] = useState(1);
   const [confirming, setConfirming] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const { readOnly, readOnlyTitle } = useReadOnly();
 
   async function handleConfirm(paymentId: string) {
     setConfirming(paymentId);
@@ -26,8 +29,8 @@ export default function AdminPaymentsPage() {
       await axios.post("/api/v1/payments/admin-confirm", { paymentId });
       toast.success("Payment confirmed");
       queryClient.invalidateQueries({ queryKey: ["admin-payments"] });
-    } catch {
-      toast.error("Failed to confirm payment");
+    } catch (err) {
+      toast.error(apiErrorMessage(err, "Failed to confirm payment"));
     } finally {
       setConfirming(null);
     }
@@ -131,7 +134,8 @@ export default function AdminPaymentsPage() {
                         {p.status === "pending" && (
                           <button
                             onClick={() => handleConfirm(p._id)}
-                            disabled={confirming === p._id}
+                            disabled={confirming === p._id || readOnly}
+ title={readOnly ? readOnlyTitle : undefined}
                             className="px-3 py-1.5 bg-secondary text-white text-xs font-bold rounded-lg hover:bg-secondary/90 disabled:opacity-50 transition-colors"
                           >
                             {confirming === p._id ? "…" : "Confirm"}
@@ -181,7 +185,8 @@ export default function AdminPaymentsPage() {
                     {p.status === "pending" && (
                       <button
                         onClick={() => handleConfirm(p._id)}
-                        disabled={confirming === p._id}
+                        disabled={confirming === p._id || readOnly}
+ title={readOnly ? readOnlyTitle : undefined}
                         className="ml-auto px-3 py-1.5 bg-secondary text-white text-xs font-bold rounded-lg hover:bg-secondary/90 disabled:opacity-50 transition-colors"
                       >
                         {confirming === p._id ? "…" : "Confirm"}

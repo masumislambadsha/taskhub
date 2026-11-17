@@ -24,7 +24,6 @@ export default async function LeaderboardPage() {
       $group: {
         _id: "$workerId",
         workerName: { $first: "$workerName" },
-        workerEmail: { $first: "$workerEmail" },
         totalTasks: { $sum: 1 },
         totalCoins: { $sum: "$payableAmount" },
       },

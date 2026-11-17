@@ -5,6 +5,7 @@ import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { isAdminRole } from "@/lib/roles";
 import { loginSchema, LoginFormData } from "@/lib/validators/auth";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -13,7 +14,7 @@ import { MdVisibility, MdVisibilityOff, MdPerson } from "react-icons/md";
 const DEMO_ACCOUNTS = [
   { role: "Worker", email: "worker@taskhub.com", password: "121212" },
   { role: "Buyer", email: "buyer@taskhub.com", password: "121212" },
-  { role: "Admin", email: "admin@taskhub.com", password: "121212" },
+  { role: "Demo Admin (read-only)", email: "admin@taskhub.com", password: "121212" },
 ];
 
 function LoginForm() {
@@ -40,7 +41,7 @@ function LoginForm() {
         const me = await fetch("/api/auth/me").then((r) => r.json());
         const role = me?.role;
         const dest =
-          role === "admin"
+          isAdminRole(role)
             ? "/admin/dashboard"
             : role === "buyer"
               ? "/buyer/dashboard"

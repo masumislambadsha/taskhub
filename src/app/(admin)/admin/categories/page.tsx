@@ -3,6 +3,9 @@ import iconMap from '@/lib/iconMap';
 import { MdAdd, MdCategory, MdClose, MdDelete, MdEdit, MdOpenInNew, MdTaskAlt, MdTrendingUp } from 'react-icons/md';
 
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { responseErrorMessage } from "@/lib/api-error";
+import { useReadOnly } from "@/hooks/useReadOnly";
 
 interface Category {
   _id: string;
@@ -47,6 +50,7 @@ export default function AdminCategoriesPage() {
   const [formIcon, setFormIcon] = useState("category");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const { readOnly, readOnlyTitle } = useReadOnly();
 
   async function loadCategories() {
     setLoading(true);
@@ -116,7 +120,13 @@ export default function AdminCategoriesPage() {
   async function handleDelete(cat: Category) {
     if (!confirm(`Delete "${cat.name}"? This won't delete existing tasks.`))
       return;
-    await fetch(`/api/v1/admin/categories/${cat._id}`, { method: "DELETE" });
+    const res = await fetch(`/api/v1/admin/categories/${cat._id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      toast.error(await responseErrorMessage(res, "Failed to delete category"));
+      return;
+    }
     loadCategories();
   }
 
@@ -133,7 +143,9 @@ export default function AdminCategoriesPage() {
         </div>
         <button
           onClick={openAdd}
-          className="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm self-start sm:self-auto sm:w-auto w-full"
+          disabled={readOnly}
+          title={readOnly ? readOnlyTitle : undefined}
+          className="disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-primary/90 transition-colors shadow-sm self-start sm:self-auto sm:w-auto w-full"
         >
           <MdAdd className="text-sm" />
           Add Category
@@ -226,13 +238,17 @@ export default function AdminCategoriesPage() {
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => openEdit(cat)}
-                      className="p-2 rounded-lg hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors"
+                      disabled={readOnly}
+                      title={readOnly ? readOnlyTitle : undefined}
+                      className="disabled:opacity-40 disabled:cursor-not-allowed p-2 rounded-lg hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors"
                     >
                       <MdEdit className="text-sm" />
                     </button>
                     <button
                       onClick={() => handleDelete(cat)}
-                      className="p-2 rounded-lg hover:bg-red-50 text-primary/40 hover:text-red-500 transition-colors"
+                      disabled={readOnly}
+                      title={readOnly ? readOnlyTitle : undefined}
+                      className="disabled:opacity-40 disabled:cursor-not-allowed p-2 rounded-lg hover:bg-red-50 text-primary/40 hover:text-red-500 transition-colors"
                     >
                       <MdDelete className="text-sm" />
                     </button>
