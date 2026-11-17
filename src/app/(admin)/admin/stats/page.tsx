@@ -1,4 +1,5 @@
-import { auth } from "@/lib/auth";
+import { getAdminViewer } from "@/lib/admin-page";
+import { maskEmailFields } from "@/lib/privacy";
 import iconMap from '@/lib/iconMap';
 import { MdCategory, MdDescription, MdPayments, MdToll } from 'react-icons/md';
 import { connectDB } from "@/lib/db";
@@ -33,7 +34,7 @@ interface Props {
 }
 
 export default async function AdminStatsPage({ searchParams }: Props) {
-  await auth();
+  const viewer = await getAdminViewer();
   await connectDB();
 
   const params = await searchParams;
@@ -701,7 +702,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
                 No data yet
               </p>
             )}
-            {topWorkers.map((w, i) => (
+            {maskEmailFields(topWorkers, ["email"], viewer).map((w, i) => (
               <div
                 key={String(w._id)}
                 className="flex items-center gap-3 sm:gap-4 px-4 sm:px-8 py-4 hover:bg-slate-50 transition-colors"
@@ -751,7 +752,7 @@ export default async function AdminStatsPage({ searchParams }: Props) {
                 No payments yet
               </p>
             )}
-            {recentPayments.map((p) => {
+            {maskEmailFields(recentPayments, ["userEmail"], viewer).map((p) => {
               const date = new Date(p.createdAt);
               return (
                 <div

@@ -3,7 +3,8 @@ import {
   MdArrowForward,
   MdPayments,
 } from "react-icons/md";
-import { auth } from "@/lib/auth";
+import { getAdminViewer } from "@/lib/admin-page";
+import { maskEmailFields } from "@/lib/privacy";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import Payment from "@/models/Payment";
@@ -13,7 +14,7 @@ import Badge from "@/components/ui/Badge";
 import { format } from "date-fns";
 
 export default async function AdminDashboard() {
-  await auth();
+  const viewer = await getAdminViewer();
   await connectDB();
 
   const [
@@ -84,7 +85,7 @@ export default async function AdminDashboard() {
             </a>
           </div>
           <div className="divide-y divide-primary/5">
-            {recentUsers.map((u) => (
+            {maskEmailFields(recentUsers, ["email"], viewer).map((u) => (
               <div
                 key={String(u._id)}
                 className="px-4 sm:px-6 py-3 flex items-center gap-3"
