@@ -4,6 +4,7 @@ import { connectDB } from "@/lib/db";
 import Task from "@/models/Task";
 import { createFundedTask } from "@/lib/ledger/flows/tasks";
 import { taskSchema } from "@/lib/validators/task";
+import { redactEmailFields } from "@/lib/privacy";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
 export async function GET(req: NextRequest) {
@@ -39,7 +40,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    tasks,
+    tasks: redactEmailFields(tasks, ["buyerEmail"], session?.user, "buyerId"),
     total,
     page,
     pages: Math.ceil(total / limit),
