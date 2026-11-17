@@ -82,6 +82,7 @@ The web app and its API routes run on Vercel and talk to MongoDB Atlas. Atlas ru
 | Every bKash payment asked bKash for two new tokens. | The bKash grant token is reused for 50 minutes and shared by all serverless instances through one MongoDB document. A 401 from bKash clears it and the request is retried once. | 7 tests in `src/lib/bkash.test.ts`: reuse, expiry at 50 minutes, a second instance, concurrent calls, one retry on a 401, and a failing token store. | [#9](https://github.com/masumislambadsha/taskhub/pull/9) |
 | Two workers could take the last task slot at once, and one worker could submit twice at once. A task ID that was not a valid ObjectId was passed into the query. | `submitWork` takes the slot with a conditional update inside one transaction, and the route refuses a task ID that is not an ObjectId. | `src/lib/ledger/flows/submissions.test.ts`. 10 parallel submissions on 5 slots give exactly 5. One worker submitting 5 times at once gets 1. Bad IDs are refused. | [#10](https://github.com/masumislambadsha/taskhub/pull/10) |
 | Lint errors were ignored in CI. | The lint errors were fixed without turning rules off, and the CI lint step now fails the build on errors. | `npm run lint` reports 0 errors (19 warnings remain). The CI Lint step runs before the tests. | [#11](https://github.com/masumislambadsha/taskhub/pull/11) |
+| The public demo's admin login (`admin@taskhub.com`, shown on the login page) gave anyone full admin power: delete users, change roles, approve withdrawals, confirm unpaid payments (which mints coins) and read every user's email. The user update route also saved any `role` or `status` text, and an admin could change or delete their own account. | A separate read-only `demo_admin` role. The demo button signs in as it. It can open every admin page and read, but every POST, PUT, PATCH and DELETE gets a 403 "Demo admin is read-only", and the action buttons are disabled with a banner on top. Other users' emails are masked for it, in the API and in the pages that read the database. The user update route accepts only the four roles and two statuses and refuses changes to your own role or status or deleting yourself. The seed adds a real admin, `owner@taskhub.com`. | Unit tests for the role helpers and `maskEmail` (`src/lib/roles.test.ts`, `src/lib/privacy.test.ts`) and route tests for the admin users, payments, withdrawals, ledger and debug routes (`src/lib/admin-routes.test.ts`). | this PR |
 
 ### Testing
 
@@ -860,7 +861,7 @@ This project was originally built as a broader multi-role platform, but the dash
 
 - Worker: `user-woker@taskhub.com` / `pass-121212`
 - Buyer: `buyer@taskhub.com` / `pass-121212`
-- Admin: `admin@taskhub.com` / `pass-121212`
+- Demo Admin (read-only): `admin@taskhub.com` / `pass-121212`
 
 ### How This Project Meets The Assignment Requirements
 
