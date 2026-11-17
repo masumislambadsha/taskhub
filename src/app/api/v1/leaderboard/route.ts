@@ -7,7 +7,7 @@ export async function GET() {
   await connectDB();
 
   const workers = await User.find({ role: "worker", status: "active" })
-    .select("name email coins")
+    .select("name coins")
     .sort({ coins: -1 })
     .limit(100)
     .lean();
@@ -36,7 +36,6 @@ export async function GET() {
     return {
       _id: w._id.toString(),
       name: w.name,
-      email: w.email,
       coinsEarned: w.coins,
       approvalRate,
       rank: i + 1,

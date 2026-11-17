@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { isAdminRole } from "@/lib/roles";
+import { maskEmailFields } from "@/lib/privacy";
 import { connectDB } from "@/lib/db";
 import Payment from "@/models/Payment";
 
@@ -14,7 +16,7 @@ export async function GET(req: NextRequest) {
   const limit = 10;
 
   const query =
-    session.user.role === "admin" ? {} : { userId: session.user.id };
+    isAdminRole(session.user.role) ? {} : { userId: session.user.id };
   const [payments, total] = await Promise.all([
     Payment.find(query)
       .sort("-createdAt")
@@ -25,7 +27,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    payments,
+    payments: maskEmailFields(payments, ["userEmail"], session.user),
     total,
     page,
     pages: Math.ceil(total / limit),

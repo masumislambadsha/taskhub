@@ -11,10 +11,13 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { IUser, UserRole } from "@/types";
+import { roleLabel } from "@/lib/roles";
 import Badge from "@/components/ui/Badge";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
+import { apiErrorMessage } from "@/lib/api-error";
+import { useReadOnly } from "@/hooks/useReadOnly";
 import { SkeletonTable } from "@/components/ui/Skeleton";
 import type { Selection } from "@heroui/react";
 import {
@@ -47,6 +50,7 @@ export default function AdminUsersPage() {
   const [role, setRole] = useState("");
   const [status, setStatus] = useState("");
   const qc = useQueryClient();
+  const { readOnly, readOnlyTitle, userId } = useReadOnly();
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users", page, role, status],
@@ -71,7 +75,7 @@ export default function AdminUsersPage() {
       toast.success("User updated");
       qc.invalidateQueries({ queryKey: ["admin-users"] });
     },
-    onError: () => toast.error("Update failed"),
+    onError: (err) => toast.error(apiErrorMessage(err, "Update failed")),
   });
 
   const deleteMutation = useMutation({
@@ -80,7 +84,7 @@ export default function AdminUsersPage() {
       toast.success("User deleted");
       qc.invalidateQueries({ queryKey: ["admin-users"] });
     },
-    onError: () => toast.error("Delete failed"),
+    onError: (err) => toast.error(apiErrorMessage(err, "Delete failed")),
   });
 
   async function handleRoleChange(
@@ -157,7 +161,7 @@ export default function AdminUsersPage() {
           variant="outline"
           className="bg-white border-primary/10 text-primary/60 h-10 px-4 pr-8 justify-between font-medium shadow-sm"
         >
-            {role ? role.charAt(0).toUpperCase() + role.slice(1) : "All Roles"}
+            {role ? roleLabel(role) : "All Roles"}
           </Button>
           <DropdownPopover className="min-w-[150px] bg-transparent backdrop-blur-sm">
             <DropdownMenu
@@ -174,6 +178,7 @@ export default function AdminUsersPage() {
                   { value: "worker", label: "Worker" },
                   { value: "buyer", label: "Buyer" },
                   { value: "admin", label: "Admin" },
+                  { value: "demo_admin", label: "Demo Admin" },
                 ].map((o) => (
                   <DropdownItem key={o.value} id={o.value} textValue={o.label}>
                     <DropdownItemIndicator />
@@ -273,7 +278,17 @@ export default function AdminUsersPage() {
                 
                 <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
                   
-                  <RoleDropdown user={u} onRoleChange={handleRoleChange} />
+                  <RoleDropdown
+                    user={u}
+                    onRoleChange={handleRoleChange}
+                    disabledReason={
+                      readOnly
+                        ? readOnlyTitle
+                        : u._id === userId
+                          ? "You cannot change your own role"
+                          : undefined
+                    }
+                  />
 
                   
                   <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1.5 rounded-lg">
@@ -290,7 +305,15 @@ export default function AdminUsersPage() {
                   <div className="flex items-center gap-2 w-full sm:w-44 shrink-0">
                     <button
                       onClick={() => handleToggleStatus(u)}
-                      className={`flex-1 text-xs py-1.5 rounded-lg font-medium transition-colors ${
+                      disabled={readOnly || u._id === userId}
+                      title={
+                        readOnly
+                          ? readOnlyTitle
+                          : u._id === userId
+                            ? "You cannot change your own status"
+                            : undefined
+                      }
+                      className={`disabled:opacity-50 disabled:cursor-not-allowed flex-1 text-xs py-1.5 rounded-lg font-medium transition-colors ${
                         u.status === "active"
                           ? "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200"
                           : "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
@@ -300,7 +323,15 @@ export default function AdminUsersPage() {
                     </button>
                     <button
                       onClick={() => handleDelete(u)}
-                      className="flex-1 text-xs py-1.5 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors"
+                      disabled={readOnly || u._id === userId}
+                      title={
+                        readOnly
+                          ? readOnlyTitle
+                          : u._id === userId
+                            ? "You cannot delete your own account"
+                            : undefined
+                      }
+                      className="disabled:opacity-50 disabled:cursor-not-allowed flex-1 text-xs py-1.5 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors"
                     >
                       Delete
                     </button>
@@ -351,41 +382,45 @@ export default function AdminUsersPage() {
 function RoleDropdown({
   user,
   onRoleChange,
+  disabledReason,
 }: {
   user: IUser;
   onRoleChange: (u: IUser, role: string, el: HTMLSelectElement) => void;
+  disabledReason?: string;
 }) {
-  const [currentRole, setCurrentRole] = useState<UserRole>(user.role);
-  const ROLES: UserRole[] = ["worker", "buyer", "admin"];
+  const ROLES: UserRole[] = ["worker", "buyer", "admin", "demo_admin"];
   return (
-    <Dropdown>
-      <Button
-        variant="outline"
-        className="text-xs border border-primary/15 rounded-lg px-2.5 py-1.5 bg-background text-primary capitalize"
-      >
-        {currentRole}
-      </Button>
-      <DropdownPopover className="min-w-[120px] bg-transparent backdrop-blur-sm">
-        <DropdownMenu
-          selectedKeys={new Set([currentRole])}
-          selectionMode="single"
-          onSelectionChange={(keys: Selection) => {
-            const newRole = Array.from(keys)[0] as UserRole;
-            const fakeEl = { value: currentRole } as HTMLSelectElement;
-            onRoleChange(user, newRole, fakeEl);
-            setCurrentRole(newRole);
-          }}
+    <span title={disabledReason}>
+      <Dropdown>
+        <Button
+          variant="outline"
+          isDisabled={!!disabledReason}
+          className="text-xs border border-primary/15 rounded-lg px-2.5 py-1.5 bg-background text-primary"
         >
-          <DropdownSection>
-            {ROLES.map((r) => (
-              <DropdownItem key={r} id={r} textValue={r}>
-                <DropdownItemIndicator />
-                <Label className="capitalize">{r}</Label>
-              </DropdownItem>
-            ))}
-          </DropdownSection>
-        </DropdownMenu>
-      </DropdownPopover>
-    </Dropdown>
+          {roleLabel(user.role)}
+        </Button>
+        <DropdownPopover className="min-w-[120px] bg-transparent backdrop-blur-sm">
+          <DropdownMenu
+            selectedKeys={new Set([user.role])}
+            selectionMode="single"
+            onSelectionChange={(keys: Selection) => {
+              const newRole = Array.from(keys)[0] as UserRole;
+              if (!newRole || newRole === user.role) return;
+              const fakeEl = { value: user.role } as HTMLSelectElement;
+              onRoleChange(user, newRole, fakeEl);
+            }}
+          >
+            <DropdownSection>
+              {ROLES.map((r) => (
+                <DropdownItem key={r} id={r} textValue={roleLabel(r)}>
+                  <DropdownItemIndicator />
+                  <Label>{roleLabel(r)}</Label>
+                </DropdownItem>
+              ))}
+            </DropdownSection>
+          </DropdownMenu>
+        </DropdownPopover>
+      </Dropdown>
+    </span>
   );
 }

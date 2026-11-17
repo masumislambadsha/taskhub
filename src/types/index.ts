@@ -1,4 +1,4 @@
-export type UserRole = "worker" | "buyer" | "admin";
+export type UserRole = "worker" | "buyer" | "admin" | "demo_admin";
 export type UserStatus = "active" | "suspended";
 export type TaskStatus = "open" | "closed" | "blocked" | "archived";
 export type SubmissionStatus = "pending" | "approved" | "rejected";

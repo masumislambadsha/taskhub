@@ -1,4 +1,5 @@
-import { auth } from "@/lib/auth";
+import { getAdminViewer } from "@/lib/admin-page";
+import { maskEmail, shouldMaskEmails } from "@/lib/privacy";
 import iconMap from '@/lib/iconMap';
 import { MdCategory } from 'react-icons/md';
 import { connectDB } from "@/lib/db";
@@ -27,7 +28,7 @@ export default async function AdminActivityPage({
 }: {
   searchParams: { filter?: string };
 }) {
-  await auth();
+  const viewer = await getAdminViewer();
   await connectDB();
   const filter = searchParams.filter || "all";
 
@@ -46,7 +47,7 @@ export default async function AdminActivityPage({
       iconBg: "bg-secondary/10",
       iconColor: "text-secondary",
       title: `New ${u.role} registered`,
-      detail: `${u.name} · ${u.email}`,
+      detail: `${u.name} · ${shouldMaskEmails(viewer) && viewer.id !== String(u._id) ? maskEmail(u.email) : u.email}`,
       time: new Date(u.createdAt as unknown as string),
       tag: u.role,
       type: "users",

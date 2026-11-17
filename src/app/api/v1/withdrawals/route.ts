@@ -5,6 +5,8 @@ import Withdrawal from "@/models/Withdrawal";
 import User from "@/models/User";
 import { withdrawalSchema } from "@/lib/validators/withdrawal";
 import { coinsToUsdWithdraw } from "@/lib/coins";
+import { maskAccountFields, maskEmailFields } from "@/lib/privacy";
+import { isAdminRole } from "@/lib/roles";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
 export async function GET(req: NextRequest) {
@@ -12,13 +14,18 @@ export async function GET(req: NextRequest) {
   if (!session)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  // A worker sees their own withdrawals and an admin role sees all of them.
+  // Anyone else (a buyer, say) must not see payout details.
+  const isWorker = session.user.role === "worker";
+  if (!isWorker && !isAdminRole(session.user.role))
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
   await connectDB();
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") ?? "1");
   const limit = 10;
 
-  const query =
-    session.user.role === "worker" ? { workerId: session.user.id } : {};
+  const query = isWorker ? { workerId: session.user.id } : {};
   const [withdrawals, total] = await Promise.all([
     Withdrawal.find(query)
       .sort("-createdAt")
@@ -29,7 +36,11 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    withdrawals,
+    withdrawals: maskAccountFields(
+      maskEmailFields(withdrawals, ["workerEmail"], session.user),
+      ["accountNumber"],
+      session.user,
+    ),
     total,
     page,
     pages: Math.ceil(total / limit),

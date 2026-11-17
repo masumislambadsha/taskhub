@@ -8,6 +8,8 @@ import NotificationBell from "@/components/notifications/NotificationBell";
 import Logo from "@/components/ui/Logo";
 import HamburgerIcon from "@/components/ui/HamburgerIcon";
 import DarkModeToggle from "@/components/ui/DarkModeToggle";
+import { isAdminRole, roleLabel } from "@/lib/roles";
+import Badge from "@/components/ui/Badge";
 
 const navLinks = [
   { href: "/how-it-works", label: "How it Works" },
@@ -25,7 +27,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const dashboardHref =
-    session?.user?.role === "admin"
+    isAdminRole(session?.user?.role)
       ? "/admin/dashboard"
       : session?.user?.role === "buyer"
         ? "/buyer/dashboard"
@@ -108,9 +110,13 @@ export default function Navbar() {
                 {menuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-primary/5 py-2 z-50">
                     <div className="px-4 py-2 border-b border-primary/5">
-                      <p className="text-xs text-primary/50 font-medium uppercase tracking-wider">
-                        {session.user.role}
-                      </p>
+                      {session.user.role === "demo_admin" ? (
+                        <Badge status="demo_admin" />
+                      ) : (
+                        <p className="text-xs text-primary/50 font-medium uppercase tracking-wider">
+                          {roleLabel(session.user.role)}
+                        </p>
+                      )}
                       <p className="text-sm font-semibold text-primary truncate">
                         {session.user.email}
                       </p>

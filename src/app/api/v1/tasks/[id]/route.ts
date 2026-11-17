@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Task from "@/models/Task";
 import { deleteFundedTask, updateFundedTask } from "@/lib/ledger/flows/tasks";
+import { redactEmailFields } from "@/lib/privacy";
 import { taskSchema } from "@/lib/validators/task";
 
 export async function GET(
@@ -12,9 +13,13 @@ export async function GET(
 ) {
   await connectDB();
   const { id } = await params;
+  if (!mongoose.isValidObjectId(id))
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   const task = await Task.findById(id).lean();
   if (!task) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json(task);
+  const session = await auth();
+  const [safe] = redactEmailFields([task], ["buyerEmail"], session?.user, "buyerId");
+  return NextResponse.json(safe);
 }
 
 export async function PUT(
