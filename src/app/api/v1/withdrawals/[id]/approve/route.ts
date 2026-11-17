@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/roles";
 import { connectDB } from "@/lib/db";
 import {
   approveWithdrawal,
@@ -13,9 +14,8 @@ export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", asyn
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  if (!session || session.user.role !== "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const guard = requireAdmin(session, "write");
+  if (!guard.ok) return guard.response;
 
   await connectDB();
   const { id } = await params;
@@ -25,7 +25,7 @@ export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", asyn
   if (action === "approve") {
     const result = await approveWithdrawal({
       withdrawalId: id,
-      adminId: session.user.id,
+      adminId: guard.userId,
     });
     if (!result.ok) {
       if (result.reason === "insufficient_coins")

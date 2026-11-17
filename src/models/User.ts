@@ -6,7 +6,7 @@ export interface IUserDoc extends Document {
   passwordHash?: string;
   photoUrl?: string;
   about?: string;
-  role: "worker" | "buyer" | "admin";
+  role: "worker" | "buyer" | "admin" | "demo_admin";
   /**
    * Cached balance of the ledger account `user:<id>`. Only
    * `postTransaction` (src/lib/ledger) may change it.
@@ -32,7 +32,7 @@ const UserSchema = new Schema<IUserDoc>(
     about: { type: String },
     role: {
       type: String,
-      enum: ["worker", "buyer", "admin"],
+      enum: ["worker", "buyer", "admin", "demo_admin"],
       default: "worker",
     },
     coins: { type: Number, default: 0 },

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/roles";
 import { connectDB } from "@/lib/db";
 import Category from "@/models/Category";
 import Task from "@/models/Task";
@@ -28,9 +29,8 @@ async function seedDefaultCategories() {
 
 export async function GET() {
   const session = await auth();
-  if (!session || session.user.role !== "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const guard = requireAdmin(session, "read");
+  if (!guard.ok) return guard.response;
   await connectDB();
   await seedDefaultCategories();
   const [categories, taskStats] = await Promise.all([
@@ -50,9 +50,8 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session || session.user.role !== "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const guard = requireAdmin(session, "write");
+  if (!guard.ok) return guard.response;
   await connectDB();
   const { name, icon } = await req.json();
   if (!name?.trim()) {

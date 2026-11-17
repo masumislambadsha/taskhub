@@ -1,7 +1,8 @@
 /**
  * Development seed script: `npm run seed`.
  *
- * Creates 1 admin, 3 buyers, 10 workers, the default categories, 20 tasks and
+ * Creates a read-only demo admin (admin@taskhub.com, the account behind the login
+ * page's "Demo Admin" button), a real admin (owner@taskhub.com), 3 buyers, 10 workers, the default categories, 20 tasks and
  * some submissions. Everything is upserted by a fixed key, so re-running does
  * not duplicate anything. Coin balances are only set when a user is first
  * created (the ledger owns them afterwards, so re-running never overwrites them;
@@ -11,6 +12,7 @@
  * Safety: refuses to run when NODE_ENV=production, and refuses a MongoDB host
  * other than localhost, 127.0.0.1 or mongo unless SEED_ALLOW_REMOTE=1.
  */
+import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import mongoose, { Types } from "mongoose";
 import Category from "@/models/Category";
@@ -33,6 +35,10 @@ for (const file of [".env.local", ".env"]) {
 
 const SEED_EMAIL_DOMAIN = "seed.taskhub.local";
 const DEFAULT_PASSWORD = "TaskHub-dev-1234";
+// The demo admin is read-only and its credentials are public on the login page.
+const DEMO_ADMIN_EMAIL = "admin@taskhub.com";
+const DEMO_ADMIN_PASSWORD = "121212";
+const OWNER_ADMIN_EMAIL = "owner@taskhub.com";
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "mongo"]);
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -201,10 +207,41 @@ async function main() {
 
   // Users
   await User.updateOne(
-    { email: email("admin") },
+    { email: DEMO_ADMIN_EMAIL },
     {
-      $set: { name: "Seed Admin", role: "admin", passwordHash, status: "active", ...SEED },
+      $set: {
+        name: "Demo Admin",
+        role: "demo_admin",
+        passwordHash: await bcrypt.hash(DEMO_ADMIN_PASSWORD, 12),
+        status: "active",
+        ...SEED,
+      },
       $setOnInsert: { coins: 0 },
+    },
+    UPSERT,
+  );
+
+  // The real admin. Its password is SEED_ADMIN_PASSWORD, or a random one that is
+  // printed once when the account is created (never overwritten on a re-run).
+  const ownerPassword = process.env.SEED_ADMIN_PASSWORD;
+  const generatedOwnerPassword = ownerPassword
+    ? undefined
+    : randomBytes(12).toString("base64url");
+  const ownerHash = await bcrypt.hash(ownerPassword ?? generatedOwnerPassword!, 12);
+  const ownerResult = await User.updateOne(
+    { email: OWNER_ADMIN_EMAIL },
+    {
+      $set: {
+        name: "Owner",
+        role: "admin",
+        status: "active",
+        ...(ownerPassword ? { passwordHash: ownerHash } : {}),
+        ...SEED,
+      },
+      $setOnInsert: {
+        coins: 0,
+        ...(ownerPassword ? {} : { passwordHash: ownerHash }),
+      },
     },
     UPSERT,
   );
@@ -295,14 +332,29 @@ async function main() {
   }
 
   console.log(
-    `Done: 1 admin, ${buyers.length} buyers, ${workers.length} workers, ` +
+    `Done: 1 demo admin, 1 admin, ${buyers.length} buyers, ${workers.length} workers, ` +
       `${TASK_CATEGORIES.length} categories, ${tasks.length} tasks, ${submissions.length} submissions.`,
   );
-  console.log("Accounts: admin@, buyer1@..buyer3@, worker1@..worker10@ (all @" + SEED_EMAIL_DOMAIN + ").");
+  console.log(
+    `Accounts: ${DEMO_ADMIN_EMAIL} (demo admin, read-only, password ${DEMO_ADMIN_PASSWORD}), ` +
+      `${OWNER_ADMIN_EMAIL} (admin), buyer1@..buyer3@, worker1@..worker10@ (all @${SEED_EMAIL_DOMAIN}).`,
+  );
+  if (ownerPassword) {
+    console.log(`Admin password for ${OWNER_ADMIN_EMAIL}: the value of SEED_ADMIN_PASSWORD.`);
+  } else if (ownerResult.upsertedCount > 0) {
+    console.log(
+      `Admin password for ${OWNER_ADMIN_EMAIL} (shown once, save it now): ${generatedOwnerPassword}`,
+    );
+  } else {
+    console.log(
+      `${OWNER_ADMIN_EMAIL} already exists, so its password was left unchanged. ` +
+        "Set SEED_ADMIN_PASSWORD to reset it.",
+    );
+  }
   console.log(
     process.env.SEED_PASSWORD
-      ? "Password: the value of SEED_PASSWORD."
-      : `Password: ${DEFAULT_PASSWORD}`,
+      ? "Buyer and worker password: the value of SEED_PASSWORD."
+      : `Buyer and worker password: ${DEFAULT_PASSWORD}`,
   );
 }
 

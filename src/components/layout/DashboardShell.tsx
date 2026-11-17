@@ -12,10 +12,12 @@ import DarkThemeToggle from "@/components/DarkThemeToggle";
 import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
+import { roleLabel } from "@/lib/roles";
+import Badge from "@/components/ui/Badge";
 
 interface DashboardShellProps {
   children: React.ReactNode;
-  role: "worker" | "buyer" | "admin";
+  role: "worker" | "buyer" | "admin" | "demo_admin";
 }
 
 export default function DashboardShell({
@@ -106,9 +108,13 @@ export default function DashboardShell({
                       role="menu"
                     >
                       <div className="px-4 py-2 border-b border-primary/5">
-                        <p className="text-xs text-primary/50 font-medium uppercase tracking-wider">
-                          {session?.user?.role}
-                        </p>
+                        {session?.user?.role === "demo_admin" ? (
+                          <Badge status="demo_admin" />
+                        ) : (
+                          <p className="text-xs text-primary/50 font-medium uppercase tracking-wider">
+                            {roleLabel(session?.user?.role)}
+                          </p>
+                        )}
                         <p className="text-sm font-semibold text-primary truncate">
                           {session?.user?.email}
                         </p>

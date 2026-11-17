@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import { refuseDemoAdmin } from "@/lib/roles";
 import User from "@/models/User";
 import Task from "@/models/Task";
 import Submission from "@/models/Submission";
@@ -28,6 +29,9 @@ export async function PATCH(req: NextRequest) {
   const session = await auth();
   if (!session)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const refused = refuseDemoAdmin(session);
+  if (refused) return refused;
 
   const { name, image, about } = await req.json();
   if (!name?.trim())

@@ -30,6 +30,7 @@ import { setSidebarOpen } from "@/store/uiSlice";
 import Logo from "@/components/ui/Logo";
 import { signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
+import { isAdminRole } from "@/lib/roles";
 import { IconType } from "react-icons";
 
 interface NavItem {
@@ -81,7 +82,7 @@ const adminNav: NavItem[] = [
 ];
 
 interface SidebarProps {
-  role: "worker" | "buyer" | "admin";
+  role: "worker" | "buyer" | "admin" | "demo_admin";
 }
 
 export default function Sidebar({ role }: SidebarProps) {
@@ -90,7 +91,7 @@ export default function Sidebar({ role }: SidebarProps) {
   const sidebarOpen = useSelector((s: RootState) => s.ui.sidebarOpen);
 
   const navItems =
-    role === "admin" ? adminNav : role === "buyer" ? buyerNav : workerNav;
+    isAdminRole(role) ? adminNav : role === "buyer" ? buyerNav : workerNav;
 
   const close = () => dispatch(setSidebarOpen(false));
 
