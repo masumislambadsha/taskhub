@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { decode } from "next-auth/jwt";
 import { headers } from "next/headers";
 import { connectDB } from "./db";
+import { refreshToken, resolveBearerUser } from "./auth-session";
 import User from "@/models/User";
 import { WORKER_INITIAL_COINS } from "@/lib/constants";
 import {
@@ -84,21 +85,10 @@ const { handlers, auth: nextAuthAuth, signIn, signOut } = NextAuth({
         token.role = (user as { role?: string }).role;
         token.coins = (user as { coins?: number }).coins;
       }
-      if (trigger === "update" && session) {
-        token.coins = session.coins;
-        token.role = session.role;
-      }
-      if (token.id) {
-        await connectDB();
-        const dbUser = await User.findById(token.id).lean();
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.coins = dbUser.coins;
-          token.name = dbUser.name;
-          token.picture = dbUser.photoUrl;
-        }
-      }
-      return token;
+      // Never take anything from the client's update() payload: the database
+      // is the only source of role, coins and profile. A null return ends the
+      // session (deleted or suspended user).
+      return refreshToken(token, { trigger, session });
     },
     async session({ session, token }) {
       if (token && session.user) {
@@ -130,22 +120,8 @@ export const auth = async () => {
       const url = process.env.NEXTAUTH_URL || "http://localhost:3000";
       const salt = url.startsWith("https://") ? "__Secure-authjs.session-token" : "authjs.session-token";
       const decoded = await decode({ token, salt, secret: process.env.NEXTAUTH_SECRET! });
-      if (decoded?.id) {
-        await connectDB();
-        const user = await User.findById(decoded.id).lean();
-        if (user) {
-          return {
-            user: {
-              id: user._id.toString(),
-              name: user.name,
-              email: user.email,
-              role: user.role,
-              coins: user.coins,
-              image: user.photoUrl,
-            },
-          };
-        }
-      }
+      const user = await resolveBearerUser(decoded);
+      if (user) return { user };
     }
   } catch {}
 
