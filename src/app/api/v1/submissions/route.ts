@@ -5,7 +5,7 @@ import Submission from "@/models/Submission";
 import { submitWork } from "@/lib/ledger/flows/submissions";
 import { submissionSchema } from "@/lib/validators/submission";
 import { createNotification } from "@/lib/notifications";
-import { maskEmailFields } from "@/lib/privacy";
+import { redactEmailFields } from "@/lib/privacy";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
 export async function GET(req: NextRequest) {
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
   ]);
 
   return NextResponse.json({
-    submissions: maskEmailFields(submissions, ["workerEmail"], session.user),
+    submissions: redactEmailFields(submissions, ["workerEmail"], session.user, "workerId"),
     total,
     page,
     pages: Math.ceil(total / limit),
