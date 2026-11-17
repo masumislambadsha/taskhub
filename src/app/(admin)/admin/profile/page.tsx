@@ -12,6 +12,7 @@ import {
 
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { isDemoAdmin } from "@/lib/roles";
 
 export default function AdminProfilePage() {
   const { data: session } = useSession();
@@ -120,7 +121,7 @@ export default function AdminProfilePage() {
                 {session?.user?.name ?? "Admin"}
               </h1>
               <span className="bg-secondary/10 text-secondary px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                Administrator
+                {isDemoAdmin(session?.user?.role) ? "Demo Admin" : "Administrator"}
               </span>
             </div>
             <p className="text-sm text-primary/50 mt-0.5">
@@ -133,7 +134,13 @@ export default function AdminProfilePage() {
           {!editing && (
             <button
               onClick={() => setEditing(true)}
-              className="flex items-center gap-2 text-sm font-semibold text-secondary hover:underline shrink-0"
+              disabled={isDemoAdmin(session?.user?.role)}
+              title={
+                isDemoAdmin(session?.user?.role)
+                  ? "Read-only demo: changes are disabled"
+                  : undefined
+              }
+              className="disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-semibold text-secondary hover:underline shrink-0"
             >
               <MdEdit className="text-sm" />
               Edit Profile

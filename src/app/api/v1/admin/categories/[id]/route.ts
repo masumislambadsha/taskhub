@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { requireAdmin } from "@/lib/roles";
 import { connectDB } from "@/lib/db";
 import Category from "@/models/Category";
 
@@ -8,9 +9,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  if (!session || session.user.role !== "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const guard = requireAdmin(session, "write");
+  if (!guard.ok) return guard.response;
   await connectDB();
   const { id } = await params;
   const deleted = await Category.findByIdAndDelete(id);
@@ -25,9 +25,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  if (!session || session.user.role !== "admin") {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const guard = requireAdmin(session, "write");
+  if (!guard.ok) return guard.response;
   await connectDB();
   const { id } = await params;
   const { name, icon } = await req.json();

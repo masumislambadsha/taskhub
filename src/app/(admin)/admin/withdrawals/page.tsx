@@ -3,6 +3,7 @@ import { MdChevronLeft, MdChevronRight, MdToll } from "react-icons/md";
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useReadOnly } from "@/hooks/useReadOnly";
 import axios from "axios";
 import { IWithdrawal } from "@/types";
 import Badge from "@/components/ui/Badge";
@@ -15,6 +16,7 @@ import Swal from "sweetalert2";
 export default function AdminWithdrawalsPage() {
   const [page, setPage] = useState(1);
   const qc = useQueryClient();
+  const { readOnly, readOnlyTitle } = useReadOnly();
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-withdrawals", page],
@@ -173,14 +175,16 @@ export default function AdminWithdrawalsPage() {
                                   action: "approve",
                                 })
                               }
-                              disabled={actionMutation.isPending}
+                              disabled={actionMutation.isPending || readOnly}
+ title={readOnly ? readOnlyTitle : undefined}
                               className="text-xs px-3 py-1.5 rounded-lg font-medium bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 transition-colors disabled:opacity-60"
                             >
                               Approve
                             </button>
                             <button
                               onClick={() => handleReject(w)}
-                              disabled={actionMutation.isPending}
+                              disabled={actionMutation.isPending || readOnly}
+ title={readOnly ? readOnlyTitle : undefined}
                               className="text-xs px-3 py-1.5 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-60"
                             >
                               Reject
@@ -243,14 +247,16 @@ export default function AdminWithdrawalsPage() {
                             action: "approve",
                           })
                         }
-                        disabled={actionMutation.isPending}
+                        disabled={actionMutation.isPending || readOnly}
+ title={readOnly ? readOnlyTitle : undefined}
                         className="flex-1 text-xs py-1.5 rounded-lg font-medium bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 transition-colors disabled:opacity-60"
                       >
                         Approve
                       </button>
                       <button
                         onClick={() => handleReject(w)}
-                        disabled={actionMutation.isPending}
+                        disabled={actionMutation.isPending || readOnly}
+ title={readOnly ? readOnlyTitle : undefined}
                         className="flex-1 text-xs py-1.5 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-60"
                       >
                         Reject

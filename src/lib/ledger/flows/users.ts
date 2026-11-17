@@ -26,7 +26,7 @@ export async function createUserWithBonus(args: {
     email: string;
     passwordHash?: string;
     photoUrl?: string;
-    role: "worker" | "buyer" | "admin";
+    role: "worker" | "buyer" | "admin" | "demo_admin";
   };
   bonus: number;
 }): Promise<{ userId: string; coins: number }> {
