@@ -6,6 +6,7 @@ import { createFundedTask } from "@/lib/ledger/flows/tasks";
 import { taskSchema } from "@/lib/validators/task";
 import { redactEmailFields } from "@/lib/privacy";
 import { withRequestLogging } from "@/lib/with-request-logging";
+import { withIdempotency } from "@/lib/idempotency";
 
 export async function GET(req: NextRequest) {
   await connectDB();
@@ -53,26 +54,28 @@ export const POST = withRequestLogging("/api/v1/tasks", async function POST(req:
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json();
-  const parsed = taskSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      { error: parsed.error.flatten() },
-      { status: 400 },
-    );
-  }
+  return withIdempotency(req, session.user.id, async () => {
+    const body = await req.json();
+    const parsed = taskSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.flatten() },
+        { status: 400 },
+      );
+    }
 
-  await connectDB();
-  const created = await createFundedTask({
-    buyerId: session.user.id,
-    buyerName: session.user.name || "Unknown",
-    buyerEmail: session.user.email || "",
-    data: parsed.data,
+    await connectDB();
+    const created = await createFundedTask({
+      buyerId: session.user.id,
+      buyerName: session.user.name || "Unknown",
+      buyerEmail: session.user.email || "",
+      data: parsed.data,
+    });
+    if (!created.ok) {
+      return NextResponse.json({ error: "Insufficient coins" }, { status: 400 });
+    }
+    const task = created.task;
+
+    return NextResponse.json(task, { status: 201 });
   });
-  if (!created.ok) {
-    return NextResponse.json({ error: "Insufficient coins" }, { status: 400 });
-  }
-  const task = created.task;
-
-  return NextResponse.json(task, { status: 201 });
 });

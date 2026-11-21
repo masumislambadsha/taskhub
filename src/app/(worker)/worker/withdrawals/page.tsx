@@ -10,6 +10,7 @@ import {
   WithdrawalFormData,
 } from "@/lib/validators/withdrawal";
 import axios from "axios";
+import { useIdempotencyKeys } from "@/lib/use-idempotency-keys";
 import toast from "react-hot-toast";
 import { IWithdrawal } from "@/types";
 import Badge from "@/components/ui/Badge";
@@ -33,6 +34,7 @@ import BkashIcon from "@/components/icons/BkashIcon";
 import { SiStripe } from "react-icons/si";
 
 export default function WorkerWithdrawalsPage() {
+  const idem = useIdempotencyKeys();
   const { data: session, update } = useSession();
   const qc = useQueryClient();
 
@@ -84,8 +86,10 @@ export default function WorkerWithdrawalsPage() {
   }
 
   const mutation = useMutation({
-    mutationFn: (d: WithdrawalFormData) => axios.post("/api/v1/withdrawals", d),
+    mutationFn: (d: WithdrawalFormData) =>
+      axios.post("/api/v1/withdrawals", d, idem.config()),
     onSuccess: () => {
+      idem.done();
       toast.success("Withdrawal request submitted!");
       reset();
       qc.invalidateQueries({ queryKey: ["withdrawals"] });

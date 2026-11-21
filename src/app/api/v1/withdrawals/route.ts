@@ -8,6 +8,7 @@ import { coinsToUsdWithdraw } from "@/lib/coins";
 import { maskAccountFields, maskEmailFields } from "@/lib/privacy";
 import { isAdminRole } from "@/lib/roles";
 import { withRequestLogging } from "@/lib/with-request-logging";
+import { withIdempotency } from "@/lib/idempotency";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -53,29 +54,31 @@ export const POST = withRequestLogging("/api/v1/withdrawals", async function POS
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json();
-  const parsed = withdrawalSchema.safeParse(body);
-  if (!parsed.success)
-    return NextResponse.json(
-      { error: parsed.error.flatten() },
-      { status: 400 },
-    );
+  return withIdempotency(req, session.user.id, async () => {
+    const body = await req.json();
+    const parsed = withdrawalSchema.safeParse(body);
+    if (!parsed.success)
+      return NextResponse.json(
+        { error: parsed.error.flatten() },
+        { status: 400 },
+      );
 
-  await connectDB();
-  const worker = await User.findById(session.user.id);
-  if (!worker || worker.coins < parsed.data.coinRequested) {
-    return NextResponse.json({ error: "Insufficient coins" }, { status: 400 });
-  }
+    await connectDB();
+    const worker = await User.findById(session.user.id);
+    if (!worker || worker.coins < parsed.data.coinRequested) {
+      return NextResponse.json({ error: "Insufficient coins" }, { status: 400 });
+    }
 
-  const withdrawal = await Withdrawal.create({
-    workerId: session.user.id,
-    workerName: session.user.name ?? "",
-    workerEmail: session.user.email ?? "",
-    coinRequested: parsed.data.coinRequested,
-    amount: coinsToUsdWithdraw(parsed.data.coinRequested),
-    paymentSystem: parsed.data.paymentSystem,
-    accountNumber: parsed.data.accountNumber,
+    const withdrawal = await Withdrawal.create({
+      workerId: session.user.id,
+      workerName: session.user.name ?? "",
+      workerEmail: session.user.email ?? "",
+      coinRequested: parsed.data.coinRequested,
+      amount: coinsToUsdWithdraw(parsed.data.coinRequested),
+      paymentSystem: parsed.data.paymentSystem,
+      accountNumber: parsed.data.accountNumber,
+    });
+
+    return NextResponse.json(withdrawal, { status: 201 });
   });
-
-  return NextResponse.json(withdrawal, { status: 201 });
 });

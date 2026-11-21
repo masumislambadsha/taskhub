@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import axios from "axios";
+import { useIdempotencyKeys } from "@/lib/use-idempotency-keys";
 import toast from "react-hot-toast";
 import { COIN_PACKAGES, PAYMENT_GATEWAYS } from "@/lib/constants";
 import { CoinPackage } from "@/types";
@@ -20,6 +21,7 @@ const GATEWAY_COLORS: Record<string, string> = {
 };
 
 export default function BuyCoinsPage() {
+  const idem = useIdempotencyKeys();
   const { data: session, update } = useSession();
   const params = useSearchParams();
   const router = useRouter();
@@ -82,9 +84,14 @@ export default function BuyCoinsPage() {
       gateway: string;
     }) =>
       axios
-        .post("/api/v1/payments/create-session", { packageId, gateway })
+        .post(
+          "/api/v1/payments/create-session",
+          { packageId, gateway },
+          idem.config(`${packageId}:${gateway}`),
+        )
         .then((r) => r.data),
-    onSuccess: (data) => {
+    onSuccess: (data, vars) => {
+      idem.done(`${vars.packageId}:${vars.gateway}`);
       if (data.url) window.location.href = data.url;
     },
     onError: () => toast.error("Failed to initiate payment"),
