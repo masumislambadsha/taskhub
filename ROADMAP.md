@@ -29,6 +29,11 @@ Version 1, 9 November 2026. Goal: turn TaskHub into a flagship project that prov
 
 **Shipped so far:** Phase 0 ([#1](https://github.com/masumislambadsha/taskhub/pull/1), [#3](https://github.com/masumislambadsha/taskhub/pull/3), [#4](https://github.com/masumislambadsha/taskhub/pull/4)); signed socket tokens and conversation checks ([#2](https://github.com/masumislambadsha/taskhub/pull/2)); payment verification ([#5](https://github.com/masumislambadsha/taskhub/pull/5)); the coin ledger, item 1.1 ([#8](https://github.com/masumislambadsha/taskhub/pull/8)); bKash grant token reuse ([#9](https://github.com/masumislambadsha/taskhub/pull/9)); the atomic submission slot ([#10](https://github.com/masumislambadsha/taskhub/pull/10)); lint errors fixed and blocking in CI ([#11](https://github.com/masumislambadsha/taskhub/pull/11)).
 
+## Known gaps to close early
+
+- The imgbb upload proxy (`/api/v1/uploads/imgbb`) accepts unauthenticated requests. A test on the branch `ccr-77a292bf-xzuy48` proves it. Fix it with authentication, a size and type limit, and a rate limit before more features.
+- The Expo app does not yet fetch the signed socket token, so its chat is rejected. Fix it, or stop mentioning the app.
+
 ## Decide these before Phase 0
 
 1. **Where does Socket.io run today?** Answered: Socket.io runs as the separate `server/` service on Render's free plan. Phase 0 containerizes it as-is.
@@ -572,6 +577,21 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 
 **Done when:** every withdrawal has a risk score with reasons, and nothing is paid without an admin's 2FA.
 
+## 1.8 Transactional outbox
+
+**Goal:** a crash between "the money moved" and "the email, notification or webhook was sent" can never lose or duplicate a side effect.
+
+**Design**
+1. **Collection `outbox`:** `type` (`email`, `notification`, `webhook`), `payload`, `status` (`pending`, `sent`, `failed`), `attempts`, `nextAttemptAt`, `idempotencyKey`, `createdAt`.
+2. **Write inside the same MongoDB transaction** as the change that causes it (for example, approving a submission posts the ledger transaction and inserts the outbox rows together). Either both happen or neither does.
+3. **A worker job (1.3's BullMQ worker)** claims pending rows with an atomic `findOneAndUpdate`, sends them, then marks them `sent`. Failures retry with exponential backoff and end as `failed` after a limit, visible on an admin page.
+4. **Receivers must tolerate a repeat.** The outbox guarantees at-least-once delivery, so every send carries the row's `idempotencyKey` (Resend and your own webhooks included).
+5. Move today's direct email and notification calls behind the outbox, one flow at a time.
+
+**Tests:** kill the worker after the claim and before the mark, and the row is picked up again; a failed transaction leaves no outbox row; a repeated delivery changes nothing.
+
+**Done when:** no payment, approval or withdrawal flow sends email or notifications directly, and the crash test passes.
+
 **Phase 1 interview story:** "Coins live in a double-entry ledger on MongoDB transactions. Tasks are funded through escrow, payment webhooks and user actions are idempotent, and a BullMQ job auto-approves after 72 hours. A concurrency test with many parallel withdrawals shows zero double-spends."
 
 ---
@@ -693,6 +713,42 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 **README table:** scenario, instances, requests per second, p95, error rate, hardware.
 
 **Done when:** the table has real numbers and at least one before-and-after fix story.
+
+## 2.6 Failure (chaos) tests
+
+**Goal:** show that the system survives real failures, with recorded results instead of claims.
+
+**Steps**
+1. Run the k6 load from 2.5 and, while it runs, do one failure at a time: stop one web instance, stop one realtime instance, restart Redis, restart MongoDB, add 500 ms of network delay to MongoDB (`tc` or a Toxiproxy container).
+2. For each, record the error rate, how long until recovery, and whether any coin movement was lost or doubled. Run `npm run ledger:reconcile` after every run; it must pass.
+3. Fix what breaks (missing retries, no reconnect, health checks that are too slow) and run again.
+4. Put a results table in the README and a `docs/chaos.md` write-up.
+
+**Done when:** every scenario is recorded, reconciliation passes after each, and the README shows the numbers.
+
+## 2.7 Observability: metrics and traces
+
+**Goal:** see what the system is doing, not only that it is up.
+
+**Steps**
+1. **Metrics:** expose `/metrics` (Prometheus format, internal port only) from web, realtime and worker: request rate, errors, latency histograms, queue depth and age, active sockets, ledger transactions per minute, AI spend.
+2. **Dashboards:** Prometheus and Grafana containers behind a compose profile, with the dashboard JSON committed to the repo.
+3. **Traces:** OpenTelemetry across web → worker → MongoDB, with the trace ID in the structured logs and in Sentry events.
+4. **Alerts:** a few rules (error rate, queue age over 5 minutes, reconciliation mismatch) that send an email or a message.
+5. Add a screenshot of the dashboard under load to the README.
+
+**Done when:** one dashboard shows the k6 run live, and one trace shows a submission going from the API through the worker to the database.
+
+## 2.8 Query performance evidence
+
+**Goal:** prove the database work with numbers.
+
+**Steps**
+1. Seed a large data set (for example 100,000 tasks and 500,000 journal entries).
+2. For the slowest endpoints (task list and filters, leaderboard, ledger history, admin queues), record `explain("executionStats")` before and after each index change.
+3. Add the indexes, remove any that go unused, and keep a table of before and after latency and documents examined in `docs/performance.md`.
+
+**Done when:** the table has at least three real before and after results, and the README links to it.
 
 **Phase 2 interview story:** "I ran Socket.io across two instances with a Redis adapter and sticky sessions, made rate limits shared through Redis, and load-tested to X requests per second at p95 Y ms. I found a missing index that cut p95 from A to B."
 
@@ -850,6 +906,25 @@ Start with the most capable current Claude model at low effort. If cost matters,
 **Done when:** 10 sample ideas produce usable drafts, the policy refusals are tested, and usage is logged.
 
 **Phase 3 interview story:** "I added fraud detection with perceptual hashing and device linking, an explainable trust score, and an AI proof checker that only labels submissions while people decide. It agreed with human decisions on Z% of N labeled proofs."
+
+## 3.7 Worker verification and admin approval
+
+**Goal:** a new worker is checked before they can earn, an admin makes the decision, and an AI pre-review saves the admin time. Workers who exist today are approved automatically.
+
+**Design**
+1. **Status on the user:** add `workerStatus: "unverified" | "pending" | "approved" | "rejected"` (and `workerReviewedBy`, `workerReviewedAt`, `workerRejectionReason`) to `User`. It only matters when `role === "worker"`. A migration script sets every existing worker to `approved`, so nobody loses access. New worker sign-ups start as `unverified`.
+2. **What an unapproved worker sees (decide before building):** the dashboard in a read-only mode with a banner showing their status. Suggested rule: they can browse tasks and finish their profile and verification, but cannot submit work, withdraw or accept paid tasks. The server enforces it in one guard (like the existing admin route guards), never only in the UI.
+3. **Verification steps (multi-step form):** profile details, a government ID or other document, a selfie holding the ID (optional), payout account (bKash, Nagad or bank), and a short skills note. Each step saves on its own, so a worker can come back later. Submitting moves the status to `pending`.
+4. **Documents are private:** store them in private storage, not public imgbb URLs. Serve them to admins only through short-lived signed URLs, and log every view in the audit log (1.5). Delete rejected documents after a set number of days.
+5. **AI pre-review (optional, after the manual flow works):** a worker-queue job reads the documents and the form, then writes a draft summary for the admin: whether the name on the ID matches the profile, whether the document looks readable and complete, and any problems. It follows the same rules as 3.5: structured output validated with Zod, a daily budget logged in `ai_usage`, prompt-injection-safe wording, and it **never approves or rejects**. The admin sees the summary next to the documents and makes the call.
+6. **Admin queue:** a "Worker applications" page sorted by waiting time, with the AI summary, the documents, and Approve and Reject (a reason is required). Decisions need the admin 2FA step-up (1.6) and write an audit log entry (1.5) in the same transaction. The worker gets an email and a notification.
+7. **Reapply:** a rejected worker can fix the problem and submit again, with a limit on attempts.
+
+**Watch out for:** ID documents are sensitive personal data. Collect only what you need, say why in your terms, and keep access narrow. The demo admin (read-only) must not see documents.
+
+**Tests:** existing workers migrate to `approved`; an unapproved worker is refused on submit, withdraw and accept (server side); only an admin can approve; the demo admin cannot open documents; a decision writes exactly one audit entry.
+
+**Done when:** a new worker cannot earn until an admin approves them, the existing workers still can, and every decision and document view is in the audit log.
 
 ---
 
@@ -1010,13 +1085,40 @@ Record with OBS Studio. Upload to YouTube as unlisted and to Google Drive set to
 
 **Done when:** a friend can run the project locally from the README in 10 minutes without asking you anything.
 
+## 4.6 Security review and write-up
+
+**Goal:** show that you can find and fix weaknesses in your own system.
+
+**Steps**
+1. **Threat model:** a short document of assets (coins, documents, accounts), entry points and the main abuse cases for each.
+2. **Checklist:** go through the OWASP Top 10 and the OWASP API Top 10 against every route. Record each finding with its status. Findings already fixed count (payment verification, session roles, privacy leaks, socket auth, the unauthenticated upload proxy).
+3. **Automation in CI:** Dependabot, `npm audit` (fail on high), secret scanning, and a container image scan (Trivy).
+4. **Headers and limits:** a strict CSP, `Strict-Transport-Security`, CORS limited to known origins, and request size limits.
+5. **Write-up:** `docs/security.md` with "vulnerabilities I found in my own app and how I fixed them", each with the test that proves the fix.
+
+**Done when:** every route is on the checklist, CI blocks on high-severity findings, and each fixed issue has a regression test.
+
+## 4.7 OpenAPI documentation
+
+**Goal:** a documented, typed public API.
+
+**Steps**
+1. Generate an OpenAPI 3.1 spec from the Zod schemas the routes already use (for example with `zod-openapi`), so the docs cannot drift from the code.
+2. Serve it at `/api/docs` (Scalar or Swagger UI) and publish the JSON next to it.
+3. Add a CI check that fails when a route changes without the spec changing.
+4. This is the base for the public API and API keys in 5.5.
+
+**Done when:** every public route is in the spec, the docs page loads, and the CI check works.
+
 **Phase 4 interview story:** "I shipped semantic search and recommendations on Atlas Vector Search and a RAG help bot with citations, covered the main flow with Playwright, and deploy with zero downtime from GitHub Actions to a VPS."
 
 ---
 
 # Phase 5: Polish (as time allows)
 
-**Order:** 5.1 → 5.2 → 5.3 → 5.4 → 5.5 → 5.6 → 5.7 (needs 5.5's API keys) → 5.8 last.
+**Cut first:** if time runs short, drop the whole of Phase 5 except 5.8 (AI navigator), and drop 5.9 (voice and video) before anything else. Never cut tests, 1.x or the demo in 4.5.
+
+**Order:** 5.1 → 5.2 → 5.3 → 5.4 → 5.5 → 5.6 → 5.7 (needs 5.5's API keys) → 5.8 → 5.9 last.
 
 ## 5.1 Bangla and English
 
@@ -1120,7 +1222,28 @@ Record with OBS Studio. Upload to YouTube as unlisted and to Google Drive set to
 
 **Done when:** it works from Claude with a scoped key, and a key without `submissions:review` can't approve.
 
-## 5.8 Voice and video calls (WebRTC), last
+## 5.8 AI navigator
+
+**Goal:** the user types or says what they want ("show my pending withdrawals", "open the task form", "go to the leaderboard and scroll to the top ten"), and the app does the navigation for them. This is different from the help bot in 4.2, which only answers questions.
+
+**Design**
+1. **Actions are a fixed list the client owns.** Define a small registry of safe UI actions, each with a Zod schema: `navigate(route)`, `scrollToSection(sectionId)`, `openModal(modalId, props)`, `focusField(fieldId)`, `setFilter(name, value)`, `closeModal`. The model can only pick from this list. It cannot run arbitrary code or build URLs outside the allowed route table.
+2. **Route and section table:** a typed map of allowed routes (with the roles that may use each), section IDs per page and modal IDs. The same table feeds the model's tool definitions, so adding a page or modal in the app makes it navigable.
+3. **Claude API with tools:** the model gets the user's text, the current route and the user's role, and answers with tool calls from the registry (the Messages API with tool use through `@anthropic-ai/sdk`; the model comes from `AI_MODEL`). The server validates every call against the registry and the user's role before sending it to the browser. An invalid or forbidden call is dropped.
+4. **Execution in the browser:** a small `useNavigator` hook runs the validated actions in order (Next.js router for navigation, `scrollIntoView` for sections, a modal store for modals), waits for a page to load before the next step, and shows a short "Doing: …" toast the user can cancel.
+5. **Safety rules:**
+   - Navigation only. The navigator never submits forms, approves, pays, withdraws, deletes or changes data. Anything that moves money or data stays a normal button the user presses. Opening a modal is fine, confirming it is not.
+   - Role checks happen on the server for every action, and the pages still enforce their own access.
+   - Treat page text and task content as data, never as instructions (prompt-injection rule from 3.5).
+   - Rate limit it (2.3) and count it against the daily AI budget in `ai_usage`.
+6. **Input:** a command box (a keyboard shortcut such as Ctrl+K), and optional voice input through the browser's speech recognition.
+7. **Fallback:** if the model is unsure, it asks one short clarifying question or shows the closest pages instead of guessing.
+
+**Tests:** a table-driven test per action; forbidden routes for each role are refused; an injected instruction inside page content cannot trigger an action outside the registry; the hook runs a multi-step plan in order.
+
+**Done when:** at least 15 phrases, in English and Bangla if 5.1 is done, reach the right page, section or modal, a worker cannot reach admin pages through it, and no action in the registry changes data.
+
+## 5.9 Voice and video calls (WebRTC), last
 
 **Steps**
 1. 1:1 voice or video inside an existing conversation (the two users must have chatted first).
