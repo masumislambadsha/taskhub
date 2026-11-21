@@ -29,6 +29,11 @@ Version 1, 9 November 2026. Goal: turn TaskHub into a flagship project that prov
 
 **Shipped so far:** Phase 0 ([#1](https://github.com/masumislambadsha/taskhub/pull/1), [#3](https://github.com/masumislambadsha/taskhub/pull/3), [#4](https://github.com/masumislambadsha/taskhub/pull/4)); signed socket tokens and conversation checks ([#2](https://github.com/masumislambadsha/taskhub/pull/2)); payment verification ([#5](https://github.com/masumislambadsha/taskhub/pull/5)); the coin ledger, item 1.1 ([#8](https://github.com/masumislambadsha/taskhub/pull/8)); bKash grant token reuse ([#9](https://github.com/masumislambadsha/taskhub/pull/9)); the atomic submission slot ([#10](https://github.com/masumislambadsha/taskhub/pull/10)); lint errors fixed and blocking in CI ([#11](https://github.com/masumislambadsha/taskhub/pull/11)).
 
+## Known gaps to close early
+
+- The imgbb upload proxy (`/api/v1/uploads/imgbb`) accepts unauthenticated requests. A test on the branch `ccr-77a292bf-xzuy48` proves it. Fix it with authentication, a size and type limit, and a rate limit before more features.
+- The Expo app does not yet fetch the signed socket token, so its chat is rejected. Fix it, or stop mentioning the app.
+
 ## Decide these before Phase 0
 
 1. **Where does Socket.io run today?** Answered: Socket.io runs as the separate `server/` service on Render's free plan. Phase 0 containerizes it as-is.
@@ -572,6 +577,21 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 
 **Done when:** every withdrawal has a risk score with reasons, and nothing is paid without an admin's 2FA.
 
+## 1.8 Transactional outbox
+
+**Goal:** a crash between "the money moved" and "the email, notification or webhook was sent" can never lose or duplicate a side effect.
+
+**Design**
+1. **Collection `outbox`:** `type` (`email`, `notification`, `webhook`), `payload`, `status` (`pending`, `sent`, `failed`), `attempts`, `nextAttemptAt`, `idempotencyKey`, `createdAt`.
+2. **Write inside the same MongoDB transaction** as the change that causes it (for example, approving a submission posts the ledger transaction and inserts the outbox rows together). Either both happen or neither does.
+3. **A worker job (1.3's BullMQ worker)** claims pending rows with an atomic `findOneAndUpdate`, sends them, then marks them `sent`. Failures retry with exponential backoff and end as `failed` after a limit, visible on an admin page.
+4. **Receivers must tolerate a repeat.** The outbox guarantees at-least-once delivery, so every send carries the row's `idempotencyKey` (Resend and your own webhooks included).
+5. Move today's direct email and notification calls behind the outbox, one flow at a time.
+
+**Tests:** kill the worker after the claim and before the mark, and the row is picked up again; a failed transaction leaves no outbox row; a repeated delivery changes nothing.
+
+**Done when:** no payment, approval or withdrawal flow sends email or notifications directly, and the crash test passes.
+
 **Phase 1 interview story:** "Coins live in a double-entry ledger on MongoDB transactions. Tasks are funded through escrow, payment webhooks and user actions are idempotent, and a BullMQ job auto-approves after 72 hours. A concurrency test with many parallel withdrawals shows zero double-spends."
 
 ---
@@ -693,6 +713,42 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 **README table:** scenario, instances, requests per second, p95, error rate, hardware.
 
 **Done when:** the table has real numbers and at least one before-and-after fix story.
+
+## 2.6 Failure (chaos) tests
+
+**Goal:** show that the system survives real failures, with recorded results instead of claims.
+
+**Steps**
+1. Run the k6 load from 2.5 and, while it runs, do one failure at a time: stop one web instance, stop one realtime instance, restart Redis, restart MongoDB, add 500 ms of network delay to MongoDB (`tc` or a Toxiproxy container).
+2. For each, record the error rate, how long until recovery, and whether any coin movement was lost or doubled. Run `npm run ledger:reconcile` after every run; it must pass.
+3. Fix what breaks (missing retries, no reconnect, health checks that are too slow) and run again.
+4. Put a results table in the README and a `docs/chaos.md` write-up.
+
+**Done when:** every scenario is recorded, reconciliation passes after each, and the README shows the numbers.
+
+## 2.7 Observability: metrics and traces
+
+**Goal:** see what the system is doing, not only that it is up.
+
+**Steps**
+1. **Metrics:** expose `/metrics` (Prometheus format, internal port only) from web, realtime and worker: request rate, errors, latency histograms, queue depth and age, active sockets, ledger transactions per minute, AI spend.
+2. **Dashboards:** Prometheus and Grafana containers behind a compose profile, with the dashboard JSON committed to the repo.
+3. **Traces:** OpenTelemetry across web → worker → MongoDB, with the trace ID in the structured logs and in Sentry events.
+4. **Alerts:** a few rules (error rate, queue age over 5 minutes, reconciliation mismatch) that send an email or a message.
+5. Add a screenshot of the dashboard under load to the README.
+
+**Done when:** one dashboard shows the k6 run live, and one trace shows a submission going from the API through the worker to the database.
+
+## 2.8 Query performance evidence
+
+**Goal:** prove the database work with numbers.
+
+**Steps**
+1. Seed a large data set (for example 100,000 tasks and 500,000 journal entries).
+2. For the slowest endpoints (task list and filters, leaderboard, ledger history, admin queues), record `explain("executionStats")` before and after each index change.
+3. Add the indexes, remove any that go unused, and keep a table of before and after latency and documents examined in `docs/performance.md`.
+
+**Done when:** the table has at least three real before and after results, and the README links to it.
 
 **Phase 2 interview story:** "I ran Socket.io across two instances with a Redis adapter and sticky sessions, made rate limits shared through Redis, and load-tested to X requests per second at p95 Y ms. I found a missing index that cut p95 from A to B."
 
@@ -1029,11 +1085,38 @@ Record with OBS Studio. Upload to YouTube as unlisted and to Google Drive set to
 
 **Done when:** a friend can run the project locally from the README in 10 minutes without asking you anything.
 
+## 4.6 Security review and write-up
+
+**Goal:** show that you can find and fix weaknesses in your own system.
+
+**Steps**
+1. **Threat model:** a short document of assets (coins, documents, accounts), entry points and the main abuse cases for each.
+2. **Checklist:** go through the OWASP Top 10 and the OWASP API Top 10 against every route. Record each finding with its status. Findings already fixed count (payment verification, session roles, privacy leaks, socket auth, the unauthenticated upload proxy).
+3. **Automation in CI:** Dependabot, `npm audit` (fail on high), secret scanning, and a container image scan (Trivy).
+4. **Headers and limits:** a strict CSP, `Strict-Transport-Security`, CORS limited to known origins, and request size limits.
+5. **Write-up:** `docs/security.md` with "vulnerabilities I found in my own app and how I fixed them", each with the test that proves the fix.
+
+**Done when:** every route is on the checklist, CI blocks on high-severity findings, and each fixed issue has a regression test.
+
+## 4.7 OpenAPI documentation
+
+**Goal:** a documented, typed public API.
+
+**Steps**
+1. Generate an OpenAPI 3.1 spec from the Zod schemas the routes already use (for example with `zod-openapi`), so the docs cannot drift from the code.
+2. Serve it at `/api/docs` (Scalar or Swagger UI) and publish the JSON next to it.
+3. Add a CI check that fails when a route changes without the spec changing.
+4. This is the base for the public API and API keys in 5.5.
+
+**Done when:** every public route is in the spec, the docs page loads, and the CI check works.
+
 **Phase 4 interview story:** "I shipped semantic search and recommendations on Atlas Vector Search and a RAG help bot with citations, covered the main flow with Playwright, and deploy with zero downtime from GitHub Actions to a VPS."
 
 ---
 
 # Phase 5: Polish (as time allows)
+
+**Cut first:** if time runs short, drop the whole of Phase 5 except 5.8 (AI navigator), and drop 5.9 (voice and video) before anything else. Never cut tests, 1.x or the demo in 4.5.
 
 **Order:** 5.1 → 5.2 → 5.3 → 5.4 → 5.5 → 5.6 → 5.7 (needs 5.5's API keys) → 5.8 → 5.9 last.
 
