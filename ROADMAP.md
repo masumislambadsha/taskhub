@@ -31,7 +31,6 @@ Version 1, 9 November 2026. Goal: turn TaskHub into a flagship project that prov
 
 ## Known gaps to close early
 
-- The imgbb upload proxy (`/api/v1/uploads/imgbb`) accepts unauthenticated requests. A test on the branch `ccr-77a292bf-xzuy48` proves it. Fix it with authentication, a size and type limit, and a rate limit before more features.
 - The Expo app does not yet fetch the signed socket token, so its chat is rejected. Fix it, or stop mentioning the app.
 
 ## Decide these before Phase 0
