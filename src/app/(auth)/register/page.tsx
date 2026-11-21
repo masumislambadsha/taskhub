@@ -1,7 +1,7 @@
 "use client";
 
-import { MdAddAPhoto, MdArrowBack, MdCategory, MdEdit, MdUpload, MdVisibility, MdVisibilityOff } from 'react-icons/md';
-import { useState, useRef, Suspense } from "react";
+import { MdAddAPhoto, MdArrowBack, MdCategory, MdVisibility, MdVisibilityOff } from 'react-icons/md';
+import { useState, Suspense } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -48,11 +48,9 @@ function RegisterForm() {
   const params = useSearchParams();
   const [step, setStep] = useState(params.get("role") ? 2 : 1);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -71,32 +69,6 @@ function RegisterForm() {
 
   async function handleGoogle() {
     await signIn("google", { callbackUrl: "/worker/dashboard" });
-  }
-
-  async function handleImageUpload(file: File) {
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
-      return;
-    }
-    const localUrl = URL.createObjectURL(file);
-    setPreview(localUrl);
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("image", file);
-      const res = await axios.post("/api/v1/uploads/imgbb", formData);
-      const url: string = res.data.url;
-      setValue("photoUrl", url);
-      setPreview(url);
-      toast.success("Photo uploaded!");
-    } catch {
-      toast.error("Upload failed. You can paste a URL instead.");
-      URL.revokeObjectURL(localUrl);
-      setPreview(null);
-    } finally {
-      setUploading(false);
-    }
   }
 
   async function onSubmit(data: RegisterFormData) {
@@ -217,52 +189,22 @@ function RegisterForm() {
               Profile Photo <span className="text-primary/40">(optional)</span>
             </label>
             <div className="flex items-center gap-4">
-              <div
-                onClick={() => fileInputRef.current?.click()}
-                className="relative w-20 h-20 rounded-full border-2 border-dashed border-primary/20 bg-background flex items-center justify-center cursor-pointer hover:border-secondary transition-colors overflow-hidden shrink-0 group"
-              >
+              <div className="relative w-20 h-20 rounded-full border-2 border-dashed border-primary/20 bg-background flex items-center justify-center overflow-hidden shrink-0">
                 {preview ? (
-                  <>
-
-                    <img
-                      src={preview}
-                      alt="preview"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <MdEdit className="text-sm" />
-                    </div>
-                  </>
-                ) : uploading ? (
-                  <div className="w-6 h-6 border-2 border-secondary border-t-transparent rounded-full animate-spin" />
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={preview}
+                    alt="preview"
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <MdAddAPhoto className="text-primary/30 text-3xl" />
                 )}
               </div>
-              <div className="flex-1 space-y-2">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="w-full px-4 py-2.5 rounded-lg border border-primary/20 bg-background text-sm text-primary hover:border-secondary transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-                >
-                  <MdUpload className="text-sm" />
-                  {uploading ? "Uploading…" : "Upload image"}
-                </button>
-                <p className="text-xs text-primary/40 text-center">
-                  or paste a URL below
-                </p>
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handleImageUpload(f);
-                }}
-              />
+              <p className="flex-1 text-xs text-primary/50">
+                Paste an image URL, or upload a photo from your profile after you
+                sign up.
+              </p>
             </div>
             <input
               {...register("photoUrl")}
@@ -369,7 +311,7 @@ function RegisterForm() {
 
           <button
             type="submit"
-            disabled={loading || uploading}
+            disabled={loading}
             className="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-primary/90 transition-colors disabled:opacity-60 mt-2"
           >
             {loading ? "Creating account…" : "Create Account"}
