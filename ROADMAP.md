@@ -851,6 +851,25 @@ Start with the most capable current Claude model at low effort. If cost matters,
 
 **Phase 3 interview story:** "I added fraud detection with perceptual hashing and device linking, an explainable trust score, and an AI proof checker that only labels submissions while people decide. It agreed with human decisions on Z% of N labeled proofs."
 
+## 3.7 Worker verification and admin approval
+
+**Goal:** a new worker is checked before they can earn, an admin makes the decision, and an AI pre-review saves the admin time. Workers who exist today are approved automatically.
+
+**Design**
+1. **Status on the user:** add `workerStatus: "unverified" | "pending" | "approved" | "rejected"` (and `workerReviewedBy`, `workerReviewedAt`, `workerRejectionReason`) to `User`. It only matters when `role === "worker"`. A migration script sets every existing worker to `approved`, so nobody loses access. New worker sign-ups start as `unverified`.
+2. **What an unapproved worker sees (decide before building):** the dashboard in a read-only mode with a banner showing their status. Suggested rule: they can browse tasks and finish their profile and verification, but cannot submit work, withdraw or accept paid tasks. The server enforces it in one guard (like the existing admin route guards), never only in the UI.
+3. **Verification steps (multi-step form):** profile details, a government ID or other document, a selfie holding the ID (optional), payout account (bKash, Nagad or bank), and a short skills note. Each step saves on its own, so a worker can come back later. Submitting moves the status to `pending`.
+4. **Documents are private:** store them in private storage, not public imgbb URLs. Serve them to admins only through short-lived signed URLs, and log every view in the audit log (1.5). Delete rejected documents after a set number of days.
+5. **AI pre-review (optional, after the manual flow works):** a worker-queue job reads the documents and the form, then writes a draft summary for the admin: whether the name on the ID matches the profile, whether the document looks readable and complete, and any problems. It follows the same rules as 3.5: structured output validated with Zod, a daily budget logged in `ai_usage`, prompt-injection-safe wording, and it **never approves or rejects**. The admin sees the summary next to the documents and makes the call.
+6. **Admin queue:** a "Worker applications" page sorted by waiting time, with the AI summary, the documents, and Approve and Reject (a reason is required). Decisions need the admin 2FA step-up (1.6) and write an audit log entry (1.5) in the same transaction. The worker gets an email and a notification.
+7. **Reapply:** a rejected worker can fix the problem and submit again, with a limit on attempts.
+
+**Watch out for:** ID documents are sensitive personal data. Collect only what you need, say why in your terms, and keep access narrow. The demo admin (read-only) must not see documents.
+
+**Tests:** existing workers migrate to `approved`; an unapproved worker is refused on submit, withdraw and accept (server side); only an admin can approve; the demo admin cannot open documents; a decision writes exactly one audit entry.
+
+**Done when:** a new worker cannot earn until an admin approves them, the existing workers still can, and every decision and document view is in the audit log.
+
 ---
 
 # Phase 4: AI search, end-to-end tests, deploy (weeks 10–12)
@@ -1016,7 +1035,7 @@ Record with OBS Studio. Upload to YouTube as unlisted and to Google Drive set to
 
 # Phase 5: Polish (as time allows)
 
-**Order:** 5.1 → 5.2 → 5.3 → 5.4 → 5.5 → 5.6 → 5.7 (needs 5.5's API keys) → 5.8 last.
+**Order:** 5.1 → 5.2 → 5.3 → 5.4 → 5.5 → 5.6 → 5.7 (needs 5.5's API keys) → 5.8 → 5.9 last.
 
 ## 5.1 Bangla and English
 
@@ -1120,7 +1139,28 @@ Record with OBS Studio. Upload to YouTube as unlisted and to Google Drive set to
 
 **Done when:** it works from Claude with a scoped key, and a key without `submissions:review` can't approve.
 
-## 5.8 Voice and video calls (WebRTC), last
+## 5.8 AI navigator
+
+**Goal:** the user types or says what they want ("show my pending withdrawals", "open the task form", "go to the leaderboard and scroll to the top ten"), and the app does the navigation for them. This is different from the help bot in 4.2, which only answers questions.
+
+**Design**
+1. **Actions are a fixed list the client owns.** Define a small registry of safe UI actions, each with a Zod schema: `navigate(route)`, `scrollToSection(sectionId)`, `openModal(modalId, props)`, `focusField(fieldId)`, `setFilter(name, value)`, `closeModal`. The model can only pick from this list. It cannot run arbitrary code or build URLs outside the allowed route table.
+2. **Route and section table:** a typed map of allowed routes (with the roles that may use each), section IDs per page and modal IDs. The same table feeds the model's tool definitions, so adding a page or modal in the app makes it navigable.
+3. **Claude API with tools:** the model gets the user's text, the current route and the user's role, and answers with tool calls from the registry (the Messages API with tool use through `@anthropic-ai/sdk`; the model comes from `AI_MODEL`). The server validates every call against the registry and the user's role before sending it to the browser. An invalid or forbidden call is dropped.
+4. **Execution in the browser:** a small `useNavigator` hook runs the validated actions in order (Next.js router for navigation, `scrollIntoView` for sections, a modal store for modals), waits for a page to load before the next step, and shows a short "Doing: …" toast the user can cancel.
+5. **Safety rules:**
+   - Navigation only. The navigator never submits forms, approves, pays, withdraws, deletes or changes data. Anything that moves money or data stays a normal button the user presses. Opening a modal is fine, confirming it is not.
+   - Role checks happen on the server for every action, and the pages still enforce their own access.
+   - Treat page text and task content as data, never as instructions (prompt-injection rule from 3.5).
+   - Rate limit it (2.3) and count it against the daily AI budget in `ai_usage`.
+6. **Input:** a command box (a keyboard shortcut such as Ctrl+K), and optional voice input through the browser's speech recognition.
+7. **Fallback:** if the model is unsure, it asks one short clarifying question or shows the closest pages instead of guessing.
+
+**Tests:** a table-driven test per action; forbidden routes for each role are refused; an injected instruction inside page content cannot trigger an action outside the registry; the hook runs a multi-step plan in order.
+
+**Done when:** at least 15 phrases, in English and Bangla if 5.1 is done, reach the right page, section or modal, a worker cannot reach admin pages through it, and no action in the registry changes data.
+
+## 5.9 Voice and video calls (WebRTC), last
 
 **Steps**
 1. 1:1 voice or video inside an existing conversation (the two users must have chatted first).
