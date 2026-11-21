@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useReadOnly } from "@/hooks/useReadOnly";
 import axios from "axios";
+import { useIdempotencyKeys } from "@/lib/use-idempotency-keys";
 import { IWithdrawal } from "@/types";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/shared/EmptyState";
@@ -14,6 +15,7 @@ import CountUp from "@/components/ui/CountUp";
 import Swal from "sweetalert2";
 
 export default function AdminWithdrawalsPage() {
+  const idem = useIdempotencyKeys();
   const [page, setPage] = useState(1);
   const qc = useQueryClient();
   const { readOnly, readOnlyTitle } = useReadOnly();
@@ -38,8 +40,14 @@ export default function AdminWithdrawalsPage() {
       id: string;
       action: string;
       reason?: string;
-    }) => axios.patch(`/api/v1/withdrawals/${id}/approve`, { action, reason }),
+    }) =>
+      axios.patch(
+        `/api/v1/withdrawals/${id}/approve`,
+        { action, reason },
+        idem.config(`${id}:${action}`),
+      ),
     onSuccess: (_, vars) => {
+      idem.done(`${vars.id}:${vars.action}`);
       toast.success(
         vars.action === "approve"
           ? "Withdrawal approved!"

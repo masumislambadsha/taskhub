@@ -7,6 +7,7 @@ import { submissionSchema } from "@/lib/validators/submission";
 import { createNotification } from "@/lib/notifications";
 import { redactEmailFields } from "@/lib/privacy";
 import { withRequestLogging } from "@/lib/with-request-logging";
+import { withIdempotency } from "@/lib/idempotency";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -47,41 +48,43 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await req.json();
-  const parsed = submissionSchema.safeParse(body);
-  if (!parsed.success)
-    return NextResponse.json(
-      { error: parsed.error.flatten() },
-      { status: 400 },
-    );
+  return withIdempotency(req, session.user.id, async () => {
+    const body = await req.json();
+    const parsed = submissionSchema.safeParse(body);
+    if (!parsed.success)
+      return NextResponse.json(
+        { error: parsed.error.flatten() },
+        { status: 400 },
+      );
 
-  await connectDB();
-  const result = await submitWork({
-    taskId: body.taskId,
-    worker: {
-      id: session.user.id,
-      name: session.user.name ?? "",
-      email: session.user.email ?? "",
-    },
-    data: parsed.data,
+    await connectDB();
+    const result = await submitWork({
+      taskId: body.taskId,
+      worker: {
+        id: session.user.id,
+        name: session.user.name ?? "",
+        email: session.user.email ?? "",
+      },
+      data: parsed.data,
+    });
+    if (!result.ok) {
+      const error = {
+        not_available: "Task not available",
+        pending_exists: "Submission already pending review",
+        full: "Task is full",
+      }[result.reason];
+      return NextResponse.json({ error }, { status: 400 });
+    }
+    const { submission, task } = result;
+
+    await createNotification({
+      toUserId: task.buyerId.toString(),
+      toEmail: task.buyerEmail,
+      message: `New submission on "${task.title}" from ${session.user.name}`,
+      actionRoute: "/buyer/submissions",
+      type: "info",
+    });
+
+    return NextResponse.json(submission, { status: 201 });
   });
-  if (!result.ok) {
-    const error = {
-      not_available: "Task not available",
-      pending_exists: "Submission already pending review",
-      full: "Task is full",
-    }[result.reason];
-    return NextResponse.json({ error }, { status: 400 });
-  }
-  const { submission, task } = result;
-
-  await createNotification({
-    toUserId: task.buyerId.toString(),
-    toEmail: task.buyerEmail,
-    message: `New submission on "${task.title}" from ${session.user.name}`,
-    actionRoute: "/buyer/submissions",
-    type: "info",
-  });
-
-  return NextResponse.json(submission, { status: 201 });
 });
