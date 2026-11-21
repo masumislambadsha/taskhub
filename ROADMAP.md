@@ -413,6 +413,8 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 
 ## 1.2 Idempotency keys
 
+**Status: Layer B done** (user actions, see `src/lib/idempotency.ts`). Layer A already credits once through `creditPayment`; the `payment_events` log and the admin "Replay event" button are still to do. The `Idempotency-Key` header is optional for now, so older clients (the Expo app) keep working; make it required once they send it.
+
 **Goal:** a retry (network glitch, double-click, a provider resending a webhook) can never credit or pay twice.
 
 **Layer A: payment webhooks and callbacks**

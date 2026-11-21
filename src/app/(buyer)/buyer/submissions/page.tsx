@@ -4,6 +4,7 @@ import { MdClose, MdToll } from 'react-icons/md';
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { useIdempotencyKeys } from "@/lib/use-idempotency-keys";
 import { ISubmission } from "@/types";
 import EmptyState from "@/components/shared/EmptyState";
 import { format } from "date-fns";
@@ -12,6 +13,7 @@ import Swal from "sweetalert2";
 import { SkeletonTable } from "@/components/ui/Skeleton";
 
 export default function BuyerSubmissionsPage() {
+  const idem = useIdempotencyKeys();
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState<ISubmission | null>(null);
   const qc = useQueryClient();
@@ -36,8 +38,14 @@ export default function BuyerSubmissionsPage() {
       id: string;
       action: string;
       reason?: string;
-    }) => axios.patch(`/api/v1/submissions/${id}/status`, { action, reason }),
+    }) =>
+      axios.patch(
+        `/api/v1/submissions/${id}/status`,
+        { action, reason },
+        idem.config(`${id}:${action}`),
+      ),
     onSuccess: (_, vars) => {
+      idem.done(`${vars.id}:${vars.action}`);
       toast.success(
         vars.action === "approve"
           ? "Submission approved!"
