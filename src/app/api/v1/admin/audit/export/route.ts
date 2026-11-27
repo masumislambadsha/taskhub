@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { requireAdmin } from "@/lib/roles";
+import { requireAdmin } from "@/lib/admin-guard";
 import { connectDB } from "@/lib/db";
 import AuditLog from "@/models/AuditLog";
 import { auditFilter } from "@/lib/audit-query";
@@ -10,7 +10,7 @@ const MAX_ROWS = 10_000;
 
 /** Admin only. Exports the entries matching the same filters as the list, newest first, up to 10,000. */
 export async function GET(req: NextRequest) {
-  const guard = requireAdmin(await auth(), "write");
+  const guard = await requireAdmin(await auth(), "write");
   if (!guard.ok) return guard.response;
 
   await connectDB();

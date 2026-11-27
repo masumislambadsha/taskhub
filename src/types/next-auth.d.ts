@@ -14,6 +14,8 @@ declare module "next-auth" {
       image?: string | null;
       role: string;
       coins: number;
+      /** Random ID of this login, used to track its two-factor verification. */
+      sid?: string;
     };
   }
 }
@@ -23,5 +25,6 @@ declare module "next-auth/jwt" {
     id?: string;
     role?: string;
     coins?: number;
+    sid?: string;
   }
 }

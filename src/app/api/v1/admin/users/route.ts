@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { requireAdmin } from "@/lib/roles";
+import { requireAdmin } from "@/lib/admin-guard";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import { maskEmailFields } from "@/lib/privacy";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
-  const guard = requireAdmin(session, "read");
+  const guard = await requireAdmin(session, "read");
   if (!guard.ok) return guard.response;
 
   await connectDB();
