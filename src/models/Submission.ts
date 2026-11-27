@@ -77,6 +77,10 @@ const SubmissionSchema = new Schema<ISubmissionDoc>(
 );
 
 SubmissionSchema.index({ taskId: 1, workerId: 1 });
+// A worker's and a buyer's submission lists: owner, optional status, newest first.
+// The worker index also answers the leaderboard's per-worker counts.
+SubmissionSchema.index({ workerId: 1, status: 1, createdAt: -1 });
+SubmissionSchema.index({ taskBuyerId: 1, status: 1, createdAt: -1 });
 // The auto-approve sweep looks for pending submissions that are due.
 SubmissionSchema.index({ status: 1, autoApproveAt: 1 });
 // The settlement sweep looks for holds whose window has ended.

@@ -48,6 +48,9 @@ const UserSchema = new Schema<IUserDoc>(
   { timestamps: true },
 );
 
+// The leaderboard: active workers by coins, highest first.
+UserSchema.index({ role: 1, status: 1, coins: -1 });
+
 const User: Model<IUserDoc> =
   mongoose.models.User || mongoose.model<IUserDoc>("User", UserSchema);
 

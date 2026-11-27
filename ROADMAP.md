@@ -774,6 +774,8 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 
 **Done when:** the table has at least three real before and after results, and the README links to it.
 
+**Status: done** ([docs/performance.md](docs/performance.md), `npm run perf:explain`). The tasks collection had no indexes; six indexes on tasks, users and submissions turn ten full scans into index reads (for example the buyer's review queue from 85 ms and 300,000 documents examined to 0.8 ms and 20). The table was measured on an in-memory MongoDB with 100,000 tasks, 20,000 users, 300,000 submissions and 200,000 ledger transactions, not on production hardware, and the document also lists what indexes cannot fix: deep `skip` pages (needs cursor pagination), the exact count, and the unanchored title regex. Admin queues and an unused-index audit were not measured.
+
 **Phase 2 interview story:** "I ran Socket.io across two instances with a Redis adapter and sticky sessions, made rate limits shared through Redis, and load-tested to X requests per second at p95 Y ms. I found a missing index that cut p95 from A to B."
 
 ---
