@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Withdrawal from "@/models/Withdrawal";
-import User from "@/models/User";
 import { withdrawalSchema } from "@/lib/validators/withdrawal";
-import { coinsToUsdWithdraw } from "@/lib/coins";
+import { logger } from "@/lib/logger";
+import { sendWithdrawalConfirmationEmail } from "@/lib/email";
+import { requestWithdrawal } from "@/lib/ledger/flows/withdrawals";
+import { workerWithdrawalView } from "@/lib/withdrawal-view";
 import { maskAccountFields, maskEmailFields } from "@/lib/privacy";
 import { isAdminRole } from "@/lib/roles";
 import { withRequestLogging } from "@/lib/with-request-logging";
@@ -31,10 +33,14 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get("page") ?? "1");
   const limit = 10;
 
-  const query = isWorker ? { workerId: session.user.id } : {};
+  const status = searchParams.get("status");
+  const query: Record<string, unknown> = isWorker ? { workerId: session.user.id } : {};
+  if (status && status !== "all") query.status = status;
+  // The admin queue shows the riskiest requests first; everyone else sees the newest first.
+  const sort = !isWorker && searchParams.get("sort") === "risk" ? "-riskScore createdAt" : "-createdAt";
   const [withdrawals, total] = await Promise.all([
     Withdrawal.find(query)
-      .sort("-createdAt")
+      .sort(sort)
       .skip((page - 1) * limit)
       .limit(limit)
       .lean(),
@@ -43,7 +49,17 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     withdrawals: maskAccountFields(
-      maskEmailFields(withdrawals, ["workerEmail"], session.user),
+      maskEmailFields(
+        isWorker
+          ? withdrawals.map((w) => workerWithdrawalView({ toObject: () => w }))
+          : withdrawals.map((w) => {
+              const { confirmTokenHash, ...rest } = w as typeof w & { confirmTokenHash?: string };
+              void confirmTokenHash;
+              return rest;
+            }),
+        ["workerEmail"],
+        session.user,
+      ),
       ["accountNumber"],
       session.user,
     ),
@@ -69,21 +85,40 @@ export const POST = withRequestLogging("/api/v1/withdrawals", async function POS
       );
 
     await connectDB();
-    const worker = await User.findById(session.user.id);
-    if (!worker || worker.coins < parsed.data.coinRequested) {
-      return NextResponse.json({ error: "Insufficient coins" }, { status: 400 });
-    }
-
-    const withdrawal = await Withdrawal.create({
-      workerId: session.user.id,
-      workerName: session.user.name ?? "",
-      workerEmail: session.user.email ?? "",
-      coinRequested: parsed.data.coinRequested,
-      amount: coinsToUsdWithdraw(parsed.data.coinRequested),
+    const result = await requestWithdrawal({
+      worker: {
+        id: session.user.id,
+        name: session.user.name ?? "",
+        email: session.user.email ?? "",
+      },
+      coins: parsed.data.coinRequested,
       paymentSystem: parsed.data.paymentSystem,
       accountNumber: parsed.data.accountNumber,
     });
+    if (!result.ok) {
+      const map = {
+        below_minimum: ["Minimum 200 coins required", 400],
+        insufficient_coins: ["Insufficient coins", 400],
+        daily_limit: ["This is over the daily withdrawal limit", 422],
+        weekly_limit: ["This is over the weekly withdrawal limit", 422],
+        worker_missing: ["Unauthorized", 401],
+      } as const;
+      const [error, status] = map[result.reason];
+      return NextResponse.json({ error }, { status });
+    }
 
-    return NextResponse.json(withdrawal, { status: 201 });
+    // The link is only ever sent by email. If sending fails the worker can ask for another.
+    const confirmUrl = `${process.env.NEXTAUTH_URL ?? ""}/worker/withdrawals/confirm?id=${result.withdrawal._id}&token=${result.confirmToken}`;
+    let emailed = true;
+    try {
+      await sendWithdrawalConfirmationEmail(result.withdrawal.workerEmail, confirmUrl, {
+        coins: result.withdrawal.coinRequested,
+        paymentSystem: result.withdrawal.paymentSystem,
+      });
+    } catch (err) {
+      emailed = false;
+      logger.error({ err, withdrawalId: String(result.withdrawal._id) }, "withdrawal confirmation email failed");
+    }
+    return NextResponse.json({ ...workerWithdrawalView(result.withdrawal), emailed }, { status: 201 });
   });
 });

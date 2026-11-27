@@ -14,6 +14,7 @@ import { useIdempotencyKeys } from "@/lib/use-idempotency-keys";
 import toast from "react-hot-toast";
 import { IWithdrawal } from "@/types";
 import Badge from "@/components/ui/Badge";
+import WithdrawalActions from "@/components/withdrawals/WithdrawalActions";
 import { coinsToUsdWithdraw } from "@/lib/coins";
 import { MIN_WITHDRAWAL_COINS, PAYMENT_GATEWAYS } from "@/lib/constants";
 import { format } from "date-fns";
@@ -298,8 +299,9 @@ export default function WorkerWithdrawalsPage() {
                     $<CountUp value={w.amount} decimals={2} />
                   </p>
                 </div>
-                <div className="shrink-0">
+                <div className="shrink-0 text-right">
                   <Badge status={w.status} />
+                  <WithdrawalActions withdrawal={w} />
                 </div>
               </div>
             ))}

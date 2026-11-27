@@ -19,6 +19,8 @@ export const SYSTEM_ACCOUNTS = {
   FORFEITED: "system:forfeited",
   /** Opening balances for coins that existed before the ledger. */
   MIGRATION: "system:migration",
+  /** Coins a worker asked to withdraw, held until the payout is paid or returned. */
+  PAYOUTS_PENDING: "system:payouts_pending",
 } as const;
 
 export type SystemAccountId =

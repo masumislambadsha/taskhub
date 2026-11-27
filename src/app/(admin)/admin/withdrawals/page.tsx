@@ -8,6 +8,8 @@ import axios from "axios";
 import { useIdempotencyKeys } from "@/lib/use-idempotency-keys";
 import { IWithdrawal } from "@/types";
 import Badge from "@/components/ui/Badge";
+import RiskReasons from "@/components/withdrawals/RiskReasons";
+import { apiErrorMessage } from "@/lib/api-error";
 import EmptyState from "@/components/shared/EmptyState";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -24,7 +26,7 @@ export default function AdminWithdrawalsPage() {
     queryKey: ["admin-withdrawals", page],
     queryFn: () =>
       axios
-        .get("/api/v1/withdrawals", { params: { page } })
+        .get("/api/v1/withdrawals", { params: { page, sort: "risk" } })
         .then((r) => r.data),
   });
 
@@ -67,9 +69,11 @@ export default function AdminWithdrawalsPage() {
     const { value: reason, isConfirmed } = await Swal.fire({
       title: "Reject Withdrawal",
       input: "textarea",
-      inputLabel: "Reason for rejection (optional)",
+      inputLabel: "Reason for rejection (required)",
       inputPlaceholder: "Tell the worker why their withdrawal was rejected…",
       inputAttributes: { rows: "3" },
+      inputValidator: (v) =>
+        (v ?? "").trim().length < 5 ? "Write a reason of at least 5 characters" : undefined,
       showCancelButton: true,
       confirmButtonText: "Reject",
       cancelButtonText: "Cancel",
@@ -82,6 +86,31 @@ export default function AdminWithdrawalsPage() {
       action: "reject",
       reason: reason || undefined,
     });
+  }
+
+  const payMutation = useMutation({
+    mutationFn: ({ id, transactionId }: { id: string; transactionId: string }) =>
+      axios.post(`/api/v1/withdrawals/${id}/pay`, { transactionId }),
+    onSuccess: () => {
+      toast.success("Marked as paid");
+      qc.invalidateQueries({ queryKey: ["admin-withdrawals"] });
+    },
+    onError: (err: unknown) => toast.error(apiErrorMessage(err, "Could not mark it paid")),
+  });
+
+  async function handlePay(w: IWithdrawal) {
+    const { value, isConfirmed } = await Swal.fire({
+      title: "Mark as paid",
+      text: `Pay ${w.paymentSystem} ${w.accountNumber} the amount of $${w.amount}, then enter the transaction ID.`,
+      input: "text",
+      inputPlaceholder: "bKash, Nagad or bank transaction ID",
+      inputValidator: (v) =>
+        (v ?? "").trim().length < 3 ? "Enter the transaction ID" : undefined,
+      showCancelButton: true,
+      confirmButtonText: "Mark paid",
+      confirmButtonColor: "#1a4731",
+    });
+    if (isConfirmed && value) payMutation.mutate({ id: w._id, transactionId: value });
   }
 
   return (
@@ -169,11 +198,27 @@ export default function AdminWithdrawalsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <Badge status={w.status} />
+                        {(w.status === "pending" || w.status === "awaiting_confirmation") && (
+                          <RiskReasons withdrawal={w} />
+                        )}
+                        {w.externalTransactionId && (
+                          <p className="mt-1 text-[11px] text-primary/50">Ref {w.externalTransactionId}</p>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-primary/40 text-xs whitespace-nowrap">
                         {format(new Date(w.createdAt), "MMM d, yyyy")}
                       </td>
                       <td className="px-6 py-4">
+                        {w.status === "approved" && (
+                          <button
+                            onClick={() => handlePay(w)}
+                            disabled={payMutation.isPending || readOnly}
+                            title={readOnly ? readOnlyTitle : undefined}
+                            className="text-xs px-3 py-1.5 rounded-lg font-medium bg-primary text-white hover:bg-primary/90 transition-colors disabled:opacity-60"
+                          >
+                            Mark paid
+                          </button>
+                        )}
                         {w.status === "pending" && (
                           <div className="flex items-center gap-2">
                             <button
@@ -246,6 +291,18 @@ export default function AdminWithdrawalsPage() {
                       {format(new Date(w.createdAt), "MMM d, yyyy")}
                     </span>
                   </div>
+                  {w.status === "approved" && (
+                    <div className="pl-12">
+                      <button
+                        onClick={() => handlePay(w)}
+                        disabled={payMutation.isPending || readOnly}
+                        title={readOnly ? readOnlyTitle : undefined}
+                        className="w-full text-xs py-1.5 rounded-lg font-medium bg-primary text-white disabled:opacity-60"
+                      >
+                        Mark paid
+                      </button>
+                    </div>
+                  )}
                   {w.status === "pending" && (
                     <div className="flex gap-2 pl-12">
                       <button

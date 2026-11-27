@@ -20,7 +20,16 @@ import { createFundedTask, deleteFundedTask, updateFundedTask } from "@/lib/ledg
 import { approveSubmission, rejectSubmission, settleRejection } from "@/lib/ledger/flows/submissions";
 import { decideDispute, openDispute } from "@/lib/ledger/flows/disputes";
 import Dispute, { ACTIVE_DISPUTE_STATUSES } from "@/models/Dispute";
-import { approveWithdrawal } from "@/lib/ledger/flows/withdrawals";
+import {
+  approveWithdrawal,
+  cancelWithdrawal,
+  confirmWithdrawal,
+  markWithdrawalPaid,
+  rejectWithdrawal,
+  requestWithdrawal,
+} from "@/lib/ledger/flows/withdrawals";
+import { RESERVED_STATUSES } from "@/models/Withdrawal";
+import PayoutAccount from "@/models/PayoutAccount";
 import { adjustUserCoins, createUserWithBonus, removeUser } from "@/lib/ledger/flows/users";
 
 let db: Awaited<ReturnType<typeof startTestDb>>;
@@ -30,6 +39,7 @@ beforeAll(async () => {
   process.env.DISPUTE_WINDOW_MS = String(30 * 24 * 3600 * 1000);
   db = await startTestDb("taskhub_ledger_invariants_test");
   await Dispute.init();
+  await PayoutAccount.init();
 }, 180_000);
 afterAll(async () => {
   process.env.DISPUTE_WINDOW_MS = "0";
@@ -38,6 +48,7 @@ afterAll(async () => {
 beforeEach(async () => {
   await db.reset();
   await Dispute.deleteMany({});
+  await PayoutAccount.deleteMany({});
 });
 
 /** A small seeded PRNG (mulberry32) so a failing run can be replayed. */
@@ -68,6 +79,9 @@ async function totalCoins(): Promise<number> {
   for (const task of await Task.find({}).lean()) {
     total += expectedEscrow(task, await pendingSubmissionValue(task._id));
   }
+  // Coins waiting to be paid out are still in the system until the payout is made.
+  const reserved = await Withdrawal.find({ status: { $in: RESERVED_STATUSES }, reservedAt: { $exists: true } }).select("coinRequested").lean();
+  total += reserved.reduce((sum, w) => sum + w.coinRequested, 0);
   return total;
 }
 
@@ -113,6 +127,7 @@ async function runScenario(seed: number, totalOps: number) {
     const context = `seed ${seed}, after ${label}\n${log.slice(-12).join("\n")}\n${JSON.stringify(report)}`;
     expect(report.balanceMismatches, context).toEqual([]);
     expect(report.escrowMismatches, context).toEqual([]);
+    expect(report.payoutsMismatch, context).toBeNull();
     expect(report.negativeBalances, context).toEqual([]);
     expect(report.globalJournalSum, context).toBe(0);
     expect(report.globalCachedSum, context).toBe(0);
@@ -266,17 +281,36 @@ async function runScenario(seed: number, totalOps: number) {
         }
       } else if (kind === "withdraw") {
         const worker = rnd.pick(workers)!;
-        const w = await Withdrawal.create({
-          workerId: worker, workerName: "W", workerEmail: "w@example.test",
-          coinRequested: 200, amount: 10, paymentSystem: "bkash", accountNumber: "017",
-        });
+        const path = rnd.next();
         batch.push(
-          approveWithdrawal({ withdrawalId: String(w._id), adminId: "adm" }).then((r) => {
-            if (r.ok) {
+          (async () => {
+            const req = await requestWithdrawal({
+              worker: { id: String(worker), name: "W", email: "w@example.test" },
+              coins: 200, paymentSystem: "bkash", accountNumber: "01700000000",
+            });
+            if (!req.ok) return;
+            const id = String(req.withdrawal._id);
+            const wid = String(worker);
+            won("withdraw_request");
+            if (path < 0.2) {
+              if ((await cancelWithdrawal({ withdrawalId: id, workerId: wid })).ok) won("withdraw_cancel");
+              return;
+            }
+            const conf = await confirmWithdrawal({ withdrawalId: id, workerId: wid, token: req.confirmToken });
+            if (!conf.ok || path < 0.35) return; // stays waiting for an admin
+            if (path < 0.55) {
+              if ((await rejectWithdrawal({ withdrawalId: id, reason: "Looks wrong to me" })).ok) won("withdraw_reject");
+              return;
+            }
+            const appr = await approveWithdrawal({ withdrawalId: id, adminId: "adm" });
+            if (!appr.ok || path < 0.7) return; // approved, not paid yet
+            // Two admins may pay the same one at once; the coins leave once.
+            const paid = await Promise.all([1, 2].map(() => markWithdrawalPaid({ withdrawalId: id, adminId: "adm", transactionId: "TRX-" + id.slice(-6) })));
+            if (paid.some((p) => p.ok)) {
               delta -= 200;
               won("withdraw");
             }
-          }),
+          })(),
         );
       } else if (kind === "adjust") {
         const user = rnd.pick([...buyers, ...workers])!;
@@ -324,7 +358,7 @@ describe("randomized operations keep every invariant", () => {
       const { ops, stats } = await runScenario(seed, 200);
       expect(ops).toBeGreaterThanOrEqual(200);
       // The run really exercised each kind of movement, not just failed attempts.
-      for (const kind of ["topup", "create", "approve", "reject", "settle", "appeal", "edit", "withdraw", "adjust", "signup"]) {
+      for (const kind of ["topup", "create", "approve", "reject", "settle", "appeal", "edit", "withdraw_request", "adjust", "signup"]) {
         expect(stats[kind] ?? 0, `${kind} never succeeded: ${JSON.stringify(stats)}`).toBeGreaterThan(0);
       }
       if (process.env.LEDGER_STATS) console.log(seed, JSON.stringify(stats));

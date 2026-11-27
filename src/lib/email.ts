@@ -69,3 +69,30 @@ export async function sendPasswordResetEmail(
     throw new Error(error.message);
   }
 }
+
+/** The link a worker opens to confirm a withdrawal request. It works for 30 minutes. */
+export async function sendWithdrawalConfirmationEmail(
+  email: string,
+  confirmUrl: string,
+  details: { coins: number; paymentSystem: string },
+): Promise<void> {
+  const { error } = await getResend().emails.send({
+    from: "TaskHub <onboarding@resend.dev>",
+    to: email,
+    subject: "Confirm your TaskHub withdrawal",
+    html: `
+      <div style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:480px;margin:0 auto;padding:32px;color:#004030;">
+        <h1 style="font-size:22px;margin:0 0 12px;">Confirm your withdrawal</h1>
+        <p style="font-size:15px;line-height:1.6;">
+          You asked to withdraw <b>${details.coins} coins</b> to ${details.paymentSystem}.
+          Confirm it within 30 minutes to send it for review.
+        </p>
+        <p><a href="${confirmUrl}" style="display:inline-block;padding:14px 28px;background:#004030;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;">Confirm withdrawal</a></p>
+        <p style="font-size:13px;color:rgba(0,64,48,0.6);line-height:1.6;">
+          If you did not ask for this, do not click the link. The request is cancelled and your coins
+          are returned if it is not confirmed within 24 hours. Consider changing your password.
+        </p>
+      </div>`,
+  });
+  if (error) throw new Error(error.message);
+}

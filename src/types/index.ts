@@ -4,7 +4,13 @@ export type TaskStatus = "open" | "closed" | "blocked" | "archived";
 export type SubmissionStatus = "pending" | "approved" | "rejected";
 export type PaymentStatus = "pending" | "success" | "failed";
 export type PaymentGateway = "stripe" | "bkash" | "sslcommerz";
-export type WithdrawalStatus = "pending" | "approved" | "rejected";
+export type WithdrawalStatus =
+  | "awaiting_confirmation"
+  | "pending"
+  | "approved"
+  | "paid"
+  | "rejected"
+  | "cancelled";
 export type NotificationType = "info" | "success" | "warning";
 
 export interface IUser {
@@ -90,6 +96,11 @@ export interface IWithdrawal {
   accountNumber: string;
   status: WithdrawalStatus;
   processedAt?: string;
+  /** Admins only. */
+  riskScore?: number;
+  riskFlags?: { code: string; level: "review" | "hold" | "high"; message: string }[];
+  externalTransactionId?: string;
+  rejectionReason?: string;
   createdAt: string;
   updatedAt: string;
 }
