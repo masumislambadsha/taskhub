@@ -6,6 +6,7 @@ import FraudFlag from "@/models/FraudFlag";
 import Task from "@/models/Task";
 import { ensureTrustLevel } from "@/lib/trust-data";
 import { levelName } from "@/lib/trust";
+import { DAILY_CAP_MESSAGE } from "@/lib/earning-limits";
 import { evaluateLinks, recordSighting } from "@/lib/fraud/signals";
 import { submitWork } from "@/lib/ledger/flows/submissions";
 import { submissionSchema } from "@/lib/validators/submission";
@@ -92,14 +93,16 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
 
     await connectDB();
 
+    // The level decides the daily cap and the task gate; refresh it if it is old.
+    const workerLevel = await ensureTrustLevel(session.user.id);
+
     // Level gate, checked on the server: some tasks only open to trusted workers.
     if (typeof body.taskId === "string" && /^[0-9a-fA-F]{24}$/.test(body.taskId)) {
       const gate = await Task.findById(body.taskId).select("minLevel").lean();
       if (gate?.minLevel) {
-        const level = await ensureTrustLevel(session.user.id);
-        if (level < gate.minLevel) {
+        if (workerLevel < gate.minLevel) {
           return NextResponse.json(
-            { error: `This task needs level ${levelName(gate.minLevel)} or higher. Your level is ${levelName(level)}.`, code: "LEVEL_TOO_LOW" },
+            { error: `This task needs level ${levelName(gate.minLevel)} or higher. Your level is ${levelName(workerLevel)}.`, code: "LEVEL_TOO_LOW" },
             { status: 403 },
           );
         }
@@ -115,6 +118,18 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
       },
       data: parsed.data,
     });
+    if (!result.ok && result.reason === "daily_cap") {
+      return NextResponse.json(
+        { error: DAILY_CAP_MESSAGE, code: "DAILY_CAP", cap: result.cap, used: result.used, resetsAt: result.resetsAt },
+        { status: 403 },
+      );
+    }
+    if (!result.ok && result.reason === "too_fast") {
+      return NextResponse.json(
+        { error: `Spend a little more time on this task first. You can submit in ${result.waitSeconds} seconds.`, code: "TOO_FAST", waitSeconds: result.waitSeconds },
+        { status: 400 },
+      );
+    }
     if (!result.ok) {
       const error = {
         not_available: "Task not available",

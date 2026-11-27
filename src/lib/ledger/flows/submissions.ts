@@ -9,12 +9,16 @@ import { inLedgerTransaction } from "../run";
 import { autoApproveAtFrom } from "@/lib/auto-approve";
 import { disputeWindowMs } from "@/lib/dispute-window";
 import User from "@/models/User";
+import TaskView from "@/models/TaskView";
+import { dailyCapFor, dhakaDayStart, dhakaNextMidnight } from "@/lib/earning-limits";
 import { recordAudit, SYSTEM_AUDIT } from "@/lib/audit";
 import { queueNotification } from "@/lib/outbox";
 
 export type SubmitWorkResult =
   | { ok: true; submission: ISubmissionDoc; task: ITaskDoc }
-  | { ok: false; reason: "not_available" | "pending_exists" | "full" };
+  | { ok: false; reason: "not_available" | "pending_exists" | "full" }
+  | { ok: false; reason: "too_fast"; waitSeconds: number }
+  | { ok: false; reason: "daily_cap"; cap: number; used: number; resetsAt: Date };
 
 /**
  * Takes a slot on a task and creates the worker's pending submission, in one
@@ -74,6 +78,33 @@ export async function submitWork(args: {
     if (existing) {
       await Task.updateOne({ _id: task._id }, { $inc: { filledWorkers: -1 } }, { session });
       return { ok: false, reason: "pending_exists" };
+    }
+
+    const giveSlotBack = () => Task.updateOne({ _id: task._id }, { $inc: { filledWorkers: -1 } }, { session });
+    const now = new Date();
+
+    // Minimum time on task (set by the buyer): the worker must have had the task open that long.
+    if (task.minSeconds && task.minSeconds > 0) {
+      const view = await TaskView.findOne({ taskId: task._id, workerId: worker.id }).session(session).lean();
+      const waitedMs = view ? now.getTime() - view.viewedAt.getTime() : 0;
+      if (!view || waitedMs < task.minSeconds * 1000) {
+        await giveSlotBack();
+        return { ok: false, reason: "too_fast", waitSeconds: Math.max(1, Math.ceil((task.minSeconds * 1000 - waitedMs) / 1000)) };
+      }
+    }
+
+    // Daily earning cap by level: what was earned or is waiting for review today, plus this reward.
+    // Writing the worker's own document makes two submissions at once conflict, so the second sees the first.
+    const me = await User.findOneAndUpdate({ _id: worker.id }, { $set: { lastSubmitAt: now } }, { session, returnDocument: "after" }).select("trust").lean();
+    const cap = dailyCapFor(me?.trust?.level ?? 0);
+    const [row] = await Submission.aggregate<{ total: number }>([
+      { $match: { workerId: new mongoose.Types.ObjectId(worker.id), status: { $in: ["pending", "approved"] }, createdAt: { $gte: dhakaDayStart(now) } } },
+      { $group: { _id: null, total: { $sum: "$payableAmount" } } },
+    ]).session(session);
+    const used = row?.total ?? 0;
+    if (used + task.payableAmount > cap) {
+      await giveSlotBack();
+      return { ok: false, reason: "daily_cap", cap, used, resetsAt: dhakaNextMidnight(now) };
     }
 
     if (task.filledWorkers >= task.requiredWorkers) {
