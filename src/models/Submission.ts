@@ -30,7 +30,9 @@ export interface ISubmissionDoc extends Document {
   rejectionHold?: {
     windowEndsAt: Date;
     settledAt?: Date;
-    settledAs?: "accepted" | "window" | "buyer_won";
+    settledAs?: "accepted" | "window" | "buyer_won" | "worker_won";
+    /** The worker's appeal. While it is open the hold is not settled by the window or by accepting. */
+    disputeId?: mongoose.Types.ObjectId;
   };
   createdAt: Date;
   updatedAt: Date;
@@ -59,7 +61,8 @@ const SubmissionSchema = new Schema<ISubmissionDoc>(
         {
           windowEndsAt: { type: Date, required: true },
           settledAt: { type: Date },
-          settledAs: { type: String, enum: ["accepted", "window", "buyer_won"] },
+          settledAs: { type: String, enum: ["accepted", "window", "buyer_won", "worker_won"] },
+          disputeId: { type: Schema.Types.ObjectId, ref: "Dispute" },
         },
         { _id: false },
       ),
