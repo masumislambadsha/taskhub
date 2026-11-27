@@ -18,7 +18,7 @@ function conversationIdOf(payload) {
   return payload && typeof payload === "object" ? payload.conversationId : undefined;
 }
 
-module.exports = function registerSocketHandlers(io) {
+module.exports = function registerSocketHandlers(io, { chatLimiter } = {}) {
   if (!getSocketJwtSecret()) {
     logger.error(
       "SOCKET_JWT_SECRET is missing or shorter than 32 characters: every socket connection will be rejected",
@@ -28,6 +28,11 @@ module.exports = function registerSocketHandlers(io) {
 
   io.on("connection", (socket) => {
     logger.info({ userId: socket.userId }, "user connected");
+
+    // Every user has a room of their own, so the web app and the worker can reach
+    // them from anywhere (through the Redis emitter) without knowing which
+    // instance their socket is on.
+    socket.join(`user:${socket.userId}`);
 
     // Conversations already confirmed in the database for this socket.
     const verified = new Set();
@@ -104,6 +109,18 @@ module.exports = function registerSocketHandlers(io) {
       }
       const content = typeof payload.content === "string" ? payload.content.trim() : "";
       if (!content) return;
+      // 20 messages per 10 seconds per user, shared by every instance.
+      if (chatLimiter) {
+        const limit = await chatLimiter.consume(socket.userId);
+        if (!limit.ok) {
+          deny("message:send", conversationId, "rate limited");
+          socket.emit("message:error", {
+            error: "You are sending messages too fast. Wait a moment.",
+            retryAfterSeconds: limit.retryAfterSeconds,
+          });
+          return;
+        }
+      }
       if (content.length > MAX_CONTENT_LENGTH) {
         deny("message:send", conversationId, "content too long");
         socket.emit("message:error", { error: "Message is too long" });

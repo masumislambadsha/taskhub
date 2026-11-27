@@ -2,6 +2,7 @@ import type mongoose from "mongoose";
 import Notification from "@/models/Notification";
 import Outbox, { type IOutboxDoc, type OutboxType } from "@/models/Outbox";
 import { connectDB } from "@/lib/db";
+import { emitToUser } from "@/lib/realtime-emit";
 import { logger } from "@/lib/logger";
 
 type Session = mongoose.mongo.ClientSession;
@@ -73,7 +74,7 @@ export interface OutboxHandlers {
 export const defaultHandlers: OutboxHandlers = {
   async notification(payload, key) {
     const p = payload as unknown as QueuedNotification;
-    await Notification.updateOne(
+    const res = await Notification.updateOne(
       { outboxKey: key },
       {
         $setOnInsert: {
@@ -87,6 +88,15 @@ export const defaultHandlers: OutboxHandlers = {
       },
       { upsert: true },
     );
+    // Only a notification created now is pushed, so a repeated delivery does not
+    // make the bell ring twice. Best effort: the page also refreshes on its own.
+    if (res.upsertedCount === 1) {
+      await emitToUser(p.toUserId, "notification:new", {
+        message: p.message,
+        actionRoute: p.actionRoute,
+        type: p.type ?? "info",
+      });
+    }
   },
   async email(payload, key) {
     const { sendRawEmail } = await import("@/lib/email");

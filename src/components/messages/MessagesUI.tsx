@@ -107,7 +107,7 @@ export default function MessagesUI({
 
   const activeConv = selectedConv;
 
-  const { data: fetchedMessages = [] } = useQuery<IMessage[]>({
+  const { data: fetchedMessages = [], refetch: refetchMessages } = useQuery<IMessage[]>({
     queryKey: ["messages", activeConv?.conversationId],
     queryFn: () =>
       axios
@@ -162,11 +162,18 @@ export default function MessagesUI({
 
   const handleTypingStop = useCallback(() => setTypingUser(null), []);
 
-  const { sendMessage, sendTypingStart, sendTypingStop, markRead } = useSocket({
+  // After the connection comes back, fetch what was sent while it was down.
+  const handleReconnect = useCallback(() => {
+    refetchMessages();
+    qc.invalidateQueries({ queryKey: ["conversations"] });
+  }, [refetchMessages, qc]);
+
+  const { sendMessage, sendTypingStart, sendTypingStop, markRead, connection } = useSocket({
     conversationId: activeConv?.conversationId,
     onMessage: handleMessage,
     onTypingStart: handleTypingStart,
     onTypingStop: handleTypingStop,
+    onReconnect: handleReconnect,
   });
 
   useEffect(() => {
@@ -309,6 +316,14 @@ export default function MessagesUI({
         </div>
       </div>
 
+      {connection === "reconnecting" && (
+        <div
+          role="status"
+          className="bg-amber-50 text-amber-800 text-xs font-medium px-4 py-1.5 border-b border-amber-200"
+        >
+          Reconnecting… messages sent in the meantime will appear when you are back.
+        </div>
+      )}
       <div
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-4"

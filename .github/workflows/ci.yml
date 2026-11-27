@@ -84,6 +84,8 @@ jobs:
       - name: Realtime server tests
         working-directory: server
         run: npm test
+        env:
+          TEST_REDIS_URL: redis://localhost:6379
 
   docker:
     runs-on: ubuntu-latest

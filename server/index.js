@@ -11,6 +11,8 @@ const { ALLOWED_ORIGINS, PORT } = require("./config/env");
 const { connectDB } = require("./config/db");
 const logger = require("./config/logger");
 const registerSocketHandlers = require("./socket");
+const { attachRedisAdapter, createShutdown } = require("./lib/scale");
+const { createChatLimiter } = require("./lib/rate-limit");
 const healthRouter = require("./routes/health");
 
 const app = express();
@@ -27,6 +29,10 @@ const io = new Server(httpServer, {
   },
 });
 
+// ── Redis: lets several realtime instances behave as one ─────────────────────
+const adapter = attachRedisAdapter(io, process.env.REDIS_URL);
+const chatLimiter = createChatLimiter({ redisUrl: process.env.REDIS_URL });
+
 // ── Database ─────────────────────────────────────────────────────────────────
 connectDB();
 
@@ -37,8 +43,18 @@ app.use("/health", healthRouter);
 Sentry.setupExpressErrorHandler(app);
 
 // ── Socket.io handlers ───────────────────────────────────────────────────────
-registerSocketHandlers(io);
+registerSocketHandlers(io, { chatLimiter });
 
 httpServer.listen(PORT, () => {
   logger.info({ port: PORT }, "Socket.io server listening");
 });
+
+// On SIGTERM stop taking connections and close the sockets, so clients move to
+// the other instance (Nginx routes them) instead of waiting for a timeout.
+const shutdown = createShutdown({
+  io,
+  httpServer,
+  closers: [() => chatLimiter.close(), () => adapter?.close()],
+});
+process.on("SIGTERM", () => void shutdown("SIGTERM"));
+process.on("SIGINT", () => void shutdown("SIGINT"));

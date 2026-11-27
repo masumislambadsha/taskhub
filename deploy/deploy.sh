@@ -41,20 +41,44 @@ CURRENT_TAG="$(cat "$CURRENT_FILE" 2>/dev/null || true)"
 PREVIOUS_TAG="$(cat "$PREVIOUS_FILE" 2>/dev/null || true)"
 
 HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-120}"
-SERVICES=(web realtime worker redis)
+SERVICES=(web1 web2 realtime1 realtime2 worker redis)
 
 compose() { docker compose -f compose.prod.yml "$@"; }
 
+# Host ports of each instance (see compose.prod.yml) and the health URL it answers.
+health_url() {
+  case "$1" in
+    web1) echo "http://127.0.0.1:3000/api/health/ready" ;;
+    web2) echo "http://127.0.0.1:3002/api/health/ready" ;;
+    realtime1) echo "http://127.0.0.1:3001/health" ;;
+    realtime2) echo "http://127.0.0.1:3003/health" ;;
+  esac
+}
+
+# Waits until every named service answers its health check.
 wait_healthy() {
-  local deadline=$((SECONDS + HEALTH_TIMEOUT))
+  local deadline=$((SECONDS + HEALTH_TIMEOUT)) s ok
   while [ "$SECONDS" -lt "$deadline" ]; do
-    if curl -fsS -o /dev/null --max-time 5 http://127.0.0.1:3000/api/health/ready \
-      && curl -fsS -o /dev/null --max-time 5 http://127.0.0.1:3001/health; then
-      return 0
-    fi
+    ok=1
+    for s in "$@"; do
+      curl -fsS -o /dev/null --max-time 5 "$(health_url "$s")" || { ok=0; break; }
+    done
+    [ "$ok" = "1" ] && return 0
     sleep 3
   done
   return 1
+}
+
+# Restarts one instance at a time and waits for it to be healthy before touching
+# the next, so Nginx always has a working instance to send traffic to. Stopping
+# a realtime instance closes its sockets; clients reconnect to the other one.
+rolling_restart() {
+  local s
+  for s in "$@"; do
+    echo "Restarting $s"
+    compose up -d --no-deps --force-recreate "$s" || return 1
+    wait_healthy "$s" || return 1
+  done
 }
 
 # Start the stack with the given tag and wait until it is healthy.
@@ -65,9 +89,12 @@ deploy_tag() {
     compose pull || return 1
   fi
   echo "Starting tag $IMAGE_TAG"
-  compose up -d --remove-orphans || return 1
-  echo "Waiting up to ${HEALTH_TIMEOUT}s for /api/health/ready (web) and /health (realtime)"
-  wait_healthy
+  # Redis and the worker first (nothing serves users from them), then each
+  # instance in turn. On a first deploy nothing is running yet, so everything
+  # is created and then waited for.
+  compose up -d --remove-orphans redis worker || return 1
+  rolling_restart web1 web2 realtime1 realtime2 || return 1
+  echo "Both web and both realtime instances are healthy"
 }
 
 print_logs() {

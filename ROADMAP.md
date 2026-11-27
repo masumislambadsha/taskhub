@@ -615,6 +615,8 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 
 ## 2.1 Socket.io Redis adapter and sticky sessions
 
+**Status: done**, except the recorded demo (see [ADR 0005](docs/adr/0005-realtime-instances.md)). The realtime server uses the Redis adapter, joins every user to `user:<id>` after the signed-token check, and shuts down gracefully on SIGTERM. The web app and the worker push to a user through `@socket.io/redis-emitter` (`src/lib/realtime-emit.ts`); the outbox uses it so a new notification rings the bell live, once. The chat limit (20 messages per 10 seconds per user) is counted in Redis, shared by both instances, and fails open. The web client shows "Reconnecting…" and, when back, refetches the conversation over REST. Compose runs `realtime1` and `realtime2` behind `hash $remote_addr consistent`. Tests run two real server instances against a real Redis: an event emitted on one reaches a user on the other (user rooms and a conversation room), an instance shutdown disconnects its clients and the other keeps serving, the chat limit is shared across instances and fails open. Not done: running `docker compose stop realtime1` mid-chat in a browser and recording it, because this environment cannot run containers; the Playwright version of that test belongs to 4.3.
+
 **Goal:** run two realtime instances. Chat and notifications reach everyone, and if one instance dies, users reconnect to the other.
 
 **Why it matters**
@@ -644,6 +646,8 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 **Done when:** the "kill an instance" demo works reliably. Record it for the demo video.
 
 ## 2.2 Load-balanced web instances
+
+**Status: done**, except watching it run. Compose and the VPS stack run `web1` and `web2` with `least_conn`, `max_fails=3 fail_timeout=10s` and `proxy_next_upstream`, so a dead instance is skipped and a request that fails on it is retried on the other. The web app is already stateless: sessions are signed cookies, uploads go to imgbb, rate limits and queues are in Redis, and nothing uses ISR or `revalidateTag`, so no shared Next.js cache handler is needed. `deploy/deploy.sh` now restarts one instance at a time and waits for each to be healthy (`rolling_restart`). The Nginx files were checked for structure but not with `nginx -t`, and I have not watched both instances serving, since this environment cannot run containers.
 
 **Goal:** two Next.js instances, and stopping one doesn't take the site down.
 

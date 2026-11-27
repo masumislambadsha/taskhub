@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
 import { IMessage } from "@/types";
@@ -47,7 +47,17 @@ interface UseSocketOptions {
   onTypingStart?: (data: { userId: string; name: string }) => void;
   onTypingStop?: (data: { userId: string }) => void;
   onMessagesRead?: (data: { userId: string }) => void;
+  /** A notification was pushed to this user (the worker or the web app queued it). */
+  onNotification?: () => void;
+  /**
+   * The socket lost its connection and is back (for example the realtime
+   * instance restarted and Nginx sent us to the other one). Messages sent in
+   * between were not delivered live, so fetch them over REST here.
+   */
+  onReconnect?: () => void;
 }
+
+export type ConnectionState = "connecting" | "connected" | "reconnecting";
 
 export function useSocket({
   conversationId,
@@ -55,9 +65,17 @@ export function useSocket({
   onTypingStart,
   onTypingStop,
   onMessagesRead,
+  onNotification,
+  onReconnect,
 }: UseSocketOptions = {}) {
   const { data: session } = useSession();
   const socketRef = useRef<Socket | null>(null);
+  const [connection, setConnection] = useState<ConnectionState>("connecting");
+  // Kept in a ref so a new callback each render does not tear down the listeners.
+  const onReconnectRef = useRef(onReconnect);
+  useEffect(() => {
+    onReconnectRef.current = onReconnect;
+  }, [onReconnect]);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -73,8 +91,34 @@ export function useSocket({
     if (onTypingStart) socket.on("typing:start", onTypingStart);
     if (onTypingStop) socket.on("typing:stop", onTypingStop);
     if (onMessagesRead) socket.on("messages:read", onMessagesRead);
+    if (onNotification) socket.on("notification:new", onNotification);
+
+    // Track the connection so the page can say "Reconnecting…", and catch up
+    // after a reconnect (anything missed while away comes from the server over REST).
+    let wasDisconnected = false;
+    // Not set synchronously in the effect: the socket may already be connected.
+    queueMicrotask(() => setConnection(socket.connected ? "connected" : "connecting"));
+    const handleConnect = () => {
+      setConnection("connected");
+      if (conversationId) socket.emit("join:conversation", conversationId);
+      if (wasDisconnected) {
+        wasDisconnected = false;
+        onReconnectRef.current?.();
+      }
+    };
+    const handleDisconnect = () => {
+      wasDisconnected = true;
+      setConnection("reconnecting");
+    };
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleDisconnect);
 
     return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleDisconnect);
+      if (onNotification) socket.off("notification:new", onNotification);
       if (conversationId) socket.emit("leave:conversation", conversationId);
       if (onMessage) socket.off("message:receive", onMessage);
       if (onTypingStart) socket.off("typing:start", onTypingStart);
@@ -88,6 +132,7 @@ export function useSocket({
     onTypingStart,
     onTypingStop,
     onMessagesRead,
+    onNotification,
   ]);
 
   const sendMessage = useCallback(
@@ -116,5 +161,5 @@ export function useSocket({
     socketRef.current?.emit("messages:read", { conversationId: convId });
   }, []);
 
-  return { sendMessage, sendTypingStart, sendTypingStop, markRead };
+  return { sendMessage, sendTypingStart, sendTypingStop, markRead, connection };
 }
