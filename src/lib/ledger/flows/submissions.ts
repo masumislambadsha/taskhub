@@ -7,6 +7,8 @@ import { ensureEscrowOpen } from "../escrow";
 import { postTransaction } from "../post";
 import { inLedgerTransaction } from "../run";
 import { autoApproveAtFrom } from "@/lib/auto-approve";
+import { disputeWindowMs } from "@/lib/dispute-window";
+import User from "@/models/User";
 import { recordAudit, SYSTEM_AUDIT } from "@/lib/audit";
 
 export type SubmitWorkResult =
@@ -184,25 +186,17 @@ export async function approveSubmission(args: {
 
 export type RejectSubmissionResult =
   | { ok: true; submission: ISubmissionDoc }
-  | { ok: false; reason: "not_found" | "escrow_insufficient" | "insufficient_coins" };
+  | { ok: false; reason: "not_found" };
 
 /**
- * Rejects a pending submission (conditional on `pending`) and gives its slot
- * back to the task.
+ * Rejects a pending submission (conditional on `pending`). No coins move and
+ * the slot stays taken: the reward stays in the task's escrow as a hold until
+ * `settleRejection` runs (the worker accepts, the window ends, or an admin
+ * decides). That keeps every coin accounted for, so a worker who wins an appeal
+ * is paid from the held coins. The slot reopens only when the hold settles,
+ * up to `DISPUTE_WINDOW_MS` (3 days) later.
  *
- * Normally no coins move, because the reward stays in escrow for the reopened
- * slot. Two cases move coins, in the same transaction:
- *
- * - The buyer already deleted the task (its open slots were refunded), or the
- *   task is over-subscribed (the buyer lowered the worker count below the
- *   slots already taken): the slot is not reopened and the reward is refunded
- *   to the buyer (`escrow -R, buyer +R`, key `reject-refund:<submissionId>`).
- * - The task's payout was changed after the submission was made: the reopened
- *   slot is worth the task's current payout, not the submission's, so the
- *   difference is charged to or refunded to the buyer (key
- *   `reject-reprice:<submissionId>`). If the buyer cannot afford a higher
- *   payout, the rejection is refused with `insufficient_coins` (an unfunded
- *   slot would otherwise be opened).
+ * With `DISPUTE_WINDOW_MS=0` the hold is settled straight away.
  */
 export async function rejectSubmission(args: {
   submissionId: string;
@@ -210,106 +204,184 @@ export async function rejectSubmission(args: {
   reason?: string;
 }): Promise<RejectSubmissionResult> {
   const { submissionId, buyerId, reason } = args;
+  const windowMs = disputeWindowMs();
+  const result = await inLedgerTransaction(async (session): Promise<RejectSubmissionResult> => {
+    const pending = await Submission.findOne({
+      _id: submissionId,
+      taskBuyerId: buyerId,
+      status: "pending",
+    }).session(session);
+    if (!pending) return { ok: false, reason: "not_found" };
+
+    // Pre-ledger task: open its escrow from the state before this rejection.
+    await ensureEscrowOpen(pending.taskId, session);
+
+    const $set: Record<string, unknown> = {
+      status: "rejected",
+      decidedAt: new Date(),
+      decidedBy: buyerId,
+      rejectionHold: { windowEndsAt: new Date(Date.now() + windowMs) },
+    };
+    if (reason) $set.rejectionReason = reason;
+    const submission = await Submission.findOneAndUpdate(
+      { _id: submissionId, taskBuyerId: buyerId, status: "pending" },
+      { $set },
+      { session, returnDocument: "after" },
+    );
+    if (!submission) return { ok: false, reason: "not_found" };
+    return { ok: true, submission };
+  });
+  if (!result.ok || windowMs > 0) return result;
+
+  const settled = await settleRejection({ submissionId, via: "window" });
+  return settled.ok ? { ok: true, submission: settled.submission } : result;
+}
+
+export type SettleRejectionResult =
+  | {
+      ok: true;
+      submission: ISubmissionDoc;
+      /** What happened to the slot. */
+      outcome: "reopened" | "refunded" | "shrunk";
+    }
+  | { ok: false; reason: "not_found" | "buyer_missing" };
+
+/**
+ * Ends a rejection's hold and gives the slot back, in one transaction. The flip
+ * of `rejectionHold.settledAt` is conditional on it being unset, so the worker
+ * accepting, the window job and the sweep can all race and it still settles once.
+ *
+ * What happens to the held reward and the slot:
+ * - Normal: the slot reopens. The reward stays in escrow for it. If the task's
+ *   payout changed since the submission, the difference is charged to or
+ *   refunded to the buyer (`reject-reprice:<id>`).
+ * - The task was deleted (open slots already refunded) or is over-subscribed
+ *   (the buyer lowered the worker count below the slots taken): no slot
+ *   reopens, so the reward is refunded to the buyer (`reject-refund:<id>`).
+ * - The payout rose and the buyer cannot afford it: the reward is refunded and
+ *   the task loses that slot (`requiredWorkers - 1`), because an unfunded slot
+ *   must never be opened.
+ */
+export async function settleRejection(args: {
+  submissionId: string;
+  via: "accepted" | "window" | "buyer_won";
+}): Promise<SettleRejectionResult> {
+  const { submissionId, via } = args;
   try {
-    return await inLedgerTransaction(async (session): Promise<RejectSubmissionResult> => {
-      const pending = await Submission.findOne({
+    return await inLedgerTransaction(async (session): Promise<SettleRejectionResult> => {
+      const held = await Submission.findOne({
         _id: submissionId,
-        taskBuyerId: buyerId,
-        status: "pending",
-      }).session(session);
-      if (!pending) return { ok: false, reason: "not_found" };
-
-      const task = await Task.findById(pending.taskId).session(session).lean();
-      const priceDelta = task ? task.payableAmount - pending.payableAmount : 0;
-      // A task can hold more filled slots than it now needs (the buyer lowered
-      // the worker count after workers had taken slots). Rejecting one of its
-      // submissions then reopens nothing, so there is no slot to keep funded.
-      const overSubscribed = task
-        ? task.filledWorkers - 1 >= task.requiredWorkers
-        : false;
-      let released = false;
-      if (
-        task &&
-        (task.status === "archived" ||
-          task.escrowReleasedAt ||
-          priceDelta !== 0 ||
-          overSubscribed)
-      ) {
-        // Pre-ledger task: open its escrow from the state before this rejection.
-        released = (await ensureEscrowOpen(pending.taskId, session)).released;
-      }
-      // No slot reopens: the reward goes back to the buyer.
-      const refund = released || overSubscribed;
-
-      const $set: Record<string, unknown> = {
         status: "rejected",
-        decidedAt: new Date(),
-        decidedBy: buyerId,
-      };
-      if (reason) $set.rejectionReason = reason;
+        "rejectionHold.windowEndsAt": { $exists: true },
+        "rejectionHold.settledAt": { $exists: false },
+      }).session(session);
+      if (!held) return { ok: false, reason: "not_found" };
+
+      const buyerId = String(held.taskBuyerId);
+      const task = await Task.findById(held.taskId).session(session).lean();
+
+      // Pre-ledger task: open its escrow from the state before settling.
+      let released = false;
+      if (task) released = (await ensureEscrowOpen(held.taskId, session)).released;
+
       const submission = await Submission.findOneAndUpdate(
-        { _id: submissionId, taskBuyerId: buyerId, status: "pending" },
-        { $set },
+        {
+          _id: submissionId,
+          status: "rejected",
+          "rejectionHold.settledAt": { $exists: false },
+        },
+        { $set: { "rejectionHold.settledAt": new Date(), "rejectionHold.settledAs": via } },
         { session, returnDocument: "after" },
       );
       if (!submission) return { ok: false, reason: "not_found" };
+      if (!task) return { ok: true, submission, outcome: "refunded" };
 
-      if (task) {
-        await Task.updateOne(
-          { _id: task._id },
-          refund
-            ? { $inc: { filledWorkers: -1 } }
-            : { $inc: { filledWorkers: -1 }, $set: { status: "open" } },
-          { session },
-        );
-        const escrow = escrowAccount(task._id);
-        const buyer = userAccount(buyerId);
-        if (refund) {
+      const reward = held.payableAmount;
+      const priceDelta = task.payableAmount - reward;
+      const overSubscribed = task.filledWorkers - 1 >= task.requiredWorkers;
+      const escrow = escrowAccount(task._id);
+      const buyer = userAccount(buyerId);
+
+      const refundReward = (outcome: "refunded" | "shrunk") => ({ outcome });
+      let outcome: "reopened" | "refunded" | "shrunk";
+
+      if (released || overSubscribed) {
+        await Task.updateOne({ _id: task._id }, { $inc: { filledWorkers: -1 } }, { session });
+        outcome = refundReward("refunded").outcome;
+      } else if (priceDelta > 0) {
+        const buyerDoc = await User.findById(buyerId).select("coins").session(session).lean();
+        if (!buyerDoc) throw new UnknownAccountError(buyer);
+        if ((buyerDoc.coins ?? 0) < priceDelta) {
+          await Task.updateOne(
+            { _id: task._id },
+            { $inc: { filledWorkers: -1, requiredWorkers: -1 } },
+            { session },
+          );
+          outcome = refundReward("shrunk").outcome;
+        } else {
+          await Task.updateOne(
+            { _id: task._id },
+            { $inc: { filledWorkers: -1 }, $set: { status: "open" } },
+            { session },
+          );
           await postTransaction(
             {
-              type: "submission_reject_refund",
-              idempotencyKey: `reject-refund:${submissionId}`,
+              type: "task_reprice",
+              idempotencyKey: `reject-reprice:${submissionId}`,
               entries: [
-                { accountId: escrow, amount: -submission.payableAmount },
-                { accountId: buyer, amount: submission.payableAmount },
+                { accountId: buyer, amount: -priceDelta },
+                { accountId: escrow, amount: priceDelta },
               ],
               meta: { taskId: String(task._id), submissionId },
               createdBy: buyerId,
             },
             session,
           );
-        } else if (priceDelta !== 0) {
+          outcome = "reopened";
+        }
+      } else {
+        await Task.updateOne(
+          { _id: task._id },
+          { $inc: { filledWorkers: -1 }, $set: { status: "open" } },
+          { session },
+        );
+        if (priceDelta < 0) {
           await postTransaction(
             {
               type: "task_reprice",
               idempotencyKey: `reject-reprice:${submissionId}`,
-              entries:
-                priceDelta > 0
-                  ? [
-                      { accountId: buyer, amount: -priceDelta },
-                      { accountId: escrow, amount: priceDelta },
-                    ]
-                  : [
-                      { accountId: escrow, amount: priceDelta },
-                      { accountId: buyer, amount: -priceDelta },
-                    ],
+              entries: [
+                { accountId: escrow, amount: priceDelta },
+                { accountId: buyer, amount: -priceDelta },
+              ],
               meta: { taskId: String(task._id), submissionId },
               createdBy: buyerId,
             },
             session,
           );
         }
+        outcome = "reopened";
       }
-      return { ok: true, submission };
+
+      if (outcome !== "reopened") {
+        await postTransaction(
+          {
+            type: "submission_reject_refund",
+            idempotencyKey: `reject-refund:${submissionId}`,
+            entries: [
+              { accountId: escrow, amount: -reward },
+              { accountId: buyer, amount: reward },
+            ],
+            meta: { taskId: String(task._id), submissionId },
+            createdBy: buyerId,
+          },
+          session,
+        );
+      }
+      return { ok: true, submission, outcome };
     });
   } catch (err) {
-    if (err instanceof InsufficientCoinsError) {
-      return {
-        ok: false,
-        reason: err.accountId.startsWith("user:") ? "insufficient_coins" : "escrow_insufficient",
-      };
-    }
-    if (err instanceof UnknownAccountError) return { ok: false, reason: "escrow_insufficient" };
+    if (err instanceof UnknownAccountError) return { ok: false, reason: "buyer_missing" };
     throw err;
   }
 }

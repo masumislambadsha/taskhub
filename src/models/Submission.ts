@@ -22,6 +22,16 @@ export interface ISubmissionDoc extends Document {
   decidedBy?: string;
   /** Why automatic approval gave up (for example the escrow could not cover it). */
   autoApproveError?: string;
+  /**
+   * Set when the buyer rejects. The reward stays in the task's escrow as a
+   * hold and the slot stays taken until the hold is settled: the worker
+   * accepts, the window ends, or (with disputes) an admin decides.
+   */
+  rejectionHold?: {
+    windowEndsAt: Date;
+    settledAt?: Date;
+    settledAs?: "accepted" | "window" | "buyer_won";
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -44,6 +54,16 @@ const SubmissionSchema = new Schema<ISubmissionDoc>(
     decidedAt: { type: Date },
     decidedBy: { type: String },
     autoApproveError: { type: String },
+    rejectionHold: {
+      type: new Schema(
+        {
+          windowEndsAt: { type: Date, required: true },
+          settledAt: { type: Date },
+          settledAs: { type: String, enum: ["accepted", "window", "buyer_won"] },
+        },
+        { _id: false },
+      ),
+    },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
@@ -56,6 +76,8 @@ const SubmissionSchema = new Schema<ISubmissionDoc>(
 SubmissionSchema.index({ taskId: 1, workerId: 1 });
 // The auto-approve sweep looks for pending submissions that are due.
 SubmissionSchema.index({ status: 1, autoApproveAt: 1 });
+// The settlement sweep looks for holds whose window has ended.
+SubmissionSchema.index({ status: 1, "rejectionHold.windowEndsAt": 1 });
 
 const Submission: Model<ISubmissionDoc> =
   mongoose.models.Submission ||

@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { ISubmission } from "@/types";
 import Badge from "@/components/ui/Badge";
+import RejectionHold from "@/components/submissions/RejectionHold";
 import EmptyState from "@/components/shared/EmptyState";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -97,6 +98,7 @@ export default function WorkerSubmissionsPage() {
                     {s.decidedBy === "system" && (
                       <span className="text-[10px] text-primary/50">Approved automatically</span>
                     )}
+                    <RejectionHold submission={s} />
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-xs text-primary/50">
@@ -153,6 +155,7 @@ export default function WorkerSubmissionsPage() {
                         {s.decidedBy === "system" && (
                           <p className="mt-1 text-[11px] text-primary/50">Approved automatically</p>
                         )}
+                        <RejectionHold submission={s} />
                       </td>
                       <td className="px-6 py-4 text-primary/50">
                         {format(new Date(s.createdAt), "MMM d, yyyy")}
