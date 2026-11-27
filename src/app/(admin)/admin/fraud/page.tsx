@@ -14,14 +14,17 @@ interface SubInfo {
 }
 interface Flag {
   _id: string;
+  type: "duplicate_proof" | "shared_device" | "self_dealing";
   severity: "low" | "medium" | "high";
   createdAt: string;
   userName: string | null;
   otherUserName: string | null;
-  evidence: { distance?: number; sameWorker?: boolean; role?: "copy" | "original" };
+  evidence: { distance?: number; sameWorker?: boolean; role?: "copy" | "original"; accounts?: number };
   submission: SubInfo | null;
   otherSubmission: SubInfo | null;
 }
+
+const TYPE_LABEL = { duplicate_proof: "Duplicate proof", shared_device: "Shared device", self_dealing: "Self-dealing" };
 
 const SEVERITY = { high: "bg-red-100 text-red-700", medium: "bg-amber-100 text-amber-700", low: "bg-primary/10 text-primary/70" };
 
@@ -48,8 +51,8 @@ export default function AdminFraudPage() {
       <div>
         <h1 className="font-headline text-2xl font-bold text-primary">Fraud flags</h1>
         <p className="text-primary/60 text-sm mt-1">
-          Screenshots that look the same as an earlier one. Highest severity first. The earlier worker is probably the
-          original; a flag is a lead, not a verdict.
+          Reused screenshots, accounts sharing a device, and workers on the same device as a buyer they worked for.
+          Highest severity first. A flag is a lead, not a verdict.
         </p>
       </div>
       <div className="bg-white rounded-xl border border-primary/5 shadow-sm overflow-x-auto">
@@ -62,6 +65,7 @@ export default function AdminFraudPage() {
             <thead>
               <tr className="text-left text-primary/50 border-b border-primary/5">
                 <th className="px-4 py-3">Severity</th>
+                <th className="px-4 py-3">Type</th>
                 <th className="px-4 py-3">Worker</th>
                 <th className="px-4 py-3">Task</th>
                 <th className="px-4 py-3">Matches</th>
@@ -76,15 +80,24 @@ export default function AdminFraudPage() {
                   <td className="px-4 py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${SEVERITY[f.severity]}`}>{f.severity}</span>
                   </td>
+                  <td className="px-4 py-3">{TYPE_LABEL[f.type]}</td>
                   <td className="px-4 py-3">
                     {f.userName}
-                    <span className="block text-xs text-primary/40">{f.evidence.role === "original" ? "earlier submission" : "later submission"}</span>
+                    {f.type === "duplicate_proof" && (
+                      <span className="block text-xs text-primary/40">{f.evidence.role === "original" ? "earlier submission" : "later submission"}</span>
+                    )}
                   </td>
-                  <td className="px-4 py-3">{f.submission?.taskTitle}</td>
+                  <td className="px-4 py-3">{f.submission?.taskTitle ?? "-"}</td>
                   <td className="px-4 py-3">
                     {f.evidence.sameWorker ? "their own earlier proof" : f.otherUserName}
                     <span className="block text-xs text-primary/40">
-                      {f.evidence.distance === 0 ? "identical file" : `${f.evidence.distance} of 64 bits differ`}
+                      {f.type === "shared_device"
+                        ? `${f.evidence.accounts} accounts on one device`
+                        : f.type === "self_dealing"
+                          ? "worked for a buyer on the same device"
+                          : f.evidence.distance === 0
+                            ? "identical file"
+                            : `${f.evidence.distance} of 64 bits differ`}
                     </span>
                   </td>
                   <td className="px-4 py-3 space-x-2">

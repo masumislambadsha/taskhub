@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
   const severityRank = { high: 0, medium: 1, low: 2 } as const;
   flags.sort((a, b) => severityRank[a.severity] - severityRank[b.severity] || a.createdAt.getTime() - b.createdAt.getTime());
 
-  const subIds = flags.flatMap((f) => (f.evidence.otherSubmissionId ? [f.submissionId, f.evidence.otherSubmissionId] : [f.submissionId]));
+  const subIds = flags.flatMap((f) => [f.submissionId, f.evidence.otherSubmissionId].filter((id): id is NonNullable<typeof id> => Boolean(id)));
   const userIds = flags.flatMap((f) => (f.evidence.otherUserId ? [f.userId, f.evidence.otherUserId] : [f.userId]));
   const [subs, users] = await Promise.all([
     Submission.find({ _id: { $in: subIds } }).select("taskTitle proofImageUrl workerName createdAt").lean(),
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
       ...f,
       userName: userBy.get(String(f.userId)) ?? null,
       otherUserName: f.evidence.otherUserId ? (userBy.get(String(f.evidence.otherUserId)) ?? null) : null,
-      submission: subBy.get(String(f.submissionId)) ?? null,
+      submission: f.submissionId ? (subBy.get(String(f.submissionId)) ?? null) : null,
       otherSubmission: f.evidence.otherSubmissionId ? (subBy.get(String(f.evidence.otherSubmissionId)) ?? null) : null,
     })),
   });

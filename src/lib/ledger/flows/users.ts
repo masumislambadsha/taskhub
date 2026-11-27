@@ -25,6 +25,7 @@ export async function createUserWithBonus(args: {
   data: {
     name: string;
     email: string;
+    emailNormalized?: string;
     passwordHash?: string;
     photoUrl?: string;
     role: "worker" | "buyer" | "admin" | "demo_admin";

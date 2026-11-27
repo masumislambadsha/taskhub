@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
 import FraudFlag from "@/models/FraudFlag";
+import { evaluateLinks, recordSighting } from "@/lib/fraud/signals";
 import { submitWork } from "@/lib/ledger/flows/submissions";
 import { submissionSchema } from "@/lib/validators/submission";
 import { drainOutboxQuietly } from "@/lib/outbox";
@@ -69,6 +70,9 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
   if (!session || session.user.role !== "worker") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  await recordSighting(session.user.id, req.headers, "submit");
+  await evaluateLinks(session.user.id);
 
   return withIdempotency(req, session.user.id, async () => {
     // Counted here, so a replayed request does not use up the hour's 30.

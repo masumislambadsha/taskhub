@@ -22,6 +22,8 @@ export interface IUserDoc extends Document {
   lastSeenAt?: Date;
   /** When true, other people see whether the user is online but never when they were last seen. */
   hideLastSeen?: boolean;
+  /** Email with Gmail dots and +tags removed, to catch one inbox signing up twice. */
+  emailNormalized?: string;
   status: "active" | "suspended";
   createdAt: Date;
   updatedAt: Date;
@@ -43,6 +45,7 @@ const UserSchema = new Schema<IUserDoc>(
     ledgerOpenedAt: { type: Date },
     lastSeenAt: { type: Date },
     hideLastSeen: { type: Boolean, default: false },
+    emailNormalized: { type: String },
     status: { type: String, enum: ["active", "suspended"], default: "active" },
   },
   { timestamps: true },
@@ -50,6 +53,8 @@ const UserSchema = new Schema<IUserDoc>(
 
 // The leaderboard: active workers by coins, highest first.
 UserSchema.index({ role: 1, status: 1, coins: -1 });
+// One account per inbox. Only accounts that have the field take part, so older accounts are unaffected.
+UserSchema.index({ emailNormalized: 1 }, { unique: true, partialFilterExpression: { emailNormalized: { $type: "string" } } });
 
 const User: Model<IUserDoc> =
   mongoose.models.User || mongoose.model<IUserDoc>("User", UserSchema);

@@ -1,3 +1,4 @@
+import { evaluateLinks, recordSighting } from "@/lib/fraud/signals";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
@@ -75,6 +76,9 @@ export const POST = withRequestLogging("/api/v1/withdrawals", async function POS
   if (!session || session.user.role !== "worker") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  await recordSighting(session.user.id, req.headers, "withdraw");
+  await evaluateLinks(session.user.id);
 
   return withIdempotency(req, session.user.id, async () => {
     // Counted here, so a repeat of a request that already ran (a double click, a
