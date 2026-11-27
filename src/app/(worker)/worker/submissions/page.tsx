@@ -92,7 +92,12 @@ export default function WorkerSubmissionsPage() {
                   <p className="font-semibold text-primary text-sm leading-snug">
                     {s.taskTitle}
                   </p>
-                  <Badge status={s.status} />
+                  <div className="flex flex-col items-end gap-1">
+                    <Badge status={s.status} />
+                    {s.decidedBy === "system" && (
+                      <span className="text-[10px] text-primary/50">Approved automatically</span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center justify-between text-xs text-primary/50">
                   <span>{s.taskBuyerName}</span>
@@ -145,6 +150,9 @@ export default function WorkerSubmissionsPage() {
                       </td>
                       <td className="px-6 py-4">
                         <Badge status={s.status} />
+                        {s.decidedBy === "system" && (
+                          <p className="mt-1 text-[11px] text-primary/50">Approved automatically</p>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-primary/50">
                         {format(new Date(s.createdAt), "MMM d, yyyy")}

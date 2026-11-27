@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import Redis from "ioredis";
 import { connectDB } from "@/lib/db";
 import { createLogger } from "@/lib/logger";
+import { startAutoApproveWorker, type AutoApproveRuntime } from "./auto-approve";
 
 const log = createLogger("worker");
 
@@ -14,6 +15,7 @@ const RECONNECT_DELAY_MS = 5000;
 const SHUTDOWN_TIMEOUT_MS = 10000;
 
 let shuttingDown = false;
+let autoApprove: AutoApproveRuntime | null = null;
 
 const redis = REDIS_URL
   ? new Redis(REDIS_URL, {
@@ -60,8 +62,9 @@ const server = http.createServer((req, res) => {
     const checks = {
       mongo: { ok: mongoOk() },
       redis: { ok: redisOk(), configured: redis !== null },
+      autoApprove: { ok: autoApprove !== null },
     };
-    const ok = checks.mongo.ok && checks.redis.ok;
+    const ok = checks.mongo.ok && checks.redis.ok && checks.autoApprove.ok;
     res.writeHead(ok ? 200 : 503, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ status: ok ? "ok" : "error", checks }));
     return;
@@ -86,6 +89,8 @@ async function shutdown(signal: string): Promise<void> {
       server.close(() => resolve());
       server.closeAllConnections();
     });
+    // Stop taking jobs before the connections go away.
+    await autoApprove?.close();
     if (redis) {
       if (redis.status === "ready") await redis.quit();
       else redis.disconnect();
@@ -114,4 +119,16 @@ server.listen(HEALTH_PORT, () => {
   if (!REDIS_URL) log.warn("REDIS_URL is not set");
 });
 
-void connectMongoWithRetry();
+async function start(): Promise<void> {
+  await connectMongoWithRetry();
+  if (!redis || shuttingDown) return;
+  try {
+    autoApprove = await startAutoApproveWorker(redis);
+    log.info("auto-approve worker started");
+  } catch (err) {
+    log.error({ err }, "auto-approve worker failed to start");
+    Sentry.captureException(err);
+  }
+}
+
+void start();

@@ -8,6 +8,7 @@ import { createNotification } from "@/lib/notifications";
 import { redactEmailFields } from "@/lib/privacy";
 import { withRequestLogging } from "@/lib/with-request-logging";
 import { withIdempotency } from "@/lib/idempotency";
+import { scheduleAutoApprove } from "@/lib/queue/auto-approve-queue";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -27,7 +28,8 @@ export async function GET(req: NextRequest) {
 
   const [submissions, total] = await Promise.all([
     Submission.find(query)
-      .sort("-createdAt")
+      // Pending work is a to-do list: the one closest to auto-approving comes first.
+      .sort(status === "pending" ? "autoApproveAt createdAt" : "-createdAt")
       .skip((page - 1) * limit)
       .limit(limit)
       .lean(),
@@ -76,6 +78,11 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
       return NextResponse.json({ error }, { status: 400 });
     }
     const { submission, task } = result;
+
+    // After the commit. If Redis is down the 15-minute sweep approves on time.
+    if (submission.autoApproveAt) {
+      await scheduleAutoApprove(String(submission._id), submission.autoApproveAt);
+    }
 
     await createNotification({
       toUserId: task.buyerId.toString(),

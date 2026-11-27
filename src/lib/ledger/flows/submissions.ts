@@ -6,6 +6,7 @@ import { InsufficientCoinsError, UnknownAccountError } from "../errors";
 import { ensureEscrowOpen } from "../escrow";
 import { postTransaction } from "../post";
 import { inLedgerTransaction } from "../run";
+import { autoApproveAtFrom } from "@/lib/auto-approve";
 
 export type SubmitWorkResult =
   | { ok: true; submission: ISubmissionDoc; task: ITaskDoc }
@@ -87,6 +88,7 @@ export async function submitWork(args: {
           workerName: worker.name,
           workerEmail: worker.email,
           payableAmount: task.payableAmount,
+          autoApproveAt: autoApproveAtFrom(),
           ...data,
         },
       ],
@@ -111,8 +113,11 @@ export type ApproveSubmissionResult =
 export async function approveSubmission(args: {
   submissionId: string;
   buyerId: string;
+  /** Who made the decision: the buyer (the default) or "system" for an automatic approval. */
+  decidedBy?: string;
 }): Promise<ApproveSubmissionResult> {
   const { submissionId, buyerId } = args;
+  const decidedBy = args.decidedBy ?? buyerId;
   try {
     return await inLedgerTransaction(async (session): Promise<ApproveSubmissionResult> => {
       const pending = await Submission.findOne({
@@ -127,7 +132,7 @@ export async function approveSubmission(args: {
 
       const submission = await Submission.findOneAndUpdate(
         { _id: submissionId, taskBuyerId: buyerId, status: "pending" },
-        { $set: { status: "approved" } },
+        { $set: { status: "approved", decidedAt: new Date(), decidedBy }, $unset: { autoApproveError: "" } },
         { session, returnDocument: "after" },
       );
       if (!submission) return { ok: false, reason: "not_found" };
@@ -220,7 +225,11 @@ export async function rejectSubmission(args: {
       // No slot reopens: the reward goes back to the buyer.
       const refund = released || overSubscribed;
 
-      const $set: Record<string, unknown> = { status: "rejected" };
+      const $set: Record<string, unknown> = {
+        status: "rejected",
+        decidedAt: new Date(),
+        decidedBy: buyerId,
+      };
       if (reason) $set.rejectionReason = reason;
       const submission = await Submission.findOneAndUpdate(
         { _id: submissionId, taskBuyerId: buyerId, status: "pending" },
