@@ -1,4 +1,4 @@
-# TaskHub local stack: nginx -> web1 + realtime1, plus worker, mongo and redis.
+# TaskHub local stack: nginx -> web1 + web2 and realtime1 + realtime2, plus worker, mongo and redis.
 # Usage: cp .env.example .env, fill in secrets, then
 #   docker compose up -d --build --wait
 # Only nginx publishes a port (80). Everything else stays on the internal network.
@@ -19,10 +19,14 @@ services:
     depends_on:
       web1:
         condition: service_healthy
+      web2:
+        condition: service_healthy
       realtime1:
         condition: service_healthy
+      realtime2:
+        condition: service_healthy
 
-  web1:
+  web1: &web
     build:
       context: .
       target: web
@@ -43,7 +47,7 @@ services:
       redis:
         condition: service_healthy
 
-  realtime1:
+  realtime1: &realtime
     build: ./server
     env_file: .env
     environment:
@@ -53,6 +57,15 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+
+  # The same image and settings as web1: identical builds, so both serve the same build ID.
+  web2:
+    <<: *web
+
+  # Same as realtime1. Redis (REDIS_URL) joins the two, so a message sent through
+  # one reaches users connected to the other.
+  realtime2:
+    <<: *realtime
 
   worker:
     build:

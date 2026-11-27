@@ -1,7 +1,7 @@
 "use client";
 import { MdNotifications } from 'react-icons/md';
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store";
 import {
@@ -11,6 +11,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { INotification } from "@/types";
+import { useSocket } from "@/hooks/useSocket";
 import { formatDistanceToNow } from "date-fns";
 
 export default function NotificationBell() {
@@ -24,6 +25,12 @@ export default function NotificationBell() {
     queryFn: () => axios.get("/api/v1/notifications").then((r) => r.data),
     refetchInterval: 30000,
   });
+
+  // A pushed notification shows at once instead of waiting for the next refresh.
+  const handlePushed = useCallback(() => {
+    qc.invalidateQueries({ queryKey: ["notifications"] });
+  }, [qc]);
+  useSocket({ onNotification: handlePushed });
 
   const readAll = useMutation({
     mutationFn: () => axios.post("/api/v1/notifications/read-all"),

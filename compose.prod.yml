@@ -2,7 +2,12 @@
 # Nginx runs on the VPS host (see deploy/nginx/taskhub.conf), not in this file.
 # MongoDB is MongoDB Atlas, so it is not part of this stack.
 #
-# Usage (normally through deploy/deploy.sh):
+# Two of everything that serves users: web1 and web2, realtime1 and realtime2.
+# Named services (not "scale: 2") keep the Nginx config simple: each has its own
+# fixed host port. Redis connects the two realtime instances, so a message sent
+# on one reaches users connected to the other.
+#
+# Usage (normally through deploy/deploy.sh, which restarts one instance at a time):
 #   DOCKERHUB_USERNAME=your-dockerhub-user IMAGE_TAG=<git-sha> \
 #     docker compose -f compose.prod.yml up -d
 name: taskhub
@@ -13,27 +18,50 @@ x-logging: &default-logging
     max-size: 10m
     max-file: "3"
 
+x-web: &web
+  image: ${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME to your Docker Hub user}/taskhub-web:${IMAGE_TAG:?set IMAGE_TAG to the image tag (a git SHA) to run}
+  restart: unless-stopped
+  env_file: deploy/env/web.env
+  environment:
+    REDIS_URL: redis://redis:6379
+  depends_on:
+    redis:
+      condition: service_healthy
+  logging: *default-logging
+
+x-realtime: &realtime
+  image: ${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME to your Docker Hub user}/taskhub-realtime:${IMAGE_TAG:?set IMAGE_TAG to the image tag (a git SHA) to run}
+  restart: unless-stopped
+  env_file: deploy/env/realtime.env
+  environment:
+    REDIS_URL: redis://redis:6379
+  # Give a stopping instance time to close its sockets, so clients move to the other one.
+  stop_grace_period: 15s
+  depends_on:
+    redis:
+      condition: service_healthy
+  logging: *default-logging
+
 services:
-  web:
-    image: ${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME to your Docker Hub user}/taskhub-web:${IMAGE_TAG:?set IMAGE_TAG to the image tag (a git SHA) to run}
-    restart: unless-stopped
-    env_file: deploy/env/web.env
-    environment:
-      REDIS_URL: redis://redis:6379
+  web1:
+    <<: *web
     ports:
       - "127.0.0.1:3000:3000"
-    depends_on:
-      redis:
-        condition: service_healthy
-    logging: *default-logging
 
-  realtime:
-    image: ${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME to your Docker Hub user}/taskhub-realtime:${IMAGE_TAG:?set IMAGE_TAG to the image tag (a git SHA) to run}
-    restart: unless-stopped
-    env_file: deploy/env/realtime.env
+  web2:
+    <<: *web
+    ports:
+      - "127.0.0.1:3002:3000"
+
+  realtime1:
+    <<: *realtime
     ports:
       - "127.0.0.1:3001:3001"
-    logging: *default-logging
+
+  realtime2:
+    <<: *realtime
+    ports:
+      - "127.0.0.1:3003:3001"
 
   worker:
     image: ${DOCKERHUB_USERNAME:?set DOCKERHUB_USERNAME to your Docker Hub user}/taskhub-worker:${IMAGE_TAG:?set IMAGE_TAG to the image tag (a git SHA) to run}
