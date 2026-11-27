@@ -18,6 +18,8 @@ import { expectedEscrow, pendingSubmissionValue } from "@/lib/ledger/escrow";
 import { reconcile } from "@/lib/ledger/reconcile";
 import { createFundedTask, deleteFundedTask, updateFundedTask } from "@/lib/ledger/flows/tasks";
 import { approveSubmission, rejectSubmission, settleRejection } from "@/lib/ledger/flows/submissions";
+import { decideDispute, openDispute } from "@/lib/ledger/flows/disputes";
+import Dispute, { ACTIVE_DISPUTE_STATUSES } from "@/models/Dispute";
 import { approveWithdrawal } from "@/lib/ledger/flows/withdrawals";
 import { adjustUserCoins, createUserWithBonus, removeUser } from "@/lib/ledger/flows/users";
 
@@ -27,6 +29,7 @@ beforeAll(async () => {
   // A long window, so rejections stay held and the scenario exercises holds and their settlement.
   process.env.DISPUTE_WINDOW_MS = String(30 * 24 * 3600 * 1000);
   db = await startTestDb("taskhub_ledger_invariants_test");
+  await Dispute.init();
 }, 180_000);
 afterAll(async () => {
   process.env.DISPUTE_WINDOW_MS = "0";
@@ -34,6 +37,7 @@ afterAll(async () => {
 });
 beforeEach(async () => {
   await db.reset();
+  await Dispute.deleteMany({});
 });
 
 /** A small seeded PRNG (mulberry32) so a failing run can be replayed. */
@@ -134,7 +138,7 @@ async function runScenario(seed: number, totalOps: number) {
     for (let k = rnd.int(1, 6); k > 0; k--, ops++) {
       const kind = rnd.pick([
         "topup", "topup", "create", "create", "create", "approve", "approve", "approve",
-        "reject", "reject", "settle", "settle", "delete", "edit", "edit", "withdraw", "withdraw", "adjust", "signup", "remove",
+        "reject", "reject", "settle", "appeal", "appeal", "decide", "decide", "delete", "edit", "edit", "withdraw", "withdraw", "adjust", "signup", "remove",
       ])!;
       log.push(kind);
       if (kind === "topup") {
@@ -196,6 +200,48 @@ async function runScenario(seed: number, totalOps: number) {
               log.push(`SETTLE ${s._id}: ${r.ok ? r.outcome : r.reason}`);
               if (r.ok) won("settle");
             }));
+          }
+        }
+      } else if (kind === "appeal") {
+        const held = await Submission.find({
+          status: "rejected",
+          "rejectionHold.windowEndsAt": { $exists: true },
+          "rejectionHold.settledAt": { $exists: false },
+        }).select("_id workerId").lean();
+        const s = rnd.pick(held);
+        if (s) {
+          for (let i = rnd.int(1, 2); i > 0; i--) {
+            batch.push(
+              openDispute({
+                submissionId: String(s._id),
+                workerId: String(s.workerId),
+                statement: "I did exactly what the task asked and attached the proof.",
+              }).then((r) => {
+                log.push(`APPEAL ${s._id}: ${r.ok ? "ok" : r.reason}`);
+                if (r.ok) won("appeal");
+              }),
+            );
+          }
+        }
+      } else if (kind === "decide") {
+        const open = await Dispute.find({ status: { $in: ACTIVE_DISPUTE_STATUSES } }).select("_id").lean();
+        const d = rnd.pick(open);
+        if (d) {
+          // Two admins can decide the same dispute at once; one decision stands.
+          for (let i = rnd.int(1, 2); i > 0; i--) {
+            const winner = rnd.next() < 0.5 ? "worker" : "buyer";
+            batch.push(
+              decideDispute({
+                disputeId: String(d._id),
+                winner,
+                note: "Reviewed both sides carefully.",
+                adminId: "adm",
+                audit: { actorId: "adm", actorRole: "admin" },
+              }).then((r) => {
+                log.push(`DECIDE ${d._id} ${winner}: ${r.ok ? "ok" : r.reason}`);
+                if (r.ok) won(`decide_${winner}`);
+              }),
+            );
           }
         }
       } else if (kind === "delete" || kind === "edit") {
@@ -278,7 +324,7 @@ describe("randomized operations keep every invariant", () => {
       const { ops, stats } = await runScenario(seed, 200);
       expect(ops).toBeGreaterThanOrEqual(200);
       // The run really exercised each kind of movement, not just failed attempts.
-      for (const kind of ["topup", "create", "approve", "edit", "withdraw", "adjust", "signup"]) {
+      for (const kind of ["topup", "create", "approve", "reject", "settle", "appeal", "edit", "withdraw", "adjust", "signup"]) {
         expect(stats[kind] ?? 0, `${kind} never succeeded: ${JSON.stringify(stats)}`).toBeGreaterThan(0);
       }
       if (process.env.LEDGER_STATS) console.log(seed, JSON.stringify(stats));

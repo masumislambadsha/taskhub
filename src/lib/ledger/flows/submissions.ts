@@ -266,122 +266,137 @@ export async function settleRejection(args: {
   submissionId: string;
   via: "accepted" | "window" | "buyer_won";
 }): Promise<SettleRejectionResult> {
-  const { submissionId, via } = args;
   try {
-    return await inLedgerTransaction(async (session): Promise<SettleRejectionResult> => {
-      const held = await Submission.findOne({
-        _id: submissionId,
-        status: "rejected",
-        "rejectionHold.windowEndsAt": { $exists: true },
-        "rejectionHold.settledAt": { $exists: false },
-      }).session(session);
-      if (!held) return { ok: false, reason: "not_found" };
-
-      const buyerId = String(held.taskBuyerId);
-      const task = await Task.findById(held.taskId).session(session).lean();
-
-      // Pre-ledger task: open its escrow from the state before settling.
-      let released = false;
-      if (task) released = (await ensureEscrowOpen(held.taskId, session)).released;
-
-      const submission = await Submission.findOneAndUpdate(
-        {
-          _id: submissionId,
-          status: "rejected",
-          "rejectionHold.settledAt": { $exists: false },
-        },
-        { $set: { "rejectionHold.settledAt": new Date(), "rejectionHold.settledAs": via } },
-        { session, returnDocument: "after" },
-      );
-      if (!submission) return { ok: false, reason: "not_found" };
-      if (!task) return { ok: true, submission, outcome: "refunded" };
-
-      const reward = held.payableAmount;
-      const priceDelta = task.payableAmount - reward;
-      const overSubscribed = task.filledWorkers - 1 >= task.requiredWorkers;
-      const escrow = escrowAccount(task._id);
-      const buyer = userAccount(buyerId);
-
-      const refundReward = (outcome: "refunded" | "shrunk") => ({ outcome });
-      let outcome: "reopened" | "refunded" | "shrunk";
-
-      if (released || overSubscribed) {
-        await Task.updateOne({ _id: task._id }, { $inc: { filledWorkers: -1 } }, { session });
-        outcome = refundReward("refunded").outcome;
-      } else if (priceDelta > 0) {
-        const buyerDoc = await User.findById(buyerId).select("coins").session(session).lean();
-        if (!buyerDoc) throw new UnknownAccountError(buyer);
-        if ((buyerDoc.coins ?? 0) < priceDelta) {
-          await Task.updateOne(
-            { _id: task._id },
-            { $inc: { filledWorkers: -1, requiredWorkers: -1 } },
-            { session },
-          );
-          outcome = refundReward("shrunk").outcome;
-        } else {
-          await Task.updateOne(
-            { _id: task._id },
-            { $inc: { filledWorkers: -1 }, $set: { status: "open" } },
-            { session },
-          );
-          await postTransaction(
-            {
-              type: "task_reprice",
-              idempotencyKey: `reject-reprice:${submissionId}`,
-              entries: [
-                { accountId: buyer, amount: -priceDelta },
-                { accountId: escrow, amount: priceDelta },
-              ],
-              meta: { taskId: String(task._id), submissionId },
-              createdBy: buyerId,
-            },
-            session,
-          );
-          outcome = "reopened";
-        }
-      } else {
-        await Task.updateOne(
-          { _id: task._id },
-          { $inc: { filledWorkers: -1 }, $set: { status: "open" } },
-          { session },
-        );
-        if (priceDelta < 0) {
-          await postTransaction(
-            {
-              type: "task_reprice",
-              idempotencyKey: `reject-reprice:${submissionId}`,
-              entries: [
-                { accountId: escrow, amount: priceDelta },
-                { accountId: buyer, amount: -priceDelta },
-              ],
-              meta: { taskId: String(task._id), submissionId },
-              createdBy: buyerId,
-            },
-            session,
-          );
-        }
-        outcome = "reopened";
-      }
-
-      if (outcome !== "reopened") {
-        await postTransaction(
-          {
-            type: "submission_reject_refund",
-            idempotencyKey: `reject-refund:${submissionId}`,
-            entries: [
-              { accountId: escrow, amount: -reward },
-              { accountId: buyer, amount: reward },
-            ],
-            meta: { taskId: String(task._id), submissionId },
-            createdBy: buyerId,
-          },
-          session,
-        );
-      }
-      return { ok: true, submission, outcome };
-    });
+    return await inLedgerTransaction((session) => settleRejectionInSession(session, args));
   } catch (err) {
     if (err instanceof UnknownAccountError) return { ok: false, reason: "buyer_missing" };
     throw err;
   }
+}
+
+/**
+ * The body of `settleRejection`, for callers that must settle inside a
+ * transaction of their own (an admin deciding an appeal also updates the
+ * dispute and writes the audit entry). `buyer_won` settles a disputed hold;
+ * the other two refuse one, because while an appeal is open only the admin's
+ * decision or the worker withdrawing it may end the hold.
+ */
+export async function settleRejectionInSession(
+  session: mongoose.mongo.ClientSession,
+  args: { submissionId: string; via: "accepted" | "window" | "buyer_won" },
+): Promise<SettleRejectionResult> {
+  const { submissionId, via } = args;
+  const held = await Submission.findOne({
+    _id: submissionId,
+    status: "rejected",
+    "rejectionHold.windowEndsAt": { $exists: true },
+    "rejectionHold.settledAt": { $exists: false },
+    ...(via === "buyer_won"
+      ? { "rejectionHold.disputeId": { $exists: true } }
+      : { "rejectionHold.disputeId": { $exists: false } }),
+  }).session(session);
+  if (!held) return { ok: false, reason: "not_found" };
+
+  const buyerId = String(held.taskBuyerId);
+  const task = await Task.findById(held.taskId).session(session).lean();
+
+  // Pre-ledger task: open its escrow from the state before settling.
+  let released = false;
+  if (task) released = (await ensureEscrowOpen(held.taskId, session)).released;
+
+  const submission = await Submission.findOneAndUpdate(
+    {
+      _id: submissionId,
+      status: "rejected",
+      "rejectionHold.settledAt": { $exists: false },
+    },
+    { $set: { "rejectionHold.settledAt": new Date(), "rejectionHold.settledAs": via } },
+    { session, returnDocument: "after" },
+  );
+  if (!submission) return { ok: false, reason: "not_found" };
+  if (!task) return { ok: true, submission, outcome: "refunded" };
+
+  const reward = held.payableAmount;
+  const priceDelta = task.payableAmount - reward;
+  const overSubscribed = task.filledWorkers - 1 >= task.requiredWorkers;
+  const escrow = escrowAccount(task._id);
+  const buyer = userAccount(buyerId);
+
+  const refundReward = (outcome: "refunded" | "shrunk") => ({ outcome });
+  let outcome: "reopened" | "refunded" | "shrunk";
+
+  if (released || overSubscribed) {
+    await Task.updateOne({ _id: task._id }, { $inc: { filledWorkers: -1 } }, { session });
+    outcome = refundReward("refunded").outcome;
+  } else if (priceDelta > 0) {
+    const buyerDoc = await User.findById(buyerId).select("coins").session(session).lean();
+    if (!buyerDoc) throw new UnknownAccountError(buyer);
+    if ((buyerDoc.coins ?? 0) < priceDelta) {
+      await Task.updateOne(
+        { _id: task._id },
+        { $inc: { filledWorkers: -1, requiredWorkers: -1 } },
+        { session },
+      );
+      outcome = refundReward("shrunk").outcome;
+    } else {
+      await Task.updateOne(
+        { _id: task._id },
+        { $inc: { filledWorkers: -1 }, $set: { status: "open" } },
+        { session },
+      );
+      await postTransaction(
+        {
+          type: "task_reprice",
+          idempotencyKey: `reject-reprice:${submissionId}`,
+          entries: [
+            { accountId: buyer, amount: -priceDelta },
+            { accountId: escrow, amount: priceDelta },
+          ],
+          meta: { taskId: String(task._id), submissionId },
+          createdBy: buyerId,
+        },
+        session,
+      );
+      outcome = "reopened";
+    }
+  } else {
+    await Task.updateOne(
+      { _id: task._id },
+      { $inc: { filledWorkers: -1 }, $set: { status: "open" } },
+      { session },
+    );
+    if (priceDelta < 0) {
+      await postTransaction(
+        {
+          type: "task_reprice",
+          idempotencyKey: `reject-reprice:${submissionId}`,
+          entries: [
+            { accountId: escrow, amount: priceDelta },
+            { accountId: buyer, amount: -priceDelta },
+          ],
+          meta: { taskId: String(task._id), submissionId },
+          createdBy: buyerId,
+        },
+        session,
+      );
+    }
+    outcome = "reopened";
+  }
+
+  if (outcome !== "reopened") {
+    await postTransaction(
+      {
+        type: "submission_reject_refund",
+        idempotencyKey: `reject-refund:${submissionId}`,
+        entries: [
+          { accountId: escrow, amount: -reward },
+          { accountId: buyer, amount: reward },
+        ],
+        meta: { taskId: String(task._id), submissionId },
+        createdBy: buyerId,
+      },
+      session,
+    );
+  }
+  return { ok: true, submission, outcome };
 }

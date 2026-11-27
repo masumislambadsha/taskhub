@@ -25,6 +25,8 @@ export async function sweepDueHolds(
     status: "rejected",
     "rejectionHold.windowEndsAt": { $lte: now },
     "rejectionHold.settledAt": { $exists: false },
+    // A disputed hold is ended by an admin or by the worker withdrawing, never by the clock.
+    "rejectionHold.disputeId": { $exists: false },
   })
     .sort("rejectionHold.windowEndsAt")
     .limit(opts.limit ?? 200)
