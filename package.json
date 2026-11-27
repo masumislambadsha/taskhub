@@ -14,6 +14,7 @@
     "start:worker": "node dist/worker/index.js",
     "seed": "tsx scripts/seed.ts",
     "load:seed": "tsx load/seed-load.ts",
+    "perf:explain": "tsx scripts/perf-explain.ts",
     "ledger:open": "tsx scripts/ledger-open.ts",
     "ledger:reconcile": "tsx scripts/ledger-reconcile.ts",
     "mfa:reset": "tsx scripts/mfa-reset.ts"

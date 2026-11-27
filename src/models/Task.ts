@@ -49,6 +49,12 @@ const TaskSchema = new Schema<ITaskDoc>(
   { timestamps: true },
 );
 
+// The public task list filters on status (and often category) and sorts newest
+// first; a buyer's own list filters on buyerId. Measured in docs/performance.md.
+TaskSchema.index({ status: 1, createdAt: -1 });
+TaskSchema.index({ status: 1, category: 1, createdAt: -1 });
+TaskSchema.index({ buyerId: 1, createdAt: -1 });
+
 const Task: Model<ITaskDoc> =
   mongoose.models.Task || mongoose.model<ITaskDoc>("Task", TaskSchema);
 

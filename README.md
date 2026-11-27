@@ -111,6 +111,7 @@ npm run lint                # ESLint
 
 - [ADR 0001: VPS deployment](docs/adr/0001-vps-deployment.md)
 - [ADR 0002: Coin ledger](docs/adr/0002-coin-ledger.md)
+- [Query performance](docs/performance.md): explain results before and after adding indexes (task list 34.8 ms to 1.3 ms, review queues about 85 ms to under 1 ms, on 100,000 tasks and 300,000 submissions)
 - [ROADMAP](ROADMAP.md)
 
 ---
