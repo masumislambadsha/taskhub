@@ -3,7 +3,6 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { isParticipant, parseConversationId } from "@/lib/conversation";
 import Message from "@/models/Message";
-import mongoose from "mongoose";
 
 interface Props {
   params: Promise<{ conversationId: string }>;
@@ -30,19 +29,12 @@ export async function GET(_req: Request, { params }: Props) {
 
   await connectDB();
 
+  // Loading the history does not mark it read: the open, visible chat tells the
+  // realtime server how far it has read (conversation:read), which also lets the
+  // sender see blue ticks only when the message was actually seen.
   const messages = await Message.find({ conversationId })
     .sort("createdAt")
     .lean();
-
-  
-  await Message.updateMany(
-    {
-      conversationId,
-      receiverId: new mongoose.Types.ObjectId(userId),
-      isRead: false,
-    },
-    { isRead: true },
-  );
 
   return NextResponse.json(messages);
 }

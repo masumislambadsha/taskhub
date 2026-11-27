@@ -134,7 +134,16 @@ export interface IMessage {
   senderPhoto?: string;
   content: string;
   isRead: boolean;
+  deliveredAt?: string;
+  readAt?: string;
   createdAt: string;
+}
+
+export interface PresenceState {
+  userId: string;
+  online: boolean;
+  /** Absent when the user hides it, or has never been seen. */
+  lastSeen?: string;
 }
 
 export interface IConversation {

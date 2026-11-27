@@ -13,6 +13,10 @@ const logger = require("./config/logger");
 const registerSocketHandlers = require("./socket");
 const { attachRedisAdapter, createShutdown } = require("./lib/scale");
 const { createChatLimiter } = require("./lib/rate-limit");
+const Redis = require("ioredis");
+const mongoose = require("mongoose");
+const { createPresence, createMemoryKv } = require("./lib/presence");
+const { conversationPartners } = require("./controllers/messageController");
 const healthRouter = require("./routes/health");
 
 const app = express();
@@ -43,7 +47,26 @@ app.use("/health", healthRouter);
 Sentry.setupExpressErrorHandler(app);
 
 // ── Socket.io handlers ───────────────────────────────────────────────────────
-registerSocketHandlers(io, { chatLimiter });
+// Presence: online status and last seen, in Redis (or in memory for a single instance).
+const presenceRedis = process.env.REDIS_URL
+  ? new Redis(process.env.REDIS_URL, { maxRetriesPerRequest: 1, commandTimeout: 1000 })
+  : null;
+presenceRedis?.on("error", () => {});
+const usersCollection = () => mongoose.connection.db?.collection("users");
+const asObjectId = (id) => new mongoose.Types.ObjectId(id);
+const presence = createPresence({
+  redis: presenceRedis ?? createMemoryKv(),
+  getPartners: (id) => conversationPartners(id),
+  isLastSeenHidden: async (id) => {
+    const user = await usersCollection()?.findOne({ _id: asObjectId(id) }, { projection: { hideLastSeen: 1 } });
+    return Boolean(user?.hideLastSeen);
+  },
+  saveLastSeen: (id, at) => usersCollection()?.updateOne({ _id: asObjectId(id) }, { $set: { lastSeenAt: at } }),
+  hasOtherSockets: async (id) => (await io.in(`user:${id}`).fetchSockets()).length > 0,
+  announce: (partnerId, event) => io.to(`user:${partnerId}`).emit("presence:update", event),
+});
+
+registerSocketHandlers(io, { chatLimiter, presence });
 
 httpServer.listen(PORT, () => {
   logger.info({ port: PORT }, "Socket.io server listening");
@@ -54,7 +77,7 @@ httpServer.listen(PORT, () => {
 const shutdown = createShutdown({
   io,
   httpServer,
-  closers: [() => chatLimiter.close(), () => adapter?.close()],
+  closers: [() => presence.stop(), () => chatLimiter.close(), () => adapter?.close(), () => presenceRedis?.disconnect()],
 });
 process.on("SIGTERM", () => void shutdown("SIGTERM"));
 process.on("SIGINT", () => void shutdown("SIGINT"));
