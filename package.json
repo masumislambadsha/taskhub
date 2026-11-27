@@ -20,6 +20,7 @@
     "mfa:reset": "tsx scripts/mfa-reset.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.14.0",
     "@heroui/react": "^3.0.1",
     "@hookform/resolvers": "^5.2.2",
     "@reduxjs/toolkit": "^2.11.2",

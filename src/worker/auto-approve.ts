@@ -3,6 +3,7 @@ import type Redis from "ioredis";
 import { drainOutbox, drainOutboxQuietly } from "@/lib/outbox";
 import { expireUnconfirmedWithdrawals } from "@/lib/ledger/flows/withdrawals";
 import { createLogger } from "@/lib/logger";
+import { runProofCheck } from "@/lib/ai/proof-check";
 import { recomputeStaleTrust } from "@/lib/trust-data";
 import { checkSubmissionProof, sweepUnhashedProofs } from "@/lib/fraud/duplicate-proof";
 import { notifyOverdueDisputes } from "@/lib/dispute-sla";
@@ -19,6 +20,7 @@ import {
   OUTBOX_DRAIN_JOB,
   OUTBOX_EVERY_MS,
   PROOF_HASH_JOB,
+  AI_PROOF_CHECK_JOB,
   AUTO_APPROVE_QUEUE,
   SWEEP_EVERY_MS,
   SWEEP_JOB,
@@ -86,6 +88,13 @@ export async function processAutoApproveJob(job: Job): Promise<unknown> {
     if (!id) return { skipped: "no submissionId" };
     const res = await settleAndNotify(id, "window");
     return { ok: res.ok };
+  }
+  if (job.name === AI_PROOF_CHECK_JOB) {
+    const id = (job.data as { submissionId?: string }).submissionId;
+    if (!id) return { skipped: "no submissionId" };
+    const res = await runProofCheck(id);
+    if (res.status === "failed") throw new Error(`AI proof check failed: ${res.reason}`);
+    return { status: res.status };
   }
   if (job.name === PROOF_HASH_JOB) {
     const id = (job.data as { submissionId?: string }).submissionId;

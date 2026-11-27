@@ -48,6 +48,9 @@ export interface ITask {
 /** Set for buyers only: the screenshot matches an earlier one (a lead for the buyer, not a verdict). */
 export interface ISubmissionFlags {
   possibleDuplicateProof?: boolean;
+  /** The AI proof check: "good" or "problem", or null for no opinion. A label only; a person decides. */
+  aiBadge?: "good" | "problem" | null;
+  aiProblems?: string[];
 }
 
 export interface ISubmission extends ISubmissionFlags {
