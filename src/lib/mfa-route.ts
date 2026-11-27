@@ -28,6 +28,21 @@ export function requireMfaSubject(
   };
 }
 
+/**
+ * A server that is missing MFA_ENCRYPTION_KEY cannot store or read any
+ * authenticator secret. The admin area stays closed (it fails closed, it does
+ * not skip the check), and this says why instead of a bare 500.
+ */
+export function mfaConfigError(err: unknown): NextResponse | null {
+  if (err instanceof Error && err.message.includes("MFA_ENCRYPTION_KEY")) {
+    return NextResponse.json(
+      { error: "Two-factor is not configured on the server (MFA_ENCRYPTION_KEY is missing or invalid)", code: "MFA_NOT_CONFIGURED" },
+      { status: 503 },
+    );
+  }
+  return null;
+}
+
 export async function readCode(req: Request): Promise<string | null> {
   try {
     const body = (await req.json()) as { code?: unknown };
