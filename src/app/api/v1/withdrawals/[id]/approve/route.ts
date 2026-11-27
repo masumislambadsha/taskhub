@@ -9,6 +9,7 @@ import {
 import { createNotification } from "@/lib/notifications";
 import { withRequestLogging } from "@/lib/with-request-logging";
 import { withIdempotency } from "@/lib/idempotency";
+import { auditContextFrom } from "@/lib/audit";
 
 export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", async function PATCH(
   req: NextRequest,
@@ -28,6 +29,7 @@ export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", asyn
       const result = await approveWithdrawal({
         withdrawalId: id,
         adminId: guard.userId,
+        audit: auditContextFrom(req, guard),
       });
       if (!result.ok) {
         if (result.reason === "insufficient_coins")
@@ -46,7 +48,11 @@ export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", asyn
         type: "success",
       });
     } else {
-      const result = await rejectWithdrawal({ withdrawalId: id });
+      const result = await rejectWithdrawal({
+        withdrawalId: id,
+        audit: auditContextFrom(req, guard),
+        reason: typeof reason === "string" && reason.trim() ? reason.trim() : undefined,
+      });
       if (!result.ok)
         return NextResponse.json({ error: "Not found" }, { status: 404 });
       withdrawal = result.withdrawal;

@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { inject } from "vitest";
 import LedgerAccount from "@/models/LedgerAccount";
 import LedgerTransaction from "@/models/LedgerTransaction";
+import AuditLog from "@/models/AuditLog";
 import Payment from "@/models/Payment";
 import PaymentEvent from "@/models/PaymentEvent";
 import Submission from "@/models/Submission";
@@ -32,6 +33,7 @@ export async function startTestDb(dbName: string) {
   await mongoose.connect(inject("mongoUri"), { dbName });
   await Promise.all([
     Payment.init(),
+    AuditLog.init(),
     PaymentEvent.init(),
     User.init(),
     LedgerAccount.init(),
@@ -54,7 +56,8 @@ export async function startTestDb(dbName: string) {
         Task.deleteMany({}),
         Submission.deleteMany({}),
         Withdrawal.deleteMany({}),
-        // The journal model is append-only, so clear it through the driver.
+        // The journal and the audit log are append-only, so clear them through the driver.
+        AuditLog.collection.deleteMany({}),
         LedgerTransaction.collection.deleteMany({}),
       ]);
     },

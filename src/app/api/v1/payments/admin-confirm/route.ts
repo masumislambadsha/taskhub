@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/roles";
 import { connectDB } from "@/lib/db";
 import { creditPayment } from "@/lib/payments/credit";
 import { logger } from "@/lib/logger";
+import { auditContextFrom } from "@/lib/audit";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
 export const POST = withRequestLogging("/api/v1/payments/admin-confirm", async function POST(req: NextRequest) {
@@ -17,6 +18,7 @@ export const POST = withRequestLogging("/api/v1/payments/admin-confirm", async f
   const result = await creditPayment({
     paymentId: String(paymentId),
     gateway: { name: "admin", adminUserId: guard.userId },
+    audit: auditContextFrom(req, guard),
   });
   if (!result.credited) {
     logger.warn(
