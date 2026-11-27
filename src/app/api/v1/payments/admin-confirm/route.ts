@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { requireAdmin } from "@/lib/roles";
+import { requireAdmin } from "@/lib/admin-guard";
 import { connectDB } from "@/lib/db";
 import { creditPayment } from "@/lib/payments/credit";
 import { logger } from "@/lib/logger";
@@ -9,7 +9,7 @@ import { withRequestLogging } from "@/lib/with-request-logging";
 
 export const POST = withRequestLogging("/api/v1/payments/admin-confirm", async function POST(req: NextRequest) {
   const session = await auth();
-  const guard = requireAdmin(session, "write");
+  const guard = await requireAdmin(session, "write", { stepUp: true });
   if (!guard.ok) return guard.response;
 
   const { paymentId } = await req.json();

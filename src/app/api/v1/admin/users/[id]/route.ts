@@ -4,7 +4,8 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import { removeUser } from "@/lib/ledger/flows/users";
-import { USER_ROLES, requireAdmin } from "@/lib/roles";
+import { USER_ROLES } from "@/lib/roles";
+import { requireAdmin } from "@/lib/admin-guard";
 import { auditContextFrom, recordAudit } from "@/lib/audit";
 import { inLedgerTransaction } from "@/lib/ledger/run";
 
@@ -15,7 +16,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  const guard = requireAdmin(session, "write");
+  const guard = await requireAdmin(session, "write", { stepUp: true });
   if (!guard.ok) return guard.response;
 
   let body: { role?: unknown; status?: unknown };
@@ -114,7 +115,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  const guard = requireAdmin(session, "write");
+  const guard = await requireAdmin(session, "write", { stepUp: true });
   if (!guard.ok) return guard.response;
 
   const { id } = await params;

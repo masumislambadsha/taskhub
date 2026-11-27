@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { requireAdmin } from "@/lib/roles";
+import { requireAdmin } from "@/lib/admin-guard";
 import { connectDB } from "@/lib/db";
 import PaymentEvent from "@/models/PaymentEvent";
 
 const PROVIDERS = ["stripe", "sslcommerz", "bkash"];
 
 export async function GET(req: NextRequest) {
-  const guard = requireAdmin(await auth(), "read");
+  const guard = await requireAdmin(await auth(), "read");
   if (!guard.ok) return guard.response;
 
   await connectDB();

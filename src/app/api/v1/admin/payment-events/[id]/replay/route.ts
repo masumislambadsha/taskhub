@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { auth } from "@/lib/auth";
-import { requireAdmin } from "@/lib/roles";
+import { requireAdmin } from "@/lib/admin-guard";
 import { replayPaymentEvent } from "@/lib/payments/events";
 import { auditContextFrom, recordAudit } from "@/lib/audit";
 import { logger } from "@/lib/logger";
@@ -13,7 +13,7 @@ export const POST = withRequestLogging(
     req: NextRequest,
     { params }: { params: Promise<{ id: string }> },
   ) {
-    const guard = requireAdmin(await auth(), "write");
+    const guard = await requireAdmin(await auth(), "write", { stepUp: true });
     if (!guard.ok) return guard.response;
 
     const { id } = await params;
