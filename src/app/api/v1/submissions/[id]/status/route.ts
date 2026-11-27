@@ -6,7 +6,7 @@ import { approveSubmission, rejectSubmission } from "@/lib/ledger/flows/submissi
 import { createNotification } from "@/lib/notifications";
 import { withRequestLogging } from "@/lib/with-request-logging";
 import { withIdempotency } from "@/lib/idempotency";
-import { cancelAutoApprove } from "@/lib/queue/auto-approve-queue";
+import { cancelAutoApprove, scheduleDisputeWindow } from "@/lib/queue/auto-approve-queue";
 
 export const PATCH = withRequestLogging("/api/v1/submissions/[id]/status", async function PATCH(
   req: NextRequest,
@@ -68,22 +68,18 @@ export const PATCH = withRequestLogging("/api/v1/submissions/[id]/status", async
         buyerId: session.user.id,
         reason: reason?.trim() || undefined,
       });
-      if (!result.ok) {
-        if (result.reason === "not_found")
-          return NextResponse.json({ error: "Not found" }, { status: 404 });
-        if (result.reason === "insufficient_coins")
-          return NextResponse.json(
-            { error: "Insufficient coins to reopen this slot at the task's current payout" },
-            { status: 400 },
-          );
-        return escrowProblem();
-      }
+      if (!result.ok)
+        return NextResponse.json({ error: "Not found" }, { status: 404 });
       submission = result.submission;
       await cancelAutoApprove(id);
+      // The reward is held until the window ends. If Redis is down, the sweep settles it.
+      if (submission.rejectionHold && !submission.rejectionHold.settledAt) {
+        await scheduleDisputeWindow(id, submission.rejectionHold.windowEndsAt);
+      }
       await createNotification({
         toUserId: submission.workerId.toString(),
         toEmail: submission.workerEmail,
-        message: `Your submission for "${submission.taskTitle}" was rejected.${reason?.trim() ? ` Reason: ${reason.trim()}` : ""}`,
+        message: `Your submission for "${submission.taskTitle}" was rejected.${reason?.trim() ? ` Reason: ${reason.trim()}` : ""} You can accept the rejection now, or it becomes final after the review window.`,
         actionRoute: "/worker/messages",
         type: "warning",
       });

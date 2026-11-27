@@ -153,6 +153,37 @@ describe.skipIf(!URL)("auto-approve worker with Redis", { timeout: 40_000 }, () 
     expect(notes).toBe(1);
   });
 
+  it("settles a rejection when its dispute-window job fires", async () => {
+    process.env.DISPUTE_WINDOW_MS = "1200";
+    const { task, buyer } = await fundedTask();
+    const sub = await createPendingSubmission(task, (await createUser(0))._id);
+    const { rejectSubmission } = await import("@/lib/ledger/flows/submissions");
+    const { scheduleDisputeWindow } = await import("@/lib/queue/auto-approve-queue");
+    runtime = await startAutoApproveWorker(connection);
+    const rejected = await rejectSubmission({ submissionId: String(sub._id), buyerId: String(buyer._id) });
+    if (!rejected.ok) throw new Error("reject failed");
+    expect(await scheduleDisputeWindow(String(sub._id), rejected.submission.rejectionHold!.windowEndsAt)).toBe(true);
+    expect((await Submission.findById(sub._id))?.rejectionHold?.settledAt).toBeUndefined();
+
+    await waitFor(async () => (await Submission.findById(sub._id))?.rejectionHold?.settledAt);
+    expect((await Submission.findById(sub._id))?.rejectionHold?.settledAs).toBe("window");
+    expect(await Notification.countDocuments({ message: /now final/ })).toBe(1);
+    expect((await reconcile()).ok).toBe(true);
+  });
+
+  it("settles a hold whose job was lost, through the startup sweep", async () => {
+    process.env.DISPUTE_WINDOW_MS = "1000000";
+    const { task, buyer } = await fundedTask();
+    const sub = await createPendingSubmission(task, (await createUser(0))._id);
+    const { rejectSubmission } = await import("@/lib/ledger/flows/submissions");
+    await rejectSubmission({ submissionId: String(sub._id), buyerId: String(buyer._id) });
+    await Submission.updateOne({ _id: sub._id }, { $set: { "rejectionHold.windowEndsAt": new Date(Date.now() - 1000) } });
+    // No window job was ever scheduled.
+    runtime = await startAutoApproveWorker(connection);
+    await waitFor(async () => (await Submission.findById(sub._id))?.rejectionHold?.settledAt);
+    expect((await reconcile()).ok).toBe(true);
+  });
+
   it("registers one repeating sweep however many workers start", async () => {
     runtime = await startAutoApproveWorker(connection);
     const second = await startAutoApproveWorker(connection);
