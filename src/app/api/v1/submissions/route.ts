@@ -9,6 +9,7 @@ import { redactEmailFields } from "@/lib/privacy";
 import { withRequestLogging } from "@/lib/with-request-logging";
 import { withIdempotency } from "@/lib/idempotency";
 import { scheduleAutoApprove } from "@/lib/queue/auto-approve-queue";
+import { consume, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -51,6 +52,10 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
   }
 
   return withIdempotency(req, session.user.id, async () => {
+    // Counted here, so a replayed request does not use up the hour's 30.
+    const limit = await consume("submit", session.user.id);
+    if (!limit.ok) return rateLimitedResponse(limit.retryAfterSeconds);
+
     const body = await req.json();
     const parsed = submissionSchema.safeParse(body);
     if (!parsed.success)

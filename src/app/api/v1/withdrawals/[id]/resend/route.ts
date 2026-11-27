@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { reissueConfirmation } from "@/lib/ledger/flows/withdrawals";
 import { sendWithdrawalConfirmationEmail } from "@/lib/email";
-import { rateLimit } from "@/lib/rate-limit";
+import { consume, rateLimitedResponse } from "@/lib/ratelimit";
 import { refuseDemoAdmin } from "@/lib/roles";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
@@ -17,12 +17,8 @@ export const POST = withRequestLogging(
     if (!session || session.user.role !== "worker")
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const limit = rateLimit(`withdrawal-resend:${session.user.id}`, 3, 60_000);
-    if (!limit.ok)
-      return NextResponse.json(
-        { error: "Too many emails. Try again shortly." },
-        { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } },
-      );
+    const limit = await consume("withdraw_resend", session.user.id);
+    if (!limit.ok) return rateLimitedResponse(limit.retryAfterSeconds);
 
     await connectDB();
     const { id } = await params;

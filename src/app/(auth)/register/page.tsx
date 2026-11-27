@@ -10,6 +10,7 @@ import { registerSchema, RegisterFormData } from "@/lib/validators/auth";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { getDeviceId } from "@/lib/device-id";
 
 const GoogleIcon = () => (
   <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -74,7 +75,9 @@ function RegisterForm() {
   async function onSubmit(data: RegisterFormData) {
     setLoading(true);
     try {
-      await axios.post("/api/v1/auth/register", data);
+      await axios.post("/api/v1/auth/register", data, {
+        headers: { "x-device-id": getDeviceId() },
+      });
       const res = await signIn("credentials", {
         email: data.email,
         password: data.password,

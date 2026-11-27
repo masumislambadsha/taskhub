@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { rateLimit } from "@/lib/rate-limit";
+import { consume, rateLimitedResponse } from "@/lib/ratelimit";
 import { logger } from "@/lib/logger";
 
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const UPLOADS_PER_MINUTE = 10;
 
 /** The image type the first bytes of the file show, or `null` if not an image we accept. */
 function sniffImageType(b: Uint8Array): string | null {
@@ -49,13 +48,8 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const limit = rateLimit(`imgbb:${user.id}`, UPLOADS_PER_MINUTE, 60_000);
-  if (!limit.ok) {
-    return NextResponse.json(
-      { error: "Too many uploads. Try again shortly." },
-      { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } },
-    );
-  }
+  const limit = await consume("upload", user.id);
+  if (!limit.ok) return rateLimitedResponse(limit.retryAfterSeconds);
 
   const apiKey = process.env.IMGBB_API_KEY;
   if (!apiKey) {

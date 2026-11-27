@@ -36,7 +36,14 @@ function LoginForm() {
     try {
       const res = await signIn("credentials", { ...data, redirect: false });
       if (res?.error) {
-        toast.error("Invalid credentials or account suspended");
+        // A blocked sign-in carries the wait in its code, as "rate_limited:<seconds>".
+        const wait = /^rate_limited:(\d+)$/.exec(res.code ?? "")?.[1];
+        if (wait) {
+          const minutes = Math.max(1, Math.ceil(Number(wait) / 60));
+          toast.error(`Too many attempts. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.`);
+        } else {
+          toast.error("Invalid credentials or account suspended");
+        }
       } else {
         const me = await fetch("/api/auth/me").then((r) => r.json());
         const role = me?.role;

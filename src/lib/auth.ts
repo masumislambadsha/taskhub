@@ -1,9 +1,10 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import bcrypt from "bcryptjs";
 import { decode } from "next-auth/jwt";
 import { headers } from "next/headers";
+import { CredentialsSignin } from "next-auth";
+import { LoginRateLimited, authorizeCredentials } from "@/lib/credentials-login";
 import { randomUUID } from "node:crypto";
 import { connectDB } from "./db";
 import { refreshToken, resolveBearerUser } from "./auth-session";
@@ -13,6 +14,14 @@ import {
   createUserWithBonus,
   isDuplicateKeyError,
 } from "@/lib/ledger/flows/users";
+
+/** Auth.js cannot answer 429, so a blocked sign-in fails with this code and the login page shows the wait. */
+class TooManyLoginAttempts extends CredentialsSignin {
+  constructor(retryAfterSeconds: number) {
+    super();
+    this.code = `rate_limited:${retryAfterSeconds}`;
+  }
+}
 
 const { handlers, auth: nextAuthAuth, signIn, signOut } = NextAuth({
   providers: [
@@ -26,25 +35,13 @@ const { handlers, auth: nextAuthAuth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-        await connectDB();
-        const user = await User.findOne({ email: credentials.email });
-        if (!user || !user.passwordHash) return null;
-        if (user.status === "suspended") throw new Error("Account suspended");
-        const valid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash,
-        );
-        if (!valid) return null;
-        return {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-          image: user.photoUrl,
-          role: user.role,
-          coins: user.coins,
-        };
+      async authorize(credentials, request) {
+        try {
+          return await authorizeCredentials(credentials, request);
+        } catch (err) {
+          if (err instanceof LoginRateLimited) throw new TooManyLoginAttempts(err.retryAfterSeconds);
+          throw err;
+        }
       },
     }),
   ],

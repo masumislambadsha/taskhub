@@ -5,7 +5,7 @@ const { authMock } = vi.hoisted(() => ({ authMock: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ auth: authMock }));
 
 import { POST, MAX_IMAGE_BYTES } from "./route";
-import { resetRateLimits } from "@/lib/rate-limit";
+import { resetRateLimits } from "@/lib/rate-limit-memory";
 
 const PNG = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0];
 const JPEG = [0xff, 0xd8, 0xff, 0xe0, 0, 0, 0, 0, 0, 0, 0, 0];
