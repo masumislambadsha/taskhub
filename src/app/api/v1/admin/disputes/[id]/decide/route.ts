@@ -4,8 +4,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { connectDB } from "@/lib/db";
 import { decideDispute } from "@/lib/ledger/flows/disputes";
 import { auditContextFrom } from "@/lib/audit";
-import { createNotification } from "@/lib/notifications";
-import User from "@/models/User";
+import { drainOutboxQuietly } from "@/lib/outbox";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
 /**
@@ -42,23 +41,8 @@ export const POST = withRequestLogging(
       return NextResponse.json({ error }, { status });
     }
 
-    // After the commit: tell both people.
-    const verdict = res.winner === "worker" ? "in the worker's favour" : "in the buyer's favour";
-    for (const [userId, route] of [
-      [res.dispute.workerId, "/worker/submissions"],
-      [res.dispute.buyerId, "/buyer/disputes"],
-    ] as const) {
-      const user = await User.findById(userId).select("email").lean();
-      if (user?.email) {
-        await createNotification({
-          toUserId: String(userId),
-          toEmail: user.email,
-          message: `An admin decided the dispute ${verdict}. Note: ${res.dispute.adminNote}`,
-          actionRoute: route,
-          type: "info",
-        }).catch(() => {});
-      }
-    }
+    // Both notices were queued with the decision; send them now.
+    await drainOutboxQuietly();
     return NextResponse.json({ ok: true, winner: res.winner, outcome: res.outcome });
   },
 );

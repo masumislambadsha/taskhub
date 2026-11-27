@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/admin-guard";
 import { connectDB } from "@/lib/db";
 import { markWithdrawalPaid } from "@/lib/ledger/flows/withdrawals";
 import { auditContextFrom } from "@/lib/audit";
-import { createNotification } from "@/lib/notifications";
+import { drainOutboxQuietly } from "@/lib/outbox";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
 /**
@@ -34,13 +34,8 @@ export const POST = withRequestLogging(
         ? NextResponse.json({ error: "Enter the bKash, Nagad or bank transaction ID" }, { status: 400 })
         : NextResponse.json({ error: "Not found, or not approved yet" }, { status: 404 });
     }
-    await createNotification({
-      toUserId: String(res.withdrawal.workerId),
-      toEmail: res.withdrawal.workerEmail,
-      message: `Your withdrawal of ${res.withdrawal.coinRequested} coins ($${res.withdrawal.amount}) was paid. Reference: ${res.withdrawal.externalTransactionId}.`,
-      actionRoute: "/worker/withdrawals",
-      type: "success",
-    }).catch(() => {});
+    // The worker's notice was queued with the payment; send it now.
+    await drainOutboxQuietly();
     return NextResponse.json(res.withdrawal);
   },
 );

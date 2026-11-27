@@ -1,8 +1,6 @@
 import { Worker, Queue, type Job } from "bullmq";
 import type Redis from "ioredis";
-import { createNotification } from "@/lib/notifications";
-import User from "@/models/User";
-import Withdrawal from "@/models/Withdrawal";
+import { drainOutbox, drainOutboxQuietly } from "@/lib/outbox";
 import { expireUnconfirmedWithdrawals } from "@/lib/ledger/flows/withdrawals";
 import { createLogger } from "@/lib/logger";
 import { notifyOverdueDisputes } from "@/lib/dispute-sla";
@@ -16,6 +14,8 @@ import {
 import {
   AUTO_APPROVE_JOB,
   DISPUTE_WINDOW_JOB,
+  OUTBOX_DRAIN_JOB,
+  OUTBOX_EVERY_MS,
   AUTO_APPROVE_QUEUE,
   SWEEP_EVERY_MS,
   SWEEP_JOB,
@@ -54,27 +54,8 @@ export async function autoApproveAndNotify(
     { submissionId, taskId: String(s.taskId), workerId: String(s.workerId), coins: s.payableAmount },
     "submission auto-approved",
   );
-  try {
-    await createNotification({
-      toUserId: s.workerId.toString(),
-      toEmail: s.workerEmail,
-      message: `Your submission for "${s.taskTitle}" was approved automatically. +${s.payableAmount} coins`,
-      actionRoute: "/worker/submissions",
-      type: "success",
-    });
-    const buyer = await User.findById(s.taskBuyerId).select("email").lean();
-    if (buyer?.email) {
-      await createNotification({
-        toUserId: s.taskBuyerId.toString(),
-        toEmail: buyer.email,
-        message: `A submission for "${s.taskTitle}" was approved automatically because it was not reviewed in time.`,
-        actionRoute: "/buyer/submissions",
-        type: "info",
-      });
-    }
-  } catch (err) {
-    log.error({ err, submissionId }, "auto-approve notification failed");
-  }
+  // The worker's and the buyer's notices were queued with the approval.
+  await drainOutboxQuietly();
   return res;
 }
 
@@ -90,21 +71,9 @@ export async function settleAndNotify(
     }
     return res;
   }
-  const s = res.submission;
   log.info({ submissionId, outcome: res.outcome, via }, "rejection settled");
-  if (via !== "accepted") {
-    try {
-      await createNotification({
-        toUserId: s.workerId.toString(),
-        toEmail: s.workerEmail,
-        message: `The rejection of your submission for "${s.taskTitle}" is now final.`,
-        actionRoute: "/worker/submissions",
-        type: "info",
-      });
-    } catch (err) {
-      log.error({ err, submissionId }, "settlement notification failed");
-    }
-  }
+  // The worker's "now final" notice was queued with the settlement.
+  await drainOutboxQuietly();
   return res;
 }
 
@@ -117,18 +86,8 @@ export async function processAutoApproveJob(job: Job): Promise<unknown> {
   }
   if (job.name === SWEEP_JOB) {
     const holds = await sweepDueHolds({ settle: (id) => settleAndNotify(id, "window") });
+    // The workers' notices are queued with each cancellation.
     const expired = await expireUnconfirmedWithdrawals();
-    for (const id of expired) {
-      const w = await Withdrawal.findById(id).select("workerId workerEmail coinRequested").lean();
-      if (!w) continue;
-      await createNotification({
-        toUserId: String(w.workerId),
-        toEmail: w.workerEmail,
-        message: `Your withdrawal of ${w.coinRequested} coins was cancelled because it was not confirmed within 24 hours. The coins were returned.`,
-        actionRoute: "/worker/withdrawals",
-        type: "warning",
-      }).catch(() => {});
-    }
     if (expired.length) log.info({ count: expired.length }, "unconfirmed withdrawals cancelled");
     const overdueDisputes = await notifyOverdueDisputes();
     if (overdueDisputes.length) log.info({ count: overdueDisputes.length }, "admins reminded about overdue disputes");
@@ -143,7 +102,13 @@ export async function processAutoApproveJob(job: Job): Promise<unknown> {
       },
       "auto-approve sweep finished",
     );
+    await drainOutbox();
     return result;
+  }
+  if (job.name === OUTBOX_DRAIN_JOB) {
+    const drained = await drainOutbox();
+    if (drained.sent || drained.retried || drained.failed) log.info(drained, "outbox drained");
+    return drained;
   }
 
   const submissionId = (job.data as { submissionId?: string }).submissionId;
@@ -177,6 +142,8 @@ export async function startAutoApproveWorker(connection: Redis): Promise<AutoApp
   // start, so submissions that came due while the worker was down are caught.
   await queue.upsertJobScheduler(SWEEP_JOB, { every: SWEEP_EVERY_MS }, { name: SWEEP_JOB });
   await queue.add(SWEEP_JOB, {}, { jobId: `${SWEEP_JOB}-startup-${Date.now()}`, removeOnComplete: true });
+  // Sends queued notifications, emails and webhooks every 30 seconds.
+  await queue.upsertJobScheduler(OUTBOX_DRAIN_JOB, { every: OUTBOX_EVERY_MS }, { name: OUTBOX_DRAIN_JOB });
 
   return {
     worker,

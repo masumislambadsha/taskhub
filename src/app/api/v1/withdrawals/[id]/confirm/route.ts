@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { confirmWithdrawal } from "@/lib/ledger/flows/withdrawals";
-import { createNotification } from "@/lib/notifications";
+import { drainOutboxQuietly } from "@/lib/outbox";
 import { workerWithdrawalView } from "@/lib/withdrawal-view";
 import { refuseDemoAdmin } from "@/lib/roles";
 import { withRequestLogging } from "@/lib/with-request-logging";
@@ -36,13 +36,7 @@ export const POST = withRequestLogging(
       const [error, status] = map[res.reason];
       return NextResponse.json({ error }, { status });
     }
-    await createNotification({
-      toUserId: session.user.id,
-      toEmail: res.withdrawal.workerEmail,
-      message: `Your withdrawal of ${res.withdrawal.coinRequested} coins is confirmed and waiting for review.`,
-      actionRoute: "/worker/withdrawals",
-      type: "info",
-    }).catch(() => {});
+    await drainOutboxQuietly();
     return NextResponse.json(workerWithdrawalView(res.withdrawal));
   },
 );

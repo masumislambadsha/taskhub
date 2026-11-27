@@ -96,3 +96,18 @@ export async function sendWithdrawalConfirmationEmail(
   });
   if (error) throw new Error(error.message);
 }
+
+/**
+ * Sends an already-built email. Used by the outbox, so `idempotencyKey` goes to
+ * Resend, which then ignores a repeat of the same key within 24 hours.
+ */
+export async function sendRawEmail(
+  mail: { to: string; subject: string; html: string },
+  idempotencyKey?: string,
+): Promise<void> {
+  const { error } = await getResend().emails.send(
+    { from: "TaskHub <onboarding@resend.dev>", ...mail },
+    idempotencyKey ? { idempotencyKey } : undefined,
+  );
+  if (error) throw new Error(error.message);
+}

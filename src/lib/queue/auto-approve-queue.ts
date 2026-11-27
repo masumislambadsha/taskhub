@@ -6,6 +6,8 @@ export const AUTO_APPROVE_QUEUE = "auto-approve";
 export const AUTO_APPROVE_JOB = "auto-approve";
 export const DISPUTE_WINDOW_JOB = "dispute-window";
 export const SWEEP_JOB = "sweep";
+export const OUTBOX_DRAIN_JOB = "outbox-drain";
+export const OUTBOX_EVERY_MS = 30 * 1000;
 export const SWEEP_EVERY_MS = 15 * 60 * 1000;
 /** A queue call that takes longer than this is given up on; the sweep covers the gap. */
 const ENQUEUE_TIMEOUT_MS = 3000;

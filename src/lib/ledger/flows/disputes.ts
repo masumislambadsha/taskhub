@@ -7,6 +7,8 @@ import { postTransaction } from "../post";
 import { inLedgerTransaction } from "../run";
 import { settleRejectionInSession } from "./submissions";
 import { recordAudit, type AuditContext } from "@/lib/audit";
+import { queueNotification } from "@/lib/outbox";
+import User from "@/models/User";
 
 export const MIN_STATEMENT_LENGTH = 30;
 export const MIN_ADMIN_NOTE_LENGTH = 10;
@@ -98,6 +100,20 @@ export async function openDispute(args: {
       { session },
     );
     if (flipped.modifiedCount !== 1) return { ok: false, reason: "already_disputed" };
+    const buyer = await User.findById(sub.taskBuyerId).select("email").session(session).lean();
+    if (buyer?.email) {
+      await queueNotification(
+        {
+          toUserId: String(sub.taskBuyerId),
+          toEmail: buyer.email,
+          message: "A worker appealed one of your rejections. You have 48 hours to add your side.",
+          actionRoute: "/buyer/disputes",
+          type: "warning",
+        },
+        `dispute-opened:${dispute._id}`,
+        session,
+      );
+    }
     return { ok: true, dispute };
   }).catch((err) => {
     // The unique index on submissionId: another appeal won the race.
@@ -290,6 +306,25 @@ export async function decideDispute(args: {
         },
         session,
       );
+      const verdict = args.winner === "worker" ? "in the worker's favour" : "in the buyer's favour";
+      for (const [userId, route, who] of [
+        [dispute.workerId, "/worker/submissions", "worker"],
+        [dispute.buyerId, "/buyer/disputes", "buyer"],
+      ] as const) {
+        const user = await User.findById(userId).select("email").session(session).lean();
+        if (!user?.email) continue;
+        await queueNotification(
+          {
+            toUserId: String(userId),
+            toEmail: user.email,
+            message: `An admin decided the dispute ${verdict}. Note: ${note}`,
+            actionRoute: route,
+            type: "info",
+          },
+          `dispute-decided:${dispute._id}:${who}`,
+          session,
+        );
+      }
       return { ok: true, dispute, winner: args.winner, outcome };
     });
   } catch (err) {
