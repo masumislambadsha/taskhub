@@ -43,7 +43,7 @@ export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", asyn
       await createNotification({
         toUserId: withdrawal.workerId.toString(),
         toEmail: withdrawal.workerEmail,
-        message: `Your withdrawal of ${withdrawal.coinRequested} coins ($${withdrawal.amount}) has been approved.`,
+        message: `Your withdrawal of ${withdrawal.coinRequested} coins ($${withdrawal.amount}) has been approved. It will be paid shortly.`,
         actionRoute: "/worker/withdrawals",
         type: "success",
       });
@@ -54,12 +54,14 @@ export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", asyn
         reason: typeof reason === "string" && reason.trim() ? reason.trim() : undefined,
       });
       if (!result.ok)
-        return NextResponse.json({ error: "Not found" }, { status: 404 });
+        return result.reason === "reason_required"
+          ? NextResponse.json({ error: "A reason of at least 5 characters is required" }, { status: 400 })
+          : NextResponse.json({ error: "Not found" }, { status: 404 });
       withdrawal = result.withdrawal;
       await createNotification({
         toUserId: withdrawal.workerId.toString(),
         toEmail: withdrawal.workerEmail,
-        message: `Your withdrawal request of ${withdrawal.coinRequested} coins was rejected.${reason?.trim() ? ` Reason: ${reason.trim()}` : ""}`,
+        message: `Your withdrawal request of ${withdrawal.coinRequested} coins was rejected and the coins were returned.${reason?.trim() ? ` Reason: ${reason.trim()}` : ""}`,
         actionRoute: "/worker/messages",
         type: "warning",
       });

@@ -73,7 +73,7 @@ describe("getWalletHistory", () => {
     await approveWithdrawal({ withdrawalId: String(w._id), adminId: "adm" });
     expect(await LedgerTransaction.countDocuments({ type: "opening" })).toBe(1);
     const page = await getWalletHistory(String(worker._id));
-    expect(page.items.map((i) => [i.type, i.amount])).toEqual([["withdrawal", -200]]);
+    expect(page.items.map((i) => [i.type, i.amount])).toEqual([["withdrawal_request", -200]]);
     expect(page.items[0].withdrawalId).toBe(String(w._id));
   });
 
