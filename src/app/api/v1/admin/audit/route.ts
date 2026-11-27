@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { requireAdmin } from "@/lib/roles";
+import { requireAdmin } from "@/lib/admin-guard";
 import { connectDB } from "@/lib/db";
 import AuditLog from "@/models/AuditLog";
 import { auditFilter } from "@/lib/audit-query";
 
 /** Admin only. The log holds admin IP addresses, so the read-only demo admin does not get it. */
 export async function GET(req: NextRequest) {
-  const guard = requireAdmin(await auth(), "write");
+  const guard = await requireAdmin(await auth(), "write");
   if (!guard.ok) return guard.response;
 
   await connectDB();

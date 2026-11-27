@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { requireAdmin } from "@/lib/roles";
+import { requireAdmin } from "@/lib/admin-guard";
 import { connectDB } from "@/lib/db";
 import Task from "@/models/Task";
 import { maskEmailFields } from "@/lib/privacy";
@@ -9,7 +9,7 @@ import { inLedgerTransaction } from "@/lib/ledger/run";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
-  const guard = requireAdmin(session, "read");
+  const guard = await requireAdmin(session, "read");
   if (!guard.ok) return guard.response;
 
   await connectDB();
@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   const session = await auth();
-  const guard = requireAdmin(session, "write");
+  const guard = await requireAdmin(session, "write");
   if (!guard.ok) return guard.response;
 
   await connectDB();

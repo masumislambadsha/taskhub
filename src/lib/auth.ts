@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { decode } from "next-auth/jwt";
 import { headers } from "next/headers";
+import { randomUUID } from "node:crypto";
 import { connectDB } from "./db";
 import { refreshToken, resolveBearerUser } from "./auth-session";
 import User from "@/models/User";
@@ -84,6 +85,9 @@ const { handlers, auth: nextAuthAuth, signIn, signOut } = NextAuth({
         }
         token.role = (user as { role?: string }).role;
         token.coins = (user as { coins?: number }).coins;
+        // A fresh random ID per login. The server remembers, against this ID,
+        // whether this login has proved the admin second factor.
+        token.sid = randomUUID();
       }
       // Never take anything from the client's update() payload: the database
       // is the only source of role, coins and profile. A null return ends the
@@ -94,6 +98,7 @@ const { handlers, auth: nextAuthAuth, signIn, signOut } = NextAuth({
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
+        session.user.sid = token.sid as string | undefined;
         session.user.coins = token.coins as number;
         session.user.image = (token.picture as string) ?? session.user.image;
       }

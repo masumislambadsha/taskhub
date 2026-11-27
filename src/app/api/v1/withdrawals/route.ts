@@ -9,6 +9,7 @@ import { maskAccountFields, maskEmailFields } from "@/lib/privacy";
 import { isAdminRole } from "@/lib/roles";
 import { withRequestLogging } from "@/lib/with-request-logging";
 import { withIdempotency } from "@/lib/idempotency";
+import { mfaProblem, mfaResponse } from "@/lib/admin-guard";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -20,6 +21,10 @@ export async function GET(req: NextRequest) {
   const isWorker = session.user.role === "worker";
   if (!isWorker && !isAdminRole(session.user.role))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!isWorker) {
+    const problem = await mfaProblem(session);
+    if (problem) return mfaResponse(problem);
+  }
 
   await connectDB();
   const { searchParams } = new URL(req.url);
