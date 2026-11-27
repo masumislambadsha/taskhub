@@ -3,7 +3,8 @@ import LedgerAccount from "@/models/LedgerAccount";
 import LedgerTransaction from "@/models/LedgerTransaction";
 import Task from "@/models/Task";
 import User from "@/models/User";
-import { escrowAccount, parseAccount, userAccount } from "./accounts";
+import Withdrawal, { RESERVED_STATUSES } from "@/models/Withdrawal";
+import { SYSTEM_ACCOUNTS, escrowAccount, parseAccount, userAccount } from "./accounts";
 import { expectedEscrow, pendingSubmissionValue } from "./escrow";
 import type { Session } from "./journal";
 
@@ -41,6 +42,11 @@ export interface ReconcileReport {
   /** Non-negative accounts (users, escrows) whose cached balance is below 0. */
   negativeBalances: { accountId: string; balance: number }[];
   escrowMismatches: EscrowMismatch[];
+  /**
+   * `system:payouts_pending` must hold exactly the coins of withdrawals that
+   * are reserved and not yet paid or returned. Null when it does.
+   */
+  payoutsMismatch: { balance: number; expected: number } | null;
   /** Information only: not errors. Opened by first touch or `npm run ledger:open`. */
   unopened: { users: number; tasksWithoutEscrow: number };
 }
@@ -92,6 +98,7 @@ async function run(session: Session | undefined): Promise<ReconcileReport> {
     balanceMismatches: [],
     negativeBalances: [],
     escrowMismatches: [],
+    payoutsMismatch: null,
     unopened: { users: 0, tasksWithoutEscrow: 0 },
   };
 
@@ -175,7 +182,23 @@ async function run(session: Session | undefined): Promise<ReconcileReport> {
     if (!escrowIds.has(escrowAccount(task._id))) report.unopened.tasksWithoutEscrow++;
   }
 
+  // Coins waiting to be paid out: the account must equal the open withdrawals.
+  const payoutsAgg = Withdrawal.aggregate<{ total: number }>([
+    { $match: { status: { $in: RESERVED_STATUSES }, reservedAt: { $exists: true } } },
+    { $group: { _id: null, total: { $sum: "$coinRequested" } } },
+  ]);
+  if (session) payoutsAgg.session(session);
+  const expectedPayouts = (await payoutsAgg)[0]?.total ?? 0;
+  const payoutsAccount = await withSession(
+    LedgerAccount.findById(SYSTEM_ACCOUNTS.PAYOUTS_PENDING).lean(),
+  );
+  const payoutsBalance = payoutsAccount?.balance ?? 0;
+  if (payoutsBalance !== expectedPayouts) {
+    report.payoutsMismatch = { balance: payoutsBalance, expected: expectedPayouts };
+  }
+
   report.ok =
+    report.payoutsMismatch === null &&
     report.balanceMismatches.length === 0 &&
     report.negativeBalances.length === 0 &&
     report.escrowMismatches.length === 0 &&

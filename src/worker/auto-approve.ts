@@ -2,6 +2,8 @@ import { Worker, Queue, type Job } from "bullmq";
 import type Redis from "ioredis";
 import { createNotification } from "@/lib/notifications";
 import User from "@/models/User";
+import Withdrawal from "@/models/Withdrawal";
+import { expireUnconfirmedWithdrawals } from "@/lib/ledger/flows/withdrawals";
 import { createLogger } from "@/lib/logger";
 import { notifyOverdueDisputes } from "@/lib/dispute-sla";
 import { sweepDueHolds } from "@/lib/ledger/flows/rejection-settlement";
@@ -115,6 +117,19 @@ export async function processAutoApproveJob(job: Job): Promise<unknown> {
   }
   if (job.name === SWEEP_JOB) {
     const holds = await sweepDueHolds({ settle: (id) => settleAndNotify(id, "window") });
+    const expired = await expireUnconfirmedWithdrawals();
+    for (const id of expired) {
+      const w = await Withdrawal.findById(id).select("workerId workerEmail coinRequested").lean();
+      if (!w) continue;
+      await createNotification({
+        toUserId: String(w.workerId),
+        toEmail: w.workerEmail,
+        message: `Your withdrawal of ${w.coinRequested} coins was cancelled because it was not confirmed within 24 hours. The coins were returned.`,
+        actionRoute: "/worker/withdrawals",
+        type: "warning",
+      }).catch(() => {});
+    }
+    if (expired.length) log.info({ count: expired.length }, "unconfirmed withdrawals cancelled");
     const overdueDisputes = await notifyOverdueDisputes();
     if (overdueDisputes.length) log.info({ count: overdueDisputes.length }, "admins reminded about overdue disputes");
     const result = await sweepDueSubmissions({ approve: autoApproveAndNotify });

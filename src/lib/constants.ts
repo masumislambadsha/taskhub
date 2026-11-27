@@ -15,6 +15,12 @@ export const COINS_PER_DOLLAR_BUY = 10;
 
 export const COINS_PER_DOLLAR_WITHDRAW = 20;
 export const MIN_WITHDRAWAL_COINS = 200;
+/** Most a worker may withdraw in 24 hours and in 7 days (fixed until trust levels, roadmap 3.4, set them per worker). */
+export const WITHDRAWAL_DAILY_LIMIT_COINS = 2000;
+export const WITHDRAWAL_WEEKLY_LIMIT_COINS = 5000;
+/** How long the emailed confirmation link works, and how long an unconfirmed request waits before it is cancelled. */
+export const WITHDRAWAL_CONFIRM_LINK_MS = 30 * 60 * 1000;
+export const WITHDRAWAL_UNCONFIRMED_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
 export const TASK_CATEGORIES = [
   "Social Media",
