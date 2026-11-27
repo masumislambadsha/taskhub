@@ -11,6 +11,7 @@ import {
   SubmissionFormData,
 } from "@/lib/validators/submission";
 import axios from "axios";
+import { useIdempotencyKeys } from "@/lib/use-idempotency-keys";
 import toast from "react-hot-toast";
 import { ITask } from "@/types";
 import { format, formatDistanceToNow } from "date-fns";
@@ -21,6 +22,7 @@ import { useSession } from "next-auth/react";
 const IMGBB_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY!;
 
 export default function TaskDetailPage() {
+  const idem = useIdempotencyKeys();
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { data: session } = useSession();
@@ -77,11 +79,16 @@ export default function TaskDetailPage() {
   async function onSubmit(data: SubmissionFormData) {
     setSubmitting(true);
     try {
-      await axios.post("/api/v1/submissions", {
-        ...data,
-        taskId: id,
-        proofImageUrl: uploadedUrl || undefined,
-      });
+      await axios.post(
+        "/api/v1/submissions",
+        {
+          ...data,
+          taskId: id,
+          proofImageUrl: uploadedUrl || undefined,
+        },
+        idem.config(`submit:${id}`),
+      );
+      idem.done(`submit:${id}`);
       toast.success("Submission sent! Waiting for buyer review.");
       router.push("/worker/submissions");
     } catch (err: unknown) {

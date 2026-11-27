@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { taskSchema, TaskFormData } from "@/lib/validators/task";
 import axios from "axios";
+import { useIdempotencyKeys } from "@/lib/use-idempotency-keys";
 import toast from "react-hot-toast";
 import { useRef, useState } from "react";
 import { TASK_CATEGORIES } from "@/lib/constants";
@@ -40,6 +41,7 @@ const confirmTheme = {
 const IMGBB_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY!;
 
 export default function NewTaskPage() {
+  const idem = useIdempotencyKeys();
   const { data: session } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -109,10 +111,12 @@ export default function NewTaskPage() {
     if (!result.isConfirmed) return;
     setLoading(true);
     try {
-      const res = await axios.post("/api/v1/tasks", {
-        ...data,
-        imageUrl: uploadedUrl,
-      });
+      const res = await axios.post(
+        "/api/v1/tasks",
+        { ...data, imageUrl: uploadedUrl },
+        idem.config(),
+      );
+      idem.done();
       toast.success("Task created successfully!");
       router.push(`/buyer/tasks/${res.data._id}/success`);
     } catch (err: unknown) {
