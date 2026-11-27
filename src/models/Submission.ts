@@ -12,6 +12,17 @@ export interface ISubmissionDoc extends Document {
   details: string;
   proofLinks?: string[];
   proofImageUrl?: string;
+  /** The AI proof check (roadmap 3.5): a badge for the buyer. It never decides anything. */
+  aiCheck?: {
+    verdict: "pass" | "fail" | "unsure";
+    confidence: number;
+    badge: "good" | "problem" | null;
+    problems: string[];
+    requirements?: Array<{ requirement: string; met: boolean; evidence: string }>;
+    detectedUsername?: string | null;
+    model: string;
+    checkedAt: Date;
+  };
   proofHashes?: { sha256: string; dhash: string; chunks: string[]; computedAt?: Date };
   rejectionReason?: string;
   status: "pending" | "approved" | "rejected";
@@ -52,6 +63,7 @@ const SubmissionSchema = new Schema<ISubmissionDoc>(
     details: { type: String, required: true },
     proofLinks: [{ type: String }],
     proofImageUrl: { type: String },
+    aiCheck: { type: Schema.Types.Mixed },
     /** Fingerprints of the proof screenshot, computed by the worker (roadmap 3.1). */
     proofHashes: {
       type: new Schema(

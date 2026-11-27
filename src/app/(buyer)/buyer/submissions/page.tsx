@@ -115,6 +115,16 @@ export default function BuyerSubmissionsPage() {
                   >
                     <td className="px-6 py-4 font-medium text-primary">
                       {s.workerName}
+                      {s.aiBadge === "good" && (
+                        <span className="ml-2 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-semibold align-middle" title="An AI looked at the proof and it seems to meet the requirements. You still decide.">
+                          AI check: looks good
+                        </span>
+                      )}
+                      {s.aiBadge === "problem" && (
+                        <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold align-middle" title={(s.aiProblems ?? []).join("\n") || "The AI saw a possible problem. You still decide."}>
+                          AI check: possible problem
+                        </span>
+                      )}
                       {s.possibleDuplicateProof && (
                         <span
                           className="ml-2 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold align-middle"

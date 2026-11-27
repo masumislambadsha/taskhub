@@ -14,7 +14,7 @@ import { drainOutboxQuietly } from "@/lib/outbox";
 import { redactEmailFields } from "@/lib/privacy";
 import { withRequestLogging } from "@/lib/with-request-logging";
 import { withIdempotency } from "@/lib/idempotency";
-import { scheduleAutoApprove, scheduleProofHash } from "@/lib/queue/auto-approve-queue";
+import { scheduleAiProofCheck, scheduleAutoApprove, scheduleProofHash } from "@/lib/queue/auto-approve-queue";
 import { consume, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function GET(req: NextRequest) {
@@ -58,7 +58,11 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     submissions: redactEmailFields(
-      submissions.map((s) => (session.user.role === "buyer" ? { ...s, possibleDuplicateProof: flagged.has(String(s._id)) } : s)),
+      submissions.map((s) => {
+        const { aiCheck, ...rest } = s as typeof s & { aiCheck?: { badge: string | null; problems: string[] } };
+        if (session.user.role !== "buyer") return rest; // workers never see the AI check
+        return { ...rest, possibleDuplicateProof: flagged.has(String(s._id)), aiBadge: aiCheck?.badge ?? null, aiProblems: aiCheck?.badge === "problem" ? aiCheck.problems : [] };
+      }),
       ["workerEmail"],
       session.user,
       "workerId",
@@ -146,7 +150,10 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
     }
 
     // Fingerprint the screenshot in the worker; the sweep covers a lost job.
-    if (submission.proofImageUrl) await scheduleProofHash(String(submission._id));
+    if (submission.proofImageUrl) {
+      await scheduleProofHash(String(submission._id));
+      await scheduleAiProofCheck(String(submission._id));
+    }
 
     // The buyer's notice was queued with the submission; send it now.
     await drainOutboxQuietly();

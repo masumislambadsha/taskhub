@@ -7,6 +7,7 @@ export const AUTO_APPROVE_JOB = "auto-approve";
 export const DISPUTE_WINDOW_JOB = "dispute-window";
 export const SWEEP_JOB = "sweep";
 export const PROOF_HASH_JOB = "proof-hash";
+export const AI_PROOF_CHECK_JOB = "ai-proof-check";
 /** Wait a moment after the submission so the image host has the file. */
 export const PROOF_HASH_DELAY_MS = 2000;
 export const OUTBOX_DRAIN_JOB = "outbox-drain";
@@ -129,6 +130,22 @@ export async function scheduleProofHash(submissionId: string): Promise<boolean> 
     return true;
   } catch (err) {
     logger.warn({ err, submissionId }, "could not schedule proof hashing; the sweep will cover it");
+    return false;
+  }
+}
+
+/** Schedules the AI proof check. Does nothing unless AI is configured; never throws, and a miss only means no badge. */
+export async function scheduleAiProofCheck(submissionId: string): Promise<boolean> {
+  if (!process.env.AI_MODEL || !process.env.ANTHROPIC_API_KEY) return false;
+  const queue = getProducer();
+  if (!queue) return false;
+  try {
+    await withTimeout(
+      queue.add(AI_PROOF_CHECK_JOB, { submissionId }, { jobId: `ai-proof-check-${submissionId}`, delay: PROOF_HASH_DELAY_MS, attempts: 2, backoff: { type: "exponential", delay: 60_000 } }),
+    );
+    return true;
+  } catch (err) {
+    logger.warn({ err, submissionId }, "could not schedule the AI proof check");
     return false;
   }
 }
