@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import { clientIp, consume, resetLimit } from "@/lib/ratelimit";
+import { evaluateLinks, recordSighting } from "@/lib/fraud/signals";
 
 /** A blocked sign-in. `auth.ts` turns it into the Auth.js error whose code carries the wait. */
 export class LoginRateLimited extends Error {
@@ -50,6 +51,10 @@ export async function authorizeCredentials(
   if (!valid) return null;
 
   await resetLimit("login_account", email);
+  if (request?.headers) {
+    await recordSighting(user._id.toString(), request.headers, "login");
+    await evaluateLinks(user._id.toString());
+  }
   return {
     id: user._id.toString(),
     name: user.name,

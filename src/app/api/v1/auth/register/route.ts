@@ -9,6 +9,7 @@ import {
 } from "@/lib/ledger/flows/users";
 import { WORKER_INITIAL_COINS, BUYER_INITIAL_COINS } from "@/lib/constants";
 import { clientIp, consume, rateLimitedResponse } from "@/lib/ratelimit";
+import { evaluateLinks, normalizeEmail, recordSighting } from "@/lib/fraud/signals";
 
 export async function POST(req: NextRequest) {
   // Per IP and device: a shared carrier IP is not blocked by one person's signups,
@@ -37,14 +38,21 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // One inbox, one account: a Gmail address with dots or a +tag is the same inbox.
+  const emailNormalized = normalizeEmail(email);
+  if (await User.exists({ emailNormalized })) {
+    return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+  }
+
   const passwordHash = await bcrypt.hash(password, 12);
   const coins = role === "buyer" ? BUYER_INITIAL_COINS : WORKER_INITIAL_COINS;
 
+  let userId: string;
   try {
-    await createUserWithBonus({
-      data: { name, email, passwordHash, photoUrl, role },
+    ({ userId } = await createUserWithBonus({
+      data: { name, email, emailNormalized, passwordHash, photoUrl, role },
       bonus: coins,
-    });
+    }));
   } catch (err) {
     // Two sign-ups with the same email at once: the unique index picks one.
     if (isDuplicateKeyError(err)) {
@@ -55,5 +63,7 @@ export async function POST(req: NextRequest) {
     }
     throw err;
   }
+  await recordSighting(userId, req.headers, "register");
+  await evaluateLinks(userId);
   return NextResponse.json({ ok: true }, { status: 201 });
 }

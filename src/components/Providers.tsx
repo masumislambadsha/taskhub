@@ -7,8 +7,22 @@ import { store } from "@/store";
 import { Toaster } from "react-hot-toast";
 import { useState } from "react";
 import SmoothScroll from "./SmoothScroll";
+import axios from "axios";
+import { getDeviceId } from "@/lib/device-id";
+
+// Every API call carries this browser's device ID, for the multiple-account checks.
+let deviceHeaderInstalled = false;
+function installDeviceHeader() {
+  if (deviceHeaderInstalled || typeof window === "undefined") return;
+  deviceHeaderInstalled = true;
+  axios.interceptors.request.use((config) => {
+    config.headers.set("x-device-id", getDeviceId());
+    return config;
+  });
+}
 
 export default function Providers({ children }: { children: React.ReactNode }) {
+  installDeviceHeader();
   const [queryClient] = useState(() => new QueryClient());
 
   return (
