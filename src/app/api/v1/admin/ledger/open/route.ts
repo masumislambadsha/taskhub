@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/roles";
 import { connectDB } from "@/lib/db";
 import { openAll } from "@/lib/ledger/open-all";
 import { withRequestLogging } from "@/lib/with-request-logging";
+import { auditContextFrom, recordAudit } from "@/lib/audit";
 
 /**
  * Admin only (a demo admin gets 403). Opens every user and active task in the coin ledger. A dry run by
@@ -28,6 +29,15 @@ export const POST = withRequestLogging(
 
     await connectDB();
     const report = await openAll({ dryRun: !apply, limit });
+    // A dry run changes nothing, so only a real run is logged.
+    if (apply) {
+      await recordAudit(auditContextFrom(req, guard), {
+        action: "ledger.open",
+        targetType: "ledger",
+        targetId: "all",
+        after: { limit: limit ?? null, report: JSON.parse(JSON.stringify(report)) },
+      });
+    }
     return NextResponse.json(report);
   },
 );

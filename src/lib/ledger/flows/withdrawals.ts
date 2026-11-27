@@ -3,6 +3,7 @@ import { SYSTEM_ACCOUNTS, userAccount } from "../accounts";
 import { InsufficientCoinsError, UnknownAccountError } from "../errors";
 import { postTransaction } from "../post";
 import { inLedgerTransaction } from "../run";
+import { recordAudit, type AuditContext } from "@/lib/audit";
 
 export type ApproveWithdrawalResult =
   | { ok: true; withdrawal: IWithdrawalDoc }
@@ -18,8 +19,10 @@ export type ApproveWithdrawalResult =
 export async function approveWithdrawal(args: {
   withdrawalId: string;
   adminId: string;
+  /** When given, the approval is logged in the same transaction. */
+  audit?: AuditContext;
 }): Promise<ApproveWithdrawalResult> {
-  const { withdrawalId, adminId } = args;
+  const { withdrawalId, adminId, audit } = args;
   try {
     return await inLedgerTransaction(async (session): Promise<ApproveWithdrawalResult> => {
       const withdrawal = await Withdrawal.findOneAndUpdate(
@@ -42,6 +45,19 @@ export async function approveWithdrawal(args: {
         },
         session,
       );
+      if (audit) {
+        await recordAudit(
+          audit,
+          {
+            action: "withdrawal.approve",
+            targetType: "withdrawal",
+            targetId: withdrawalId,
+            before: { status: "pending" },
+            after: { status: "approved", coins: withdrawal.coinRequested, workerId: String(withdrawal.workerId) },
+          },
+          session,
+        );
+      }
       return { ok: true, withdrawal };
     });
   } catch (err) {
@@ -56,13 +72,33 @@ export async function approveWithdrawal(args: {
 /** Rejects a pending withdrawal (conditional on `pending`). No coins move. */
 export async function rejectWithdrawal(args: {
   withdrawalId: string;
+  /** When given, the rejection is logged in the same transaction. */
+  audit?: AuditContext;
+  reason?: string;
 }): Promise<
   { ok: true; withdrawal: IWithdrawalDoc } | { ok: false; reason: "not_found" }
 > {
-  const withdrawal = await Withdrawal.findOneAndUpdate(
-    { _id: args.withdrawalId, status: "pending" },
-    { $set: { status: "rejected", processedAt: new Date() } },
-    { returnDocument: "after" },
-  );
-  return withdrawal ? { ok: true, withdrawal } : { ok: false, reason: "not_found" };
+  return inLedgerTransaction(async (session) => {
+    const withdrawal = await Withdrawal.findOneAndUpdate(
+      { _id: args.withdrawalId, status: "pending" },
+      { $set: { status: "rejected", processedAt: new Date() } },
+      { session, returnDocument: "after" },
+    );
+    if (!withdrawal) return { ok: false as const, reason: "not_found" as const };
+    if (args.audit) {
+      await recordAudit(
+        args.audit,
+        {
+          action: "withdrawal.reject",
+          targetType: "withdrawal",
+          targetId: args.withdrawalId,
+          before: { status: "pending" },
+          after: { status: "rejected", workerId: String(withdrawal.workerId) },
+          reason: args.reason,
+        },
+        session,
+      );
+    }
+    return { ok: true as const, withdrawal };
+  });
 }

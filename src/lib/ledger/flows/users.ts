@@ -4,6 +4,7 @@ import { SYSTEM_ACCOUNTS, userAccount } from "../accounts";
 import { InsufficientCoinsError, UnknownAccountError } from "../errors";
 import { postTransaction } from "../post";
 import { inLedgerTransaction } from "../run";
+import { recordAudit, type AuditContext } from "@/lib/audit";
 
 export function isDuplicateKeyError(err: unknown): boolean {
   return (
@@ -72,8 +73,10 @@ export async function adjustUserCoins(args: {
   adminId: string;
   requestId: string;
   reason?: string;
+  /** When given, the adjustment is logged in the same transaction. */
+  audit?: AuditContext;
 }): Promise<AdjustCoinsResult> {
-  const { userId, delta, adminId, requestId, reason } = args;
+  const { userId, delta, adminId, requestId, reason, audit } = args;
   try {
     return await inLedgerTransaction(async (session): Promise<AdjustCoinsResult> => {
       const { replayed } = await postTransaction(
@@ -89,6 +92,20 @@ export async function adjustUserCoins(args: {
         },
         session,
       );
+      // A replayed request already has its entry from the first time.
+      if (audit && !replayed) {
+        await recordAudit(
+          audit,
+          {
+            action: "coins.adjust",
+            targetType: "user",
+            targetId: userId,
+            after: { delta },
+            reason,
+          },
+          session,
+        );
+      }
       return { ok: true, replayed };
     });
   } catch (err) {
@@ -106,11 +123,13 @@ export async function adjustUserCoins(args: {
 export async function removeUser(args: {
   userId: string;
   adminId: string;
+  /** When given, the removal is logged in the same transaction. */
+  audit?: AuditContext;
 }): Promise<{ ok: true; forfeited: number } | { ok: false; reason: "not_found" }> {
-  const { userId, adminId } = args;
+  const { userId, adminId, audit } = args;
   if (!mongoose.isValidObjectId(userId)) return { ok: false, reason: "not_found" };
   return inLedgerTransaction(async (session) => {
-    const user = await User.findById(userId).select("coins").session(session).lean();
+    const user = await User.findById(userId).select("coins email role").session(session).lean();
     if (!user) return { ok: false as const, reason: "not_found" as const };
 
     const coins = user.coins ?? 0;
@@ -131,6 +150,19 @@ export async function removeUser(args: {
       );
     }
     await User.deleteOne({ _id: userId }, { session });
+    if (audit) {
+      await recordAudit(
+        audit,
+        {
+          action: "user.delete",
+          targetType: "user",
+          targetId: userId,
+          before: { email: user.email, role: user.role, coins },
+          after: { forfeited: coins },
+        },
+        session,
+      );
+    }
     return { ok: true as const, forfeited: coins };
   });
 }

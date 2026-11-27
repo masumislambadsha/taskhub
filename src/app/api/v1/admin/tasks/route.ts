@@ -4,6 +4,8 @@ import { requireAdmin } from "@/lib/roles";
 import { connectDB } from "@/lib/db";
 import Task from "@/models/Task";
 import { maskEmailFields } from "@/lib/privacy";
+import { auditContextFrom, recordAudit } from "@/lib/audit";
+import { inLedgerTransaction } from "@/lib/ledger/run";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -43,7 +45,30 @@ export async function PATCH(req: NextRequest) {
 
   await connectDB();
   const { id, status } = await req.json();
-  const task = await Task.findByIdAndUpdate(id, { status }, { new: true });
+  const audit = auditContextFrom(req, guard);
+  const task = await inLedgerTransaction(async (session) => {
+    const before = await Task.findById(id).select("status title").session(session).lean();
+    if (!before) return null;
+    const updated = await Task.findByIdAndUpdate(
+      id,
+      { status },
+      { returnDocument: "after", session },
+    );
+    if (status !== before.status) {
+      await recordAudit(
+        audit,
+        {
+          action: "task.status_change",
+          targetType: "task",
+          targetId: String(id),
+          before: { status: before.status },
+          after: { status },
+        },
+        session,
+      );
+    }
+    return updated;
+  });
   if (!task) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(task);
 }
