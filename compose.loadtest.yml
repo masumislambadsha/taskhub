@@ -1,0 +1,26 @@
+# Load testing stack: the production-like stack with resource limits close to a
+# small VPS, plus k6 and Artillery under the `loadtest` profile.
+#   docker compose -f compose.yml -f compose.loadtest.yml --profile loadtest run --rm k6 run /load/browse.js
+# Use a fake payment provider and a throwaway database. Never load test Stripe or bKash.
+services:
+  web1:
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 1g }
+  web2:
+    deploy:
+      resources:
+        limits: { cpus: "1.0", memory: 1g }
+  k6:
+    image: grafana/k6:0.54.0
+    profiles: [loadtest]
+    volumes: ["./load:/load:ro"]
+    environment: { BASE_URL: "http://nginx" }
+    depends_on: [nginx]
+  artillery:
+    image: artilleryio/artillery:2.0.21
+    profiles: [loadtest]
+    volumes: ["./load:/load:ro"]
+    working_dir: /load
+    environment: { SOCKET_URL: "http://nginx" }
+    depends_on: [nginx]

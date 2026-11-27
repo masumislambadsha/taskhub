@@ -734,6 +734,8 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 
 **Done when:** the table has real numbers and at least one before-and-after fix story.
 
+**Status: scripts written, nothing measured.** `load/browse.js` (k6, browse scenario with thresholds), `load/chat.yml` (Artillery, needs a CSV of valid tokens), `load/seed-load.ts` (`npm run load:seed`: 1,000 users and 10,000 tasks, local database only) and `compose.loadtest.yml` (1 CPU and 1 GB limits on the web containers, k6 and Artillery under the `loadtest` profile). This environment cannot run containers or k6, so there are no numbers and no fix story yet; `load/README.md` has the empty results table. The work scenario (submit and approve) is not written, and the first suspect is the unanchored `$regex` task search. Done only when it has been run on the real hardware.
+
 ## 2.6 Failure (chaos) tests
 
 **Goal:** show that the system survives real failures, with recorded results instead of claims.
