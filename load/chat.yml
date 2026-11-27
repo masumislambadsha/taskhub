@@ -1,0 +1,34 @@
+# Artillery "chat" scenario: many Socket.io clients sending messages.
+# Needs a token per user (see load/README.md). Run:
+#   docker compose --profile loadtest run --rm artillery run /load/chat.yml
+config:
+  target: "{{ $processEnvironment.SOCKET_URL }}"
+  engines:
+    socketio-v3: {}
+  socketio:
+    transports: ["websocket"]
+  phases:
+    - { duration: 30, arrivalRate: 5, name: warm up }
+    - { duration: 60, arrivalRate: 20, name: sustained }
+  payload:
+    path: "./chat-users.csv" # token,conversationId,taskId,receiverId
+    fields: [token, conversationId, taskId, receiverId]
+  ensure:
+    maxErrorRate: 1
+scenarios:
+  - engine: socketio-v3
+    flow:
+      - emit:
+          channel: "join:conversation"
+          data: "{{ conversationId }}"
+      - loop:
+          - emit:
+              channel: "message:send"
+              data:
+                conversationId: "{{ conversationId }}"
+                taskId: "{{ taskId }}"
+                receiverId: "{{ receiverId }}"
+                receiverName: "Load"
+                content: "load test message"
+          - think: 1
+        count: 20
