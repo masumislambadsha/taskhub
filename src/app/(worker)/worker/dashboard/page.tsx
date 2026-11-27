@@ -17,6 +17,7 @@ import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import StatCard from "@/components/shared/StatCard";
 import { MIN_WITHDRAWAL_COINS } from "@/lib/constants";
+import TrustCard from "@/components/worker/TrustCard";
 
 export default async function WorkerDashboard() {
   const session = await auth();
@@ -118,7 +119,8 @@ export default async function WorkerDashboard() {
         </Link>
       </div>
 
-      
+      <TrustCard />
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Submissions" value={total} icon="assignment" />
         <StatCard label="Approved" value={approved} icon="check_circle" />

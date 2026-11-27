@@ -3,6 +3,9 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
 import FraudFlag from "@/models/FraudFlag";
+import Task from "@/models/Task";
+import { ensureTrustLevel } from "@/lib/trust-data";
+import { levelName } from "@/lib/trust";
 import { evaluateLinks, recordSighting } from "@/lib/fraud/signals";
 import { submitWork } from "@/lib/ledger/flows/submissions";
 import { submissionSchema } from "@/lib/validators/submission";
@@ -88,6 +91,21 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
       );
 
     await connectDB();
+
+    // Level gate, checked on the server: some tasks only open to trusted workers.
+    if (typeof body.taskId === "string" && /^[0-9a-fA-F]{24}$/.test(body.taskId)) {
+      const gate = await Task.findById(body.taskId).select("minLevel").lean();
+      if (gate?.minLevel) {
+        const level = await ensureTrustLevel(session.user.id);
+        if (level < gate.minLevel) {
+          return NextResponse.json(
+            { error: `This task needs level ${levelName(gate.minLevel)} or higher. Your level is ${levelName(level)}.`, code: "LEVEL_TOO_LOW" },
+            { status: 403 },
+          );
+        }
+      }
+    }
+
     const result = await submitWork({
       taskId: body.taskId,
       worker: {

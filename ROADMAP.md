@@ -880,6 +880,8 @@ Two things the measurements changed from the plan. A plain dHash was unstable on
 
 **Done when:** the score is explained in the UI, each component has tests, and level gates are enforced on the server.
 
+**Status: done, with gaps** (see [ADR 0006](docs/adr/0006-trust-score-rules.md)). `src/lib/trust.ts` holds the six components and levels (each tested), `src/lib/trust-data.ts` gathers the counts (approvals from a buyer linked by an open or confirmed self-dealing flag do not count), stores `trust` and a daily `trustHistory` on the user, recomputes when stale (one hour) and for every active worker about once a day in the worker's sweep. Workers see their level, score, every component and what would move them up on the dashboard (`/api/v1/user/trust`). Effects enforced on the server: a task's `minLevel` (set by the buyer on the new-task form) refuses lower-level workers with a clear message before a slot is taken, and withdrawal limits are multiplied by level (1×, 1.5×, 2.5×, 4×). The earning caps (3.3) read the same level table. Gaps: no email or phone verification exists yet, so that component is 0 for everyone (3.7 adds it); recomputation after each event is replaced by "when stale", the sweep and when the worker looks, rather than a debounced event hook; the history chart is not drawn (the data is stored and returned); the edit-task form does not show `minLevel` yet.
+
 ## 3.5 AI proof check
 
 **Goal:** help buyers review faster and catch fake proofs, with a human always making the decision.
