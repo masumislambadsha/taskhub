@@ -218,6 +218,75 @@ describe("rejectSubmission", () => {
     expect(t?.escrowReleasedAt).toBeInstanceOf(Date);
   });
 
+  describe("when the task holds more filled slots than it now needs", () => {
+    it("refunds the reward and charges no reprice, because no slot reopens", async () => {
+      // 3 slots at 10 coins, two taken; the buyer then lowers the count to 1.
+      const { buyer, task } = await fundedTask(100, 3, 10);
+      const a = await createPendingSubmission(task, (await createUser(0))._id);
+      const b = await createPendingSubmission(task, (await createUser(0))._id);
+      const edit = await updateFundedTask({
+        taskId: String(task._id),
+        buyerId: String(buyer._id),
+        data: taskInput({ requiredWorkers: 1, payableAmount: 25 }),
+      });
+      expect(edit.ok).toBe(true);
+      const buyerBefore = await coinsOf(buyer._id);
+      const statusBefore = (await Task.findById(task._id))?.status;
+      // Two pending rewards of 10 remain in escrow; the open slot is gone.
+      expect(await escrowOf(task._id)).toBe(20);
+
+      const res = await rejectSubmission({ submissionId: String(a._id), buyerId: String(buyer._id) });
+
+      expect(res.ok).toBe(true);
+      // The rejected reward comes back, and the new payout is not charged.
+      expect(await coinsOf(buyer._id)).toBe(buyerBefore + 10);
+      expect(await escrowOf(task._id)).toBe(10);
+      const after = await Task.findById(task._id);
+      expect(after?.filledWorkers).toBe(1);
+      // Still full, so the rejection does not touch the status.
+      expect(after?.status).toBe(statusBefore);
+      expect(await LedgerTransaction.findOne({ idempotencyKey: `reject-reprice:${a._id}` })).toBeNull();
+      expect((await reconcile()).escrowMismatches).toEqual([]);
+
+      // Rejecting the second one leaves a slot, so that one reopens at the new payout.
+      const res2 = await rejectSubmission({ submissionId: String(b._id), buyerId: String(buyer._id) });
+      expect(res2.ok).toBe(true);
+      expect(await escrowOf(task._id)).toBe(25);
+      expect((await Task.findById(task._id))?.status).toBe("open");
+      const report = await reconcile();
+      expect(report.ok).toBe(true);
+    });
+
+    it("does the same on a task from before the ledger", async () => {
+      const buyer = await createUser(0);
+      const task = await createPreLedgerTask(buyer._id, {
+        requiredWorkers: 1,
+        filledWorkers: 2,
+        payableAmount: 13,
+        status: "closed",
+      });
+      const sub = await Submission.create({
+        taskId: task._id,
+        taskTitle: task.title,
+        taskBuyerId: buyer._id,
+        taskBuyerName: "Buyer",
+        workerId: (await createUser(0))._id,
+        workerName: "Worker",
+        workerEmail: "worker@example.test",
+        payableAmount: 3,
+        details: "Done.",
+      });
+
+      const res = await rejectSubmission({ submissionId: String(sub._id), buyerId: String(buyer._id) });
+
+      expect(res.ok).toBe(true);
+      expect(await coinsOf(buyer._id)).toBe(3);
+      expect(await escrowOf(task._id)).toBe(0);
+      expect((await Task.findById(task._id))?.filledWorkers).toBe(1);
+      expect((await reconcile()).escrowMismatches).toEqual([]);
+    });
+  });
+
   describe("when the task's payout changed after the submission", () => {
     const reprice = (buyer: { _id: unknown }, task: { _id: unknown }, payableAmount: number) =>
       updateFundedTask({

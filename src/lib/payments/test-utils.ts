@@ -3,6 +3,7 @@ import { inject } from "vitest";
 import LedgerAccount from "@/models/LedgerAccount";
 import LedgerTransaction from "@/models/LedgerTransaction";
 import Payment from "@/models/Payment";
+import PaymentEvent from "@/models/PaymentEvent";
 import Submission from "@/models/Submission";
 import Task from "@/models/Task";
 import User from "@/models/User";
@@ -31,6 +32,7 @@ export async function startTestDb(dbName: string) {
   await mongoose.connect(inject("mongoUri"), { dbName });
   await Promise.all([
     Payment.init(),
+    PaymentEvent.init(),
     User.init(),
     LedgerAccount.init(),
     LedgerTransaction.init(),
@@ -46,6 +48,7 @@ export async function startTestDb(dbName: string) {
     async reset() {
       await Promise.all([
         Payment.deleteMany({}),
+        PaymentEvent.deleteMany({}),
         User.deleteMany({}),
         LedgerAccount.deleteMany({}),
         Task.deleteMany({}),

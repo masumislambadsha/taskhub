@@ -172,9 +172,10 @@ export type RejectSubmissionResult =
  * Normally no coins move, because the reward stays in escrow for the reopened
  * slot. Two cases move coins, in the same transaction:
  *
- * - The buyer already deleted the task (its open slots were refunded): the
- *   slot is not reopened and the reward is refunded to the buyer
- *   (`escrow -R, buyer +R`, key `reject-refund:<submissionId>`).
+ * - The buyer already deleted the task (its open slots were refunded), or the
+ *   task is over-subscribed (the buyer lowered the worker count below the
+ *   slots already taken): the slot is not reopened and the reward is refunded
+ *   to the buyer (`escrow -R, buyer +R`, key `reject-refund:<submissionId>`).
  * - The task's payout was changed after the submission was made: the reopened
  *   slot is worth the task's current payout, not the submission's, so the
  *   difference is charged to or refunded to the buyer (key
@@ -199,14 +200,25 @@ export async function rejectSubmission(args: {
 
       const task = await Task.findById(pending.taskId).session(session).lean();
       const priceDelta = task ? task.payableAmount - pending.payableAmount : 0;
+      // A task can hold more filled slots than it now needs (the buyer lowered
+      // the worker count after workers had taken slots). Rejecting one of its
+      // submissions then reopens nothing, so there is no slot to keep funded.
+      const overSubscribed = task
+        ? task.filledWorkers - 1 >= task.requiredWorkers
+        : false;
       let released = false;
       if (
         task &&
-        (task.status === "archived" || task.escrowReleasedAt || priceDelta !== 0)
+        (task.status === "archived" ||
+          task.escrowReleasedAt ||
+          priceDelta !== 0 ||
+          overSubscribed)
       ) {
         // Pre-ledger task: open its escrow from the state before this rejection.
         released = (await ensureEscrowOpen(pending.taskId, session)).released;
       }
+      // No slot reopens: the reward goes back to the buyer.
+      const refund = released || overSubscribed;
 
       const $set: Record<string, unknown> = { status: "rejected" };
       if (reason) $set.rejectionReason = reason;
@@ -220,14 +232,14 @@ export async function rejectSubmission(args: {
       if (task) {
         await Task.updateOne(
           { _id: task._id },
-          released
+          refund
             ? { $inc: { filledWorkers: -1 } }
             : { $inc: { filledWorkers: -1 }, $set: { status: "open" } },
           { session },
         );
         const escrow = escrowAccount(task._id);
         const buyer = userAccount(buyerId);
-        if (released) {
+        if (refund) {
           await postTransaction(
             {
               type: "submission_reject_refund",
