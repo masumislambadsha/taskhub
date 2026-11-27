@@ -1,0 +1,47 @@
+# Prometheus, Alertmanager and Grafana behind the `monitoring` profile.
+#   docker compose -f compose.yml -f compose.monitoring.yml --profile monitoring up -d
+# Set METRICS_TOKEN (web and realtime read it) and write the same value to
+# monitoring/secrets/metrics-token; put the SMTP password in monitoring/secrets/smtp-password.
+# Grafana is on port 3030 and only listens on localhost; reach it with an SSH tunnel.
+services:
+  web1:
+    environment: { METRICS_TOKEN: "${METRICS_TOKEN:-}" }
+  web2:
+    environment: { METRICS_TOKEN: "${METRICS_TOKEN:-}" }
+  realtime1:
+    environment: { METRICS_TOKEN: "${METRICS_TOKEN:-}" }
+  realtime2:
+    environment: { METRICS_TOKEN: "${METRICS_TOKEN:-}" }
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    profiles: [monitoring]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - ./monitoring/secrets/metrics-token:/etc/prometheus/metrics-token:ro
+      - prometheus-data:/prometheus
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.retention.time=15d"]
+    restart: unless-stopped
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    profiles: [monitoring]
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./monitoring/secrets/smtp-password:/etc/alertmanager/smtp-password:ro
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:11.3.0
+    profiles: [monitoring]
+    ports: ["127.0.0.1:3030:3000"]
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:?set GRAFANA_ADMIN_PASSWORD}"
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on: [prometheus]
+    restart: unless-stopped
+volumes:
+  prometheus-data:
+  grafana-data:

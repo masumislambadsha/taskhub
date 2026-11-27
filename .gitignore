@@ -63,3 +63,4 @@ deploy/id_*
 
 # deploy.sh state (current and previous image tag on the VPS)
 /.deploy/
+monitoring/secrets/

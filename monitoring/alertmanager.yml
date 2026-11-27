@@ -1,0 +1,14 @@
+# Edit the addresses and SMTP settings for your mail provider, then restart.
+route:
+  receiver: owner
+  group_by: [alertname]
+  group_wait: 30s
+  repeat_interval: 4h
+receivers:
+  - name: owner
+    email_configs:
+      - to: you@example.com
+        from: alerts@example.com
+        smarthost: smtp.example.com:587
+        auth_username: alerts@example.com
+        auth_password_file: /etc/alertmanager/smtp-password

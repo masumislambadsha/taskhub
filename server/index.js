@@ -16,6 +16,8 @@ const { createChatLimiter } = require("./lib/rate-limit");
 const Redis = require("ioredis");
 const mongoose = require("mongoose");
 const { createPresence, createMemoryKv } = require("./lib/presence");
+const { createMetrics } = require("./lib/metrics");
+const { metricsRoute } = require("./lib/metrics-route");
 const { conversationPartners } = require("./controllers/messageController");
 const healthRouter = require("./routes/health");
 
@@ -42,6 +44,9 @@ connectDB();
 
 // ── Routes ───────────────────────────────────────────────────────────────────
 app.use("/health", healthRouter);
+const metrics = createMetrics();
+// Prometheus scrapes this on the internal network; Nginx does not forward it.
+app.get("/metrics", metricsRoute(metrics.registry));
 
 // Reports unhandled Express errors. Does nothing when Sentry is disabled.
 Sentry.setupExpressErrorHandler(app);
@@ -66,7 +71,7 @@ const presence = createPresence({
   announce: (partnerId, event) => io.to(`user:${partnerId}`).emit("presence:update", event),
 });
 
-registerSocketHandlers(io, { chatLimiter, presence });
+registerSocketHandlers(io, { chatLimiter, presence, metrics });
 
 httpServer.listen(PORT, () => {
   logger.info({ port: PORT }, "Socket.io server listening");
