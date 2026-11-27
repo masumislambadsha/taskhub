@@ -28,6 +28,11 @@ export default function TrustCard() {
     queryFn: () => axios.get("/api/v1/user/trust").then((r) => r.data),
     staleTime: 60_000,
   });
+  const limits = useQuery<{ cap: number; used: number; remaining: number; resetsAt: string }>({
+    queryKey: ["earning-limits"],
+    queryFn: () => axios.get("/api/v1/user/earning-limits").then((r) => r.data),
+    staleTime: 30_000,
+  }).data;
   if (!data) return null;
 
   return (
@@ -45,6 +50,22 @@ export default function TrustCard() {
           <li key={line}>{line}</li>
         ))}
       </ul>
+      {limits && (
+        <div>
+          <div className="flex justify-between text-sm text-primary/70">
+            <span>Today&apos;s limit (resets at midnight, Dhaka time)</span>
+            <span>
+              {limits.used} / {limits.cap} coins
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full bg-primary/10 mt-1">
+            <div className="h-full rounded-full bg-amber-500" style={{ width: `${Math.min(100, (limits.used / limits.cap) * 100)}%` }} />
+          </div>
+          <p className="text-xs text-primary/50 mt-1">
+            {limits.remaining > 0 ? `${limits.remaining} coins of work left today. Work waiting for review counts.` : "Daily limit reached. It resets at midnight, Dhaka time."}
+          </p>
+        </div>
+      )}
       <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
         {PARTS.map(([key, label, max]) => (
           <div key={key}>

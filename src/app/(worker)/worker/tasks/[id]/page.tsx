@@ -1,7 +1,7 @@
 "use client";
 import { MdAdd, MdAddPhotoAlternate, MdChat, MdClose, MdToll } from 'react-icons/md';
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -36,6 +36,11 @@ export default function TaskDetailPage() {
     queryKey: ["task", id],
     queryFn: () => axios.get(`/api/v1/tasks/${id}`).then((r) => r.data),
   });
+
+  // Opening the task starts its minimum-time clock (the server keeps the first time only).
+  useEffect(() => {
+    if (task && session?.user?.role === "worker") axios.post(`/api/v1/tasks/${id}/view`).catch(() => {});
+  }, [id, task, session?.user?.role]);
 
   const {
     register,

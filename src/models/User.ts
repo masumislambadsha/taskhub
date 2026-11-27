@@ -24,6 +24,8 @@ export interface IUserDoc extends Document {
   hideLastSeen?: boolean;
   /** Email with Gmail dots and +tags removed, to catch one inbox signing up twice. */
   emailNormalized?: string;
+  /** Written on every submission so two of a worker's submissions at once conflict and the daily cap is exact. */
+  lastSubmitAt?: Date;
   /** The worker trust score (roadmap 3.4), recomputed by `ensureTrust` and the nightly sweep. */
   trust?: { score: number; level: 0 | 1 | 2 | 3; components: Record<string, number>; capped: boolean; computedAt: Date };
   /** One entry per day at most, for the chart; the newest 90 are kept. */
@@ -50,6 +52,7 @@ const UserSchema = new Schema<IUserDoc>(
     lastSeenAt: { type: Date },
     hideLastSeen: { type: Boolean, default: false },
     emailNormalized: { type: String },
+    lastSubmitAt: { type: Date },
     trust: {
       type: new Schema(
         {

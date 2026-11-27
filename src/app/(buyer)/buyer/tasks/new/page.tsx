@@ -366,6 +366,21 @@ export default function NewTaskPage() {
             <p className="text-xs text-primary/50 mt-1">Higher levels mean a longer record of approved work. Fewer workers can take the task.</p>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-primary mb-1.5">
+              Minimum time on the task (seconds, optional)
+            </label>
+            <input
+              {...register("minSeconds", { setValueAs: (v) => (v === "" || v == null ? undefined : Number(v)) })}
+              type="number"
+              min={0}
+              max={3600}
+              placeholder="0"
+              className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary"
+            />
+            <p className="text-xs text-primary/50 mt-1">For example 120 for a 2-minute video. Workers cannot submit sooner than this after opening the task.</p>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-primary mb-1.5">

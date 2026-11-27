@@ -5,6 +5,8 @@ export interface ITaskDoc extends Document {
   details: string;
   category?: string;
   minLevel?: number;
+  /** Seconds a worker must have had the task open before submitting (0 = no minimum). */
+  minSeconds?: number;
   buyerId: mongoose.Types.ObjectId;
   buyerName: string;
   buyerEmail: string;
@@ -33,6 +35,7 @@ const TaskSchema = new Schema<ITaskDoc>(
     category: { type: String },
     /** The lowest worker trust level that may take the task (0 = anyone). */
     minLevel: { type: Number, enum: [0, 1, 2, 3], default: 0 },
+    minSeconds: { type: Number, min: 0, max: 3600, default: 0 },
     buyerId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     buyerName: { type: String, required: true },
     buyerEmail: { type: String, required: true },
