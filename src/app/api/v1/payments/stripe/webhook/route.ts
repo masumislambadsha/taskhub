@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { connectDB } from "@/lib/db";
 import { getStripe } from "@/lib/stripe";
-import { creditStripeSession } from "@/lib/payments/stripe";
+import { receivePaymentEvent, stripePayload } from "@/lib/payments/events";
 import { withRequestLogging } from "@/lib/with-request-logging";
 
 export const POST = withRequestLogging("/api/v1/payments/stripe/webhook", async function POST(req: NextRequest) {
@@ -27,8 +26,12 @@ export const POST = withRequestLogging("/api/v1/payments/stripe/webhook", async 
     event.type === "checkout.session.async_payment_succeeded"
   ) {
     const s = event.data.object as Stripe.Checkout.Session;
-    await connectDB();
-    await creditStripeSession(s, event.type);
+    await receivePaymentEvent({
+      provider: "stripe",
+      eventId: event.id,
+      type: event.type,
+      payload: stripePayload(s),
+    });
   }
 
   return NextResponse.json({ ok: true });
