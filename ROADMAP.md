@@ -488,6 +488,8 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 
 ## 1.4 Dispute flow
 
+**Status: step 1 of 2 done, the hold** (see [ADR 0003](docs/adr/0003-rejection-hold.md)). Rejecting now holds the reward in the task's escrow and keeps the slot taken; the worker can accept the rejection (`POST /api/v1/submissions/[id]/accept-rejection`), or it becomes final after `DISPUTE_WINDOW_MS` (3 days) through a `dispute-window` job with the sweep as safety net. The hold is a counted part of the task's own escrow, not a separate account. Still to do from this item: the appeal itself (`disputes` collection, worker statement and evidence, buyer reply, admin queue and decision with step-up and audit, the worker-wins payout), the 3-open-disputes limit, harsh-reviewer flags and the 48-hour admin reminder.
+
 **Goal:** a worker can appeal an unfair rejection, an admin decides, and the coins move automatically.
 
 **Design**

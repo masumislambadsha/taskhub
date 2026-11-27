@@ -3,6 +3,9 @@ import { Queue } from "bullmq";
 import Redis from "ioredis";
 import {
   AUTO_APPROVE_QUEUE,
+  cancelDisputeWindow,
+  disputeWindowJobId,
+  scheduleDisputeWindow,
   autoApproveJobId,
   cancelAutoApprove,
   closeAutoApproveProducer,
@@ -66,6 +69,19 @@ d("auto-approve queue", () => {
     await cancelAutoApprove("sub3");
     expect(await inspect.getDelayedCount()).toBe(0);
     await expect(cancelAutoApprove("never-scheduled")).resolves.toBeUndefined();
+  });
+
+  it("schedules and cancels the end of a dispute window with its own job ID", async () => {
+    expect(disputeWindowJobId("abc")).toBe("dispute-window-abc");
+    const runAt = new Date(Date.now() + 3 * 24 * 3600 * 1000);
+    expect(await scheduleDisputeWindow("sub5", runAt)).toBe(true);
+    expect(await scheduleDisputeWindow("sub5", runAt)).toBe(true);
+    expect(await inspect.getDelayedCount()).toBe(1);
+    const job = await inspect.getJob("dispute-window-sub5");
+    expect(job?.name).toBe("dispute-window");
+    await cancelDisputeWindow("sub5");
+    expect(await inspect.getDelayedCount()).toBe(0);
+    await expect(cancelDisputeWindow("never")).resolves.toBeUndefined();
   });
 
   it("a runAt in the past schedules with no delay", async () => {

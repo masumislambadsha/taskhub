@@ -19,6 +19,9 @@ import { recordTransaction, validateInput, type Session } from "./journal";
  * - A pending submission is already counted in `filledWorkers`, and its reward
  *   is paid out of the escrow when the buyer approves it (reward = the
  *   submission's own `payableAmount`, fixed when it was submitted).
+ * - A rejected submission whose hold is not settled yet is the same: its slot
+ *   is still taken and its reward is still in the escrow, held until the
+ *   worker accepts, the window ends, or an admin decides.
  *
  * Creating a submission moves one slot from "open" to "pending" and rejecting
  * moves it back, so neither changes the total; approving pays the reward out;
@@ -36,7 +39,10 @@ export function openSlotValue(task: TaskValueFields): number {
   return Math.max(0, task.requiredWorkers - task.filledWorkers) * task.payableAmount;
 }
 
-/** Sum of the rewards owed to a task's pending submissions. */
+/**
+ * Sum of the rewards owed to a task's pending submissions and to its held
+ * (rejected, not yet settled) ones. Both still sit in the escrow.
+ */
 export async function pendingSubmissionValue(
   taskId: string | mongoose.Types.ObjectId,
   session?: Session,
@@ -45,7 +51,14 @@ export async function pendingSubmissionValue(
     {
       $match: {
         taskId: new mongoose.Types.ObjectId(String(taskId)),
-        status: "pending",
+        $or: [
+          { status: "pending" },
+          {
+            status: "rejected",
+            "rejectionHold.windowEndsAt": { $exists: true },
+            "rejectionHold.settledAt": { $exists: false },
+          },
+        ],
       },
     },
     { $group: { _id: null, total: { $sum: "$payableAmount" } } },

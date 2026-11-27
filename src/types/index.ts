@@ -58,6 +58,8 @@ export interface ISubmission {
   decidedAt?: string;
   /** The buyer's user ID, or "system" for an automatic approval. */
   decidedBy?: string;
+  /** For a rejection: the reward is held until this settles. */
+  rejectionHold?: { windowEndsAt: string; settledAt?: string; settledAs?: string };
   createdAt: string;
   updatedAt: string;
 }
