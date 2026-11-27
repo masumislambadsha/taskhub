@@ -4,6 +4,7 @@ export interface ITaskDoc extends Document {
   title: string;
   details: string;
   category?: string;
+  minLevel?: number;
   buyerId: mongoose.Types.ObjectId;
   buyerName: string;
   buyerEmail: string;
@@ -30,6 +31,8 @@ const TaskSchema = new Schema<ITaskDoc>(
     title: { type: String, required: true },
     details: { type: String, required: true },
     category: { type: String },
+    /** The lowest worker trust level that may take the task (0 = anyone). */
+    minLevel: { type: Number, enum: [0, 1, 2, 3], default: 0 },
     buyerId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     buyerName: { type: String, required: true },
     buyerEmail: { type: String, required: true },

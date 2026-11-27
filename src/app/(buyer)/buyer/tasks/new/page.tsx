@@ -349,6 +349,23 @@ export default function NewTaskPage() {
             </div>
           </div>
 
+          <div>
+            <label className="block text-sm font-medium text-primary mb-1.5">
+              Lowest worker level allowed
+            </label>
+            <select
+              {...register("minLevel", { valueAsNumber: true })}
+              defaultValue={0}
+              className="w-full px-4 py-3 rounded-lg border border-primary/20 bg-background focus:outline-none focus:ring-2 focus:ring-secondary text-primary"
+            >
+              <option value={0}>Anyone (New and above)</option>
+              <option value={1}>Regular and above</option>
+              <option value={2}>Skilled and above</option>
+              <option value={3}>Trusted only</option>
+            </select>
+            <p className="text-xs text-primary/50 mt-1">Higher levels mean a longer record of approved work. Fewer workers can take the task.</p>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-primary mb-1.5">

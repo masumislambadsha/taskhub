@@ -1,3 +1,5 @@
+import { ensureTrustLevel } from "@/lib/trust-data";
+import { WITHDRAWAL_LIMIT_MULTIPLIER } from "@/lib/trust";
 import { createHash, randomBytes } from "node:crypto";
 import mongoose from "mongoose";
 import Withdrawal, { RESERVED_STATUSES, type IWithdrawalDoc } from "@/models/Withdrawal";
@@ -65,8 +67,12 @@ export async function requestWithdrawal(args: {
     return row?.total ?? 0;
   };
   const [day, week] = await Promise.all([sumSince(new Date(now.getTime() - DAY)), sumSince(new Date(now.getTime() - 7 * DAY))]);
-  if (day + coins > WITHDRAWAL_DAILY_LIMIT_COINS) return { ok: false, reason: "daily_limit" };
-  if (week + coins > WITHDRAWAL_WEEKLY_LIMIT_COINS) return { ok: false, reason: "weekly_limit" };
+  // Higher trust levels may withdraw more (roadmap 3.4).
+  const multiplier = WITHDRAWAL_LIMIT_MULTIPLIER[await ensureTrustLevel(worker.id)];
+  const dailyLimit = Math.floor(WITHDRAWAL_DAILY_LIMIT_COINS * multiplier);
+  const weeklyLimit = Math.floor(WITHDRAWAL_WEEKLY_LIMIT_COINS * multiplier);
+  if (day + coins > dailyLimit) return { ok: false, reason: "daily_limit" };
+  if (week + coins > weeklyLimit) return { ok: false, reason: "weekly_limit" };
 
   const number = normalizeAccountNumber(args.accountNumber);
   // Assess before recording this number, so "first used just now" is detected.
