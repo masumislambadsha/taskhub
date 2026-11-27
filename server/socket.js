@@ -25,7 +25,7 @@ function conversationIdOf(payload) {
   return payload && typeof payload === "object" ? payload.conversationId : undefined;
 }
 
-module.exports = function registerSocketHandlers(io, { chatLimiter, presence } = {}) {
+module.exports = function registerSocketHandlers(io, { chatLimiter, presence, metrics } = {}) {
   if (!getSocketJwtSecret()) {
     logger.error(
       "SOCKET_JWT_SECRET is missing or shorter than 32 characters: every socket connection will be rejected",
@@ -40,6 +40,8 @@ module.exports = function registerSocketHandlers(io, { chatLimiter, presence } =
     // them from anywhere (through the Redis emitter) without knowing which
     // instance their socket is on.
     socket.join(`user:${socket.userId}`);
+    metrics?.sockets.inc();
+    metrics?.connections.inc();
 
     // Online status, and anything sent while this user was away is now delivered.
     presence?.connected(socket.userId, socket.id).catch((err) => logger.warn({ err: err.message }, "presence connect failed"));
@@ -81,6 +83,7 @@ module.exports = function registerSocketHandlers(io, { chatLimiter, presence } =
     const verified = new Set();
 
     function deny(event, conversationId, reason) {
+      metrics?.denied.inc({ reason: String(reason).slice(0, 40) });
       logger.warn(
         {
           userId: socket.userId,
@@ -200,7 +203,9 @@ module.exports = function registerSocketHandlers(io, { chatLimiter, presence } =
         // The recipient's device answers with message:delivered once it has it.
 
         io.to(conversationId).emit("message:receive", out);
+        metrics?.messages.inc();
       } catch (err) {
+        metrics?.handlerErrors.inc();
         logger.error({ err, userId: socket.userId, roomId: conversationId }, "error saving message");
         Sentry.captureException(err);
         socket.emit("message:error", { error: "Failed to send message" });
@@ -295,6 +300,7 @@ module.exports = function registerSocketHandlers(io, { chatLimiter, presence } =
     socket.on("disconnect", () => {
       logger.info({ userId: socket.userId }, "user disconnected");
       presence?.disconnected(socket.userId, socket.id);
+      metrics?.sockets.dec();
     });
   });
 };

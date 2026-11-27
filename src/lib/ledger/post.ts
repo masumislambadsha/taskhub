@@ -1,4 +1,5 @@
 import LedgerAccount from "@/models/LedgerAccount";
+import { countLedgerTransaction } from "@/lib/metrics";
 import LedgerTransaction, {
   type ILedgerTransactionDoc,
   type LedgerEntry,
@@ -86,5 +87,6 @@ export async function postTransaction(
   const transaction = await recordTransaction(input, session, {
     updateUserBalances: true,
   });
+  countLedgerTransaction(input.type);
   return { transaction, replayed: false };
 }

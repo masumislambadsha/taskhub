@@ -6,6 +6,7 @@ import Redis from "ioredis";
 import { connectDB } from "@/lib/db";
 import { createLogger } from "@/lib/logger";
 import { startAutoApproveWorker, type AutoApproveRuntime } from "./auto-approve";
+import { createWorkerMetrics } from "./metrics";
 
 const log = createLogger("worker");
 
@@ -57,7 +58,24 @@ async function connectMongoWithRetry(): Promise<void> {
   }
 }
 
+const metricsRegistry = createWorkerMetrics(() => autoApprove?.queue ?? null);
+
 const server = http.createServer((req, res) => {
+  if (req.method === "GET" && req.url === "/metrics") {
+    // Internal port only: Prometheus scrapes it on the Docker network.
+    metricsRegistry
+      .metrics()
+      .then((body) => {
+        res.writeHead(200, { "Content-Type": metricsRegistry.contentType });
+        res.end(body);
+      })
+      .catch((err) => {
+        log.error({ err }, "metrics collection failed");
+        res.writeHead(500);
+        res.end();
+      });
+    return;
+  }
   if (req.method === "GET" && req.url === "/health") {
     const checks = {
       mongo: { ok: mongoOk() },
