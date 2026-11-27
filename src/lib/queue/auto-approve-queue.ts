@@ -6,6 +6,9 @@ export const AUTO_APPROVE_QUEUE = "auto-approve";
 export const AUTO_APPROVE_JOB = "auto-approve";
 export const DISPUTE_WINDOW_JOB = "dispute-window";
 export const SWEEP_JOB = "sweep";
+export const PROOF_HASH_JOB = "proof-hash";
+/** Wait a moment after the submission so the image host has the file. */
+export const PROOF_HASH_DELAY_MS = 2000;
 export const OUTBOX_DRAIN_JOB = "outbox-drain";
 export const OUTBOX_EVERY_MS = 30 * 1000;
 export const SWEEP_EVERY_MS = 15 * 60 * 1000;
@@ -106,6 +109,26 @@ export async function scheduleDisputeWindow(submissionId: string, runAt: Date): 
     return true;
   } catch (err) {
     logger.warn({ err, submissionId }, "could not schedule dispute window; the sweep will cover it");
+    return false;
+  }
+}
+
+/** BullMQ job IDs must not contain colons. */
+export function proofHashJobId(submissionId: string): string {
+  return `proof-hash-${submissionId}`;
+}
+
+/** Schedules the screenshot fingerprint check. One job per submission; never throws (the sweep covers a miss). */
+export async function scheduleProofHash(submissionId: string): Promise<boolean> {
+  const queue = getProducer();
+  if (!queue) return false;
+  try {
+    await withTimeout(
+      queue.add(PROOF_HASH_JOB, { submissionId }, { jobId: proofHashJobId(submissionId), delay: PROOF_HASH_DELAY_MS }),
+    );
+    return true;
+  } catch (err) {
+    logger.warn({ err, submissionId }, "could not schedule proof hashing; the sweep will cover it");
     return false;
   }
 }

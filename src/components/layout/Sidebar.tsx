@@ -77,6 +77,7 @@ const adminNav: NavItem[] = [
   },
   { href: "/admin/withdrawals", label: "Withdrawals", icon: MdAccountBalance },
   { href: "/admin/disputes", label: "Disputes", icon: MdRateReview },
+  { href: "/admin/fraud", label: "Fraud flags", icon: MdRateReview },
   { href: "/admin/payments", label: "Payments", icon: MdPayments },
   { href: "/admin/payment-events", label: "Payment Events", icon: MdReceiptLong },
   { href: "/admin/audit", label: "Audit Log", icon: MdReceiptLong },

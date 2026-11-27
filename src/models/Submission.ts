@@ -12,6 +12,7 @@ export interface ISubmissionDoc extends Document {
   details: string;
   proofLinks?: string[];
   proofImageUrl?: string;
+  proofHashes?: { sha256: string; dhash: string; chunks: string[]; computedAt?: Date };
   rejectionReason?: string;
   status: "pending" | "approved" | "rejected";
   /** When the system approves it if the buyer has not decided (set when submitted). */
@@ -51,6 +52,18 @@ const SubmissionSchema = new Schema<ISubmissionDoc>(
     details: { type: String, required: true },
     proofLinks: [{ type: String }],
     proofImageUrl: { type: String },
+    /** Fingerprints of the proof screenshot, computed by the worker (roadmap 3.1). */
+    proofHashes: {
+      type: new Schema(
+        {
+          sha256: { type: String, required: true },
+          dhash: { type: String, required: true },
+          chunks: [{ type: String }],
+          computedAt: { type: Date, default: Date.now },
+        },
+        { _id: false },
+      ),
+    },
     rejectionReason: { type: String },
     autoApproveAt: { type: Date },
     decidedAt: { type: Date },
@@ -77,6 +90,10 @@ const SubmissionSchema = new Schema<ISubmissionDoc>(
 );
 
 SubmissionSchema.index({ taskId: 1, workerId: 1 });
+// Finding near-duplicate screenshots: submissions that share any dHash chunk,
+// and exact duplicates by SHA-256.
+SubmissionSchema.index({ "proofHashes.chunks": 1, createdAt: -1 });
+SubmissionSchema.index({ "proofHashes.sha256": 1 });
 // A worker's and a buyer's submission lists: owner, optional status, newest first.
 // The worker index also answers the leaderboard's per-worker counts.
 SubmissionSchema.index({ workerId: 1, status: 1, createdAt: -1 });
