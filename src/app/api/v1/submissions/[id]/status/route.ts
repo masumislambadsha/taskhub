@@ -6,6 +6,7 @@ import { approveSubmission, rejectSubmission } from "@/lib/ledger/flows/submissi
 import { createNotification } from "@/lib/notifications";
 import { withRequestLogging } from "@/lib/with-request-logging";
 import { withIdempotency } from "@/lib/idempotency";
+import { cancelAutoApprove } from "@/lib/queue/auto-approve-queue";
 
 export const PATCH = withRequestLogging("/api/v1/submissions/[id]/status", async function PATCH(
   req: NextRequest,
@@ -53,6 +54,7 @@ export const PATCH = withRequestLogging("/api/v1/submissions/[id]/status", async
         return escrowProblem();
       }
       submission = result.submission;
+      await cancelAutoApprove(id);
       await createNotification({
         toUserId: submission.workerId.toString(),
         toEmail: submission.workerEmail,
@@ -77,6 +79,7 @@ export const PATCH = withRequestLogging("/api/v1/submissions/[id]/status", async
         return escrowProblem();
       }
       submission = result.submission;
+      await cancelAutoApprove(id);
       await createNotification({
         toUserId: submission.workerId.toString(),
         toEmail: submission.workerEmail,

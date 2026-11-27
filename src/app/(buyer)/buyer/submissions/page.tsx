@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useIdempotencyKeys } from "@/lib/use-idempotency-keys";
+import { autoApproveCountdown } from "@/lib/countdown";
 import { ISubmission } from "@/types";
 import EmptyState from "@/components/shared/EmptyState";
 import { format } from "date-fns";
@@ -99,6 +100,9 @@ export default function BuyerSubmissionsPage() {
                     Submitted
                   </th>
                   <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
+                    Auto-approve
+                  </th>
+                  <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-primary/50">
                     Actions
                   </th>
                 </tr>
@@ -123,6 +127,9 @@ export default function BuyerSubmissionsPage() {
                     </td>
                     <td className="px-6 py-4 text-primary/50">
                       {format(new Date(s.createdAt), "MMM d, yyyy")}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-primary/60 whitespace-nowrap">
+                      {autoApproveCountdown(s.autoApproveAt)}
                     </td>
                     <td className="px-6 py-4">
                       <button
