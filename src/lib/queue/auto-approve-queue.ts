@@ -4,6 +4,7 @@ import { logger } from "@/lib/logger";
 
 export const AUTO_APPROVE_QUEUE = "auto-approve";
 export const AUTO_APPROVE_JOB = "auto-approve";
+export const DISPUTE_WINDOW_JOB = "dispute-window";
 export const SWEEP_JOB = "sweep";
 export const SWEEP_EVERY_MS = 15 * 60 * 1000;
 /** A queue call that takes longer than this is given up on; the sweep covers the gap. */
@@ -12,6 +13,11 @@ const ENQUEUE_TIMEOUT_MS = 3000;
 /** BullMQ job IDs must not contain colons. */
 export function autoApproveJobId(submissionId: string): string {
   return `auto-approve-${submissionId}`;
+}
+
+/** BullMQ job IDs must not contain colons. */
+export function disputeWindowJobId(submissionId: string): string {
+  return `dispute-window-${submissionId}`;
 }
 
 export const defaultJobOptions = {
@@ -77,6 +83,39 @@ export async function scheduleAutoApprove(
   } catch (err) {
     logger.warn({ err, submissionId }, "could not schedule auto-approve; the sweep will cover it");
     return false;
+  }
+}
+
+/** Schedules the end of a rejection's dispute window. One job per submission; never throws (the sweep covers a miss). */
+export async function scheduleDisputeWindow(submissionId: string, runAt: Date): Promise<boolean> {
+  const queue = getProducer();
+  if (!queue) return false;
+  try {
+    await withTimeout(
+      queue.add(
+        DISPUTE_WINDOW_JOB,
+        { submissionId },
+        {
+          jobId: disputeWindowJobId(submissionId),
+          delay: Math.max(0, runAt.getTime() - Date.now()),
+        },
+      ),
+    );
+    return true;
+  } catch (err) {
+    logger.warn({ err, submissionId }, "could not schedule dispute window; the sweep will cover it");
+    return false;
+  }
+}
+
+/** Removes the window job once the hold is settled some other way. Never throws. */
+export async function cancelDisputeWindow(submissionId: string): Promise<void> {
+  const queue = getProducer();
+  if (!queue) return;
+  try {
+    await withTimeout(queue.remove(disputeWindowJobId(submissionId)));
+  } catch (err) {
+    logger.warn({ err, submissionId }, "could not cancel dispute window job");
   }
 }
 

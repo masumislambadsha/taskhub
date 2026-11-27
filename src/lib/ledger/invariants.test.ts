@@ -17,16 +17,19 @@ import { creditPayment } from "@/lib/payments/credit";
 import { expectedEscrow, pendingSubmissionValue } from "@/lib/ledger/escrow";
 import { reconcile } from "@/lib/ledger/reconcile";
 import { createFundedTask, deleteFundedTask, updateFundedTask } from "@/lib/ledger/flows/tasks";
-import { approveSubmission, rejectSubmission } from "@/lib/ledger/flows/submissions";
+import { approveSubmission, rejectSubmission, settleRejection } from "@/lib/ledger/flows/submissions";
 import { approveWithdrawal } from "@/lib/ledger/flows/withdrawals";
 import { adjustUserCoins, createUserWithBonus, removeUser } from "@/lib/ledger/flows/users";
 
 let db: Awaited<ReturnType<typeof startTestDb>>;
 
 beforeAll(async () => {
+  // A long window, so rejections stay held and the scenario exercises holds and their settlement.
+  process.env.DISPUTE_WINDOW_MS = String(30 * 24 * 3600 * 1000);
   db = await startTestDb("taskhub_ledger_invariants_test");
 }, 180_000);
 afterAll(async () => {
+  process.env.DISPUTE_WINDOW_MS = "0";
   await db?.stop();
 });
 beforeEach(async () => {
@@ -131,7 +134,7 @@ async function runScenario(seed: number, totalOps: number) {
     for (let k = rnd.int(1, 6); k > 0; k--, ops++) {
       const kind = rnd.pick([
         "topup", "topup", "create", "create", "create", "approve", "approve", "approve",
-        "reject", "delete", "edit", "edit", "withdraw", "withdraw", "adjust", "signup", "remove",
+        "reject", "reject", "settle", "settle", "delete", "edit", "edit", "withdraw", "withdraw", "adjust", "signup", "remove",
       ])!;
       log.push(kind);
       if (kind === "topup") {
@@ -176,6 +179,22 @@ async function runScenario(seed: number, totalOps: number) {
             batch.push((kind === "approve" ? approveSubmission(args) : rejectSubmission(args)).then((r) => {
               log.push(`${kind.toUpperCase()} ${s._id}: ${r.ok ? "ok" : r.reason}`);
               if (r.ok) won(kind);
+            }));
+          }
+        }
+      } else if (kind === "settle") {
+        const held = await Submission.find({
+          status: "rejected",
+          "rejectionHold.windowEndsAt": { $exists: true },
+          "rejectionHold.settledAt": { $exists: false },
+        }).select("_id").lean();
+        const s = rnd.pick(held);
+        if (s) {
+          // Accept, the window job and the sweep can all arrive together.
+          for (let i = rnd.int(1, 3); i > 0; i--) {
+            batch.push(settleRejection({ submissionId: String(s._id), via: i % 2 ? "accepted" : "window" }).then((r) => {
+              log.push(`SETTLE ${s._id}: ${r.ok ? r.outcome : r.reason}`);
+              if (r.ok) won("settle");
             }));
           }
         }

@@ -3,6 +3,8 @@ import type Redis from "ioredis";
 import { createNotification } from "@/lib/notifications";
 import User from "@/models/User";
 import { createLogger } from "@/lib/logger";
+import { sweepDueHolds } from "@/lib/ledger/flows/rejection-settlement";
+import { settleRejection, type SettleRejectionResult } from "@/lib/ledger/flows/submissions";
 import {
   autoApproveSubmission,
   sweepDueSubmissions,
@@ -10,6 +12,7 @@ import {
 } from "@/lib/ledger/flows/auto-approve";
 import {
   AUTO_APPROVE_JOB,
+  DISPUTE_WINDOW_JOB,
   AUTO_APPROVE_QUEUE,
   SWEEP_EVERY_MS,
   SWEEP_JOB,
@@ -72,9 +75,47 @@ export async function autoApproveAndNotify(
   return res;
 }
 
+/** Settles one rejection hold and tells the worker. Notification failures never undo the settlement. */
+export async function settleAndNotify(
+  submissionId: string,
+  via: "accepted" | "window" | "buyer_won",
+): Promise<SettleRejectionResult> {
+  const res = await settleRejection({ submissionId, via });
+  if (!res.ok) {
+    if (res.reason === "buyer_missing") {
+      log.warn({ submissionId }, "rejection hold cannot settle: the buyer's account is gone");
+    }
+    return res;
+  }
+  const s = res.submission;
+  log.info({ submissionId, outcome: res.outcome, via }, "rejection settled");
+  if (via !== "accepted") {
+    try {
+      await createNotification({
+        toUserId: s.workerId.toString(),
+        toEmail: s.workerEmail,
+        message: `The rejection of your submission for "${s.taskTitle}" is now final.`,
+        actionRoute: "/worker/submissions",
+        type: "info",
+      });
+    } catch (err) {
+      log.error({ err, submissionId }, "settlement notification failed");
+    }
+  }
+  return res;
+}
+
 export async function processAutoApproveJob(job: Job): Promise<unknown> {
+  if (job.name === DISPUTE_WINDOW_JOB) {
+    const id = (job.data as { submissionId?: string }).submissionId;
+    if (!id) return { skipped: "no submissionId" };
+    const res = await settleAndNotify(id, "window");
+    return { ok: res.ok };
+  }
   if (job.name === SWEEP_JOB) {
+    const holds = await sweepDueHolds({ settle: (id) => settleAndNotify(id, "window") });
     const result = await sweepDueSubmissions({ approve: autoApproveAndNotify });
+    log.info({ holdsSettled: holds.settled.length, holdsFailed: holds.failed.length }, "dispute-window sweep finished");
     log.info(
       {
         backfilled: result.backfilled,

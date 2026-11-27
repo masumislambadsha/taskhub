@@ -324,17 +324,20 @@ describe("rejectSubmission", () => {
       expect(await coinsOf(buyer._id)).toBe(70 + 12 + 6);
     });
 
-    it("refuses the rejection when the buyer cannot afford the higher payout", async () => {
+    it("refunds the reward and removes the slot when the buyer cannot afford the higher payout", async () => {
       const { buyer, task } = await fundedTask(42, 3, 10); // buyer 12 left
       const worker = await createUser(0);
       const sub = await createPendingSubmission(task, worker._id);
       await reprice(buyer, task, 15); // charges 10: buyer 2 left, escrow 40
       const res = await rejectSubmission({ submissionId: String(sub._id), buyerId: String(buyer._id) });
-      expect(res).toEqual({ ok: false, reason: "insufficient_coins" });
-      expect((await Submission.findById(sub._id))?.status).toBe("pending");
-      expect((await Task.findById(task._id))?.filledWorkers).toBe(1);
-      expect(await escrowOf(task._id)).toBe(40);
-      expect(await coinsOf(buyer._id)).toBe(2);
+      expect(res.ok).toBe(true);
+      // An unfunded slot is never opened: the reward comes back and the task loses that slot.
+      const after = await Task.findById(task._id);
+      expect(after?.filledWorkers).toBe(0);
+      expect(after?.requiredWorkers).toBe(2);
+      expect(await coinsOf(buyer._id)).toBe(12);
+      expect(await escrowOf(task._id)).toBe(30); // 2 open slots at 15
+      expect((await reconcile()).ok).toBe(true);
     });
 
     it("opens a pre-ledger escrow first, then reprices", async () => {
