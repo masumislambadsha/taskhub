@@ -8,8 +8,15 @@ import {
   isDuplicateKeyError,
 } from "@/lib/ledger/flows/users";
 import { WORKER_INITIAL_COINS, BUYER_INITIAL_COINS } from "@/lib/constants";
+import { clientIp, consume, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function POST(req: NextRequest) {
+  // Per IP and device: a shared carrier IP is not blocked by one person's signups,
+  // and one device cannot make accounts in bulk.
+  const device = (req.headers.get("x-device-id") ?? "").slice(0, 64) || "none";
+  const limit = await consume("signup", `${clientIp(req.headers)}:${device}`);
+  if (!limit.ok) return rateLimitedResponse(limit.retryAfterSeconds);
+
   const body = await req.json();
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {

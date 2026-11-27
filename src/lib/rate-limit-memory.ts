@@ -29,6 +29,11 @@ export function rateLimit(
   return { ok: true, retryAfterSeconds: 0 };
 }
 
+/** Forgets one key, for example after a successful login. */
+export function forgetMemoryKey(key: string): void {
+  windows.delete(key);
+}
+
 /** Clears all counters. For tests. */
 export function resetRateLimits(): void {
   windows.clear();

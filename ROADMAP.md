@@ -657,6 +657,8 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 
 ## 2.3 Redis rate limiting
 
+**Status: done for the web app; the chat limit comes with 2.1** (see [ADR 0004](docs/adr/0004-rate-limits.md)). Every limit is in `src/lib/rate-limit-config.ts` and counted by one atomic Redis script (`src/lib/ratelimit.ts`), so it is shared by every instance: the tests alternate attempts between two separate copies of the module and the 6th login attempt is refused. Enforced: login (5 per account and 30 per IP in 15 minutes, counting attempts on emails that do not exist), sign-up (5 an hour per IP and device, with a device ID the form sends), two-factor codes (5 in 15 minutes), task submission (30 an hour), withdrawal requests (3 a day), image uploads, the confirmation-email resend, and helpers for AI features (`consumeAi`) and public API keys by plan (`consumeApiKey`) that those features will use. Blocks answer 429 with `Retry-After` and text the pages show ("Try again in 2 minutes"), and the login page shows the wait. The client IP comes from `X-Real-IP` only (Nginx sets it); `X-Forwarded-For` is trusted only on Vercel. If Redis is configured but down, login, sign-up, two-factor, withdrawals and AI fail closed while chat, submissions and uploads fail open; without `REDIS_URL` limits are counted per process. A replay of an idempotent request does not use up the withdrawal or submission allowance. Not enforced yet: the chat limit (realtime server, 2.1), the AI limit (the AI features do not exist yet) and per-key API limits (5.5), though the helpers are tested.
+
 **Goal:** stop brute force, spam and runaway AI costs, with limits shared by every instance.
 
 **Tool:** `rate-limiter-flexible` with a Redis store (or a small Lua script).

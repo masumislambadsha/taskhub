@@ -8,7 +8,7 @@ import PayoutAccount from "@/models/PayoutAccount";
 import User from "@/models/User";
 import Withdrawal from "@/models/Withdrawal";
 import { startTestDb } from "@/lib/payments/test-utils";
-import { resetRateLimits } from "@/lib/rate-limit";
+import { resetRateLimits } from "@/lib/rate-limit-memory";
 
 const authMock = vi.hoisted(() => vi.fn());
 const emailMock = vi.hoisted(() => ({ sendWithdrawalConfirmationEmail: vi.fn(async () => undefined) }));

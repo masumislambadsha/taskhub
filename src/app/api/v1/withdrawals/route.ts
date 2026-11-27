@@ -7,6 +7,7 @@ import { logger } from "@/lib/logger";
 import { sendWithdrawalConfirmationEmail } from "@/lib/email";
 import { requestWithdrawal } from "@/lib/ledger/flows/withdrawals";
 import { workerWithdrawalView } from "@/lib/withdrawal-view";
+import { consume, rateLimitedResponse } from "@/lib/ratelimit";
 import { maskAccountFields, maskEmailFields } from "@/lib/privacy";
 import { isAdminRole } from "@/lib/roles";
 import { withRequestLogging } from "@/lib/with-request-logging";
@@ -76,6 +77,11 @@ export const POST = withRequestLogging("/api/v1/withdrawals", async function POS
   }
 
   return withIdempotency(req, session.user.id, async () => {
+    // Counted here, so a repeat of a request that already ran (a double click, a
+    // retry) is answered from the stored response and does not use up the day's 3.
+    const limit = await consume("withdraw", session.user.id);
+    if (!limit.ok) return rateLimitedResponse(limit.retryAfterSeconds);
+
     const body = await req.json();
     const parsed = withdrawalSchema.safeParse(body);
     if (!parsed.success)

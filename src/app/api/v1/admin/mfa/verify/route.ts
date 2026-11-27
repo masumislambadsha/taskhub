@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { verifyMfa } from "@/lib/mfa";
 import { mfaConfigError, readCode, requireMfaSubject } from "@/lib/mfa-route";
+import { consume, rateLimitedResponse } from "@/lib/ratelimit";
 import { auditContextFrom, recordAudit } from "@/lib/audit";
 
 /**
@@ -16,6 +17,9 @@ export async function POST(req: NextRequest) {
   if (!subject.ok) return subject.response;
   const code = await readCode(req);
   if (!code) return NextResponse.json({ error: "A code is required" }, { status: 400 });
+  // Shared by every instance, on top of the lockout stored with the credential.
+  const limit = await consume("mfa", subject.userId);
+  if (!limit.ok) return rateLimitedResponse(limit.retryAfterSeconds);
 
   await connectDB();
   let res;
