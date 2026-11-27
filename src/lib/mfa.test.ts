@@ -445,6 +445,23 @@ describe("the two-factor endpoints", () => {
     expect(await AuditLog.countDocuments({ action: "mfa.recovery_used", targetId: id })).toBe(1);
   });
 
+  it("says so, and stays closed, when the server has no encryption key", async () => {
+    const a = await admin();
+    as(a, "fresh-login");
+    const key = process.env.MFA_ENCRYPTION_KEY;
+    delete process.env.MFA_ENCRYPTION_KEY;
+    try {
+      const res = await setupPost();
+      expect(res.status).toBe(503);
+      expect((await json(res)).code).toBe("MFA_NOT_CONFIGURED");
+      // Nothing was created, and the admin area is still closed to this admin.
+      expect(await MfaCredential.countDocuments()).toBe(0);
+      expect((await usersGet(get("/api/v1/admin/users"))).status).toBe(403);
+    } finally {
+      process.env.MFA_ENCRYPTION_KEY = key;
+    }
+  });
+
   it("are for admins only; the demo admin and others are turned away", async () => {
     const demo = await admin("demo_admin");
     as(demo);

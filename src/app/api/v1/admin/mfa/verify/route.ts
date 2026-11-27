@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { verifyMfa } from "@/lib/mfa";
-import { readCode, requireMfaSubject } from "@/lib/mfa-route";
+import { mfaConfigError, readCode, requireMfaSubject } from "@/lib/mfa-route";
 import { auditContextFrom, recordAudit } from "@/lib/audit";
 
 /**
@@ -18,7 +18,14 @@ export async function POST(req: NextRequest) {
   if (!code) return NextResponse.json({ error: "A code is required" }, { status: 400 });
 
   await connectDB();
-  const res = await verifyMfa(subject.userId, subject.sid, code);
+  let res;
+  try {
+    res = await verifyMfa(subject.userId, subject.sid, code);
+  } catch (err) {
+    const configured = mfaConfigError(err);
+    if (configured) return configured;
+    throw err;
+  }
   if (!res.ok) {
     if (res.reason === "locked") {
       return NextResponse.json(
