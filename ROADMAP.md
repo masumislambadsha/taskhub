@@ -446,6 +446,8 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 
 ## 1.3 Escrow with 72-hour auto-approve (BullMQ)
 
+**Status: auto-approve done** (`src/lib/ledger/flows/auto-approve.ts`, `src/worker/auto-approve.ts`, `src/lib/queue/auto-approve-queue.ts`). Submissions get `autoApproveAt` (72 hours, or `AUTO_APPROVE_AFTER_MS`), a delayed BullMQ job approves them as `system`, and a 15-minute sweep (also run at worker start) approves any whose job was lost and gives pre-existing pending submissions a fresh window. Buyers see a countdown and workers an "Approved automatically" label. Escrow funding, approval payout and refunds were done in 1.1. Still to do from this item: reject-with-hold (needs the dispute flow, 1.4), closing a task instead of deleting it, the `task-close` job, the "Needs review" dashboard list, Bull Board behind Nginx, and the nightly reconciliation job.
+
 **Goal:** the buyer's coins lock when a task is posted, the worker is paid on approval, and a buyer who never reviews can't block payment.
 
 **Depends on:** 1.1, 1.2 and the worker process.
