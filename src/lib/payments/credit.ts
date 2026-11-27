@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Payment from "@/models/Payment";
 import type { IPaymentDoc } from "@/models/Payment";
 import { logger } from "@/lib/logger";
+import { recordAudit, type AuditContext } from "@/lib/audit";
 import {
   postTransaction,
   SYSTEM_ACCOUNTS,
@@ -37,6 +38,8 @@ export interface CreditResult {
 
 export interface CreditInput {
   paymentId: string;
+  /** For a manual admin confirmation: logs it in the same transaction as the credit. */
+  audit?: AuditContext;
   /**
    * What the provider says was paid. Compared with the amount the Payment
    * should have cost, inside the same transaction that credits the coins.
@@ -97,7 +100,7 @@ function isDuplicateKey(err: unknown): boolean {
  * second call for the same payment, however concurrent, credits nothing.
  */
 export async function creditPayment(input: CreditInput): Promise<CreditResult> {
-  const { paymentId, expected, gateway } = input;
+  const { paymentId, expected, gateway, audit } = input;
   const logCtx = {
     paymentId,
     gateway: gateway.name,
@@ -196,6 +199,20 @@ export async function creditPayment(input: CreditInput): Promise<CreditResult> {
             throw new RollbackError("user_not_found");
           }
           throw err;
+        }
+
+        if (audit) {
+          await recordAudit(
+            audit,
+            {
+              action: "payment.admin_confirm",
+              targetType: "payment",
+              targetId: paymentId,
+              before: { status: "pending" },
+              after: { status: "success", coins: updated.coinsPurchased, userId: String(updated.userId) },
+            },
+            session,
+          );
         }
 
         logger.info(

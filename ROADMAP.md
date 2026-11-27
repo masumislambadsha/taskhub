@@ -518,6 +518,8 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 
 ## 1.5 Audit log of admin actions
 
+**Status: done** (`src/lib/audit.ts`, `src/models/AuditLog.ts`, admin page `/admin/audit`). Covers withdrawal approve and reject, user role change, suspend, unsuspend and delete, task status changes, category create, update and delete, manual payment confirmation, payment event replay, ledger opening, manual coin adjustments and the system's automatic approvals. Entries are written in the same transaction as the action wherever the action is a database change; the payment event replay and the ledger opening talk to other systems or run their own transactions, so their entry is written right after. The app also refuses to update or delete entries, and `scripts/mongo-audit-role.js` creates the database role that enforces it. Not done: withdrawal mark-paid and dispute decisions (those features do not exist yet), settings changes, 2FA resets (1.6), and the optional nightly tamper-evidence digests. The database role itself is not covered by a test, because the in-memory test database has no authentication.
+
 **Goal:** answer "who did what, when and why" for every sensitive action.
 
 **Collection `audit_logs`:** `actorId` (or `system`), `actorRole`, `action`, `targetType`, `targetId`, `before`, `after` (only the changed fields), `reason`, `ip`, `userAgent`, `requestId`, `createdAt`.

@@ -5,6 +5,8 @@ import { connectDB } from "@/lib/db";
 import Category from "@/models/Category";
 import Task from "@/models/Task";
 import { TASK_CATEGORIES } from "@/lib/constants";
+import { auditContextFrom, recordAudit } from "@/lib/audit";
+import { inLedgerTransaction } from "@/lib/ledger/run";
 
 async function seedDefaultCategories() {
   const count = await Category.countDocuments();
@@ -64,9 +66,23 @@ export async function POST(req: NextRequest) {
       { status: 409 },
     );
   }
-  const category = await Category.create({
-    name: name.trim(),
-    icon: icon ?? "category",
+  const audit = auditContextFrom(req, guard);
+  const category = await inLedgerTransaction(async (session) => {
+    const [created] = await Category.create(
+      [{ name: name.trim(), icon: icon ?? "category" }],
+      { session },
+    );
+    await recordAudit(
+      audit,
+      {
+        action: "category.create",
+        targetType: "category",
+        targetId: String(created._id),
+        after: { name: created.name, icon: created.icon },
+      },
+      session,
+    );
+    return created;
   });
   return NextResponse.json({ category }, { status: 201 });
 }
