@@ -149,8 +149,9 @@ describe.skipIf(!URL)("auto-approve worker with Redis", { timeout: 40_000 }, () 
 
     await waitFor(async () => (await Submission.findById(sub._id))?.status === "approved");
     expect(await coinsOf(worker._id)).toBe(10);
-    const notes = await Notification.countDocuments({ toUserId: String(worker._id) });
-    expect(notes).toBe(1);
+    // The notice is created just after the approval commits, so wait for it.
+    await waitFor(async () => (await Notification.countDocuments({ toUserId: String(worker._id) })) === 1);
+    expect(await Notification.countDocuments({ toUserId: String(worker._id) })).toBe(1);
   });
 
   it("settles a rejection when its dispute-window job fires", async () => {
@@ -167,6 +168,8 @@ describe.skipIf(!URL)("auto-approve worker with Redis", { timeout: 40_000 }, () 
 
     await waitFor(async () => (await Submission.findById(sub._id))?.rejectionHold?.settledAt);
     expect((await Submission.findById(sub._id))?.rejectionHold?.settledAs).toBe("window");
+    // The notice is created just after the settlement commits, so wait for it.
+    await waitFor(async () => (await Notification.countDocuments({ message: /now final/ })) === 1);
     expect(await Notification.countDocuments({ message: /now final/ })).toBe(1);
     expect((await reconcile()).ok).toBe(true);
   });
