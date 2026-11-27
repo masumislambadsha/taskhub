@@ -24,6 +24,15 @@ export interface IUserDoc extends Document {
   hideLastSeen?: boolean;
   /** Email with Gmail dots and +tags removed, to catch one inbox signing up twice. */
   emailNormalized?: string;
+  /**
+   * Worker verification (roadmap 3.7). Only meaningful for workers. A worker with no value
+   * (an account from before verification existed) counts as approved; new worker sign-ups
+   * start "unverified".
+   */
+  workerStatus?: "unverified" | "pending" | "approved" | "rejected";
+  workerReviewedBy?: string;
+  workerReviewedAt?: Date;
+  workerRejectionReason?: string;
   /** Written on every submission so two of a worker's submissions at once conflict and the daily cap is exact. */
   lastSubmitAt?: Date;
   /** The worker trust score (roadmap 3.4), recomputed by `ensureTrust` and the nightly sweep. */
@@ -52,6 +61,10 @@ const UserSchema = new Schema<IUserDoc>(
     lastSeenAt: { type: Date },
     hideLastSeen: { type: Boolean, default: false },
     emailNormalized: { type: String },
+    workerStatus: { type: String, enum: ["unverified", "pending", "approved", "rejected"] },
+    workerReviewedBy: { type: String },
+    workerReviewedAt: { type: Date },
+    workerRejectionReason: { type: String },
     lastSubmitAt: { type: Date },
     trust: {
       type: new Schema(

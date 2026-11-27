@@ -50,7 +50,8 @@ export async function POST(req: NextRequest) {
   let userId: string;
   try {
     ({ userId } = await createUserWithBonus({
-      data: { name, email, emailNormalized, passwordHash, photoUrl, role },
+      // New workers must be approved by an admin before they can earn (roadmap 3.7).
+      data: { name, email, emailNormalized, passwordHash, photoUrl, role, ...(role === "worker" ? { workerStatus: "unverified" as const } : {}) },
       bonus: coins,
     }));
   } catch (err) {

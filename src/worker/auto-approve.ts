@@ -3,6 +3,7 @@ import type Redis from "ioredis";
 import { drainOutbox, drainOutboxQuietly } from "@/lib/outbox";
 import { expireUnconfirmedWithdrawals } from "@/lib/ledger/flows/withdrawals";
 import { createLogger } from "@/lib/logger";
+import { purgeRejectedDocuments } from "@/lib/worker-verification";
 import { runProofCheck } from "@/lib/ai/proof-check";
 import { recomputeStaleTrust } from "@/lib/trust-data";
 import { checkSubmissionProof, sweepUnhashedProofs } from "@/lib/fraud/duplicate-proof";
@@ -108,6 +109,8 @@ export async function processAutoApproveJob(job: Job): Promise<unknown> {
     // Trust scores are recomputed for everyone about once a day, a batch per sweep.
     const trusted = await recomputeStaleTrust();
     if (trusted) log.info({ recomputed: trusted }, "trust scores recomputed");
+    const purged = await purgeRejectedDocuments();
+    if (purged) log.info({ purged }, "rejected application documents deleted");
     const hashed = await sweepUnhashedProofs();
     if (hashed.checked) log.info(hashed, "proof hash sweep finished");
     const holds = await sweepDueHolds({ settle: (id) => settleAndNotify(id, "window") });

@@ -1,4 +1,5 @@
 import { evaluateLinks, recordSighting } from "@/lib/fraud/signals";
+import { requireApprovedWorker } from "@/lib/worker-verification";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
@@ -76,6 +77,10 @@ export const POST = withRequestLogging("/api/v1/withdrawals", async function POS
   if (!session || session.user.role !== "worker") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  await connectDB();
+  const notApproved = await requireApprovedWorker(session.user.id);
+  if (notApproved) return notApproved;
 
   await recordSighting(session.user.id, req.headers, "withdraw");
   await evaluateLinks(session.user.id);

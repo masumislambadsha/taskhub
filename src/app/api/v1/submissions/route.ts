@@ -5,6 +5,7 @@ import Submission from "@/models/Submission";
 import FraudFlag from "@/models/FraudFlag";
 import Task from "@/models/Task";
 import { ensureTrustLevel } from "@/lib/trust-data";
+import { requireApprovedWorker } from "@/lib/worker-verification";
 import { levelName } from "@/lib/trust";
 import { DAILY_CAP_MESSAGE } from "@/lib/earning-limits";
 import { evaluateLinks, recordSighting } from "@/lib/fraud/signals";
@@ -78,6 +79,11 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
   if (!session || session.user.role !== "worker") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Only approved workers may earn (roadmap 3.7). Checked on the server, in the database, not from the session.
+  await connectDB();
+  const notApproved = await requireApprovedWorker(session.user.id);
+  if (notApproved) return notApproved;
 
   await recordSighting(session.user.id, req.headers, "submit");
   await evaluateLinks(session.user.id);
