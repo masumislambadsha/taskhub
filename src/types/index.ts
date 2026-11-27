@@ -59,7 +59,7 @@ export interface ISubmission {
   /** The buyer's user ID, or "system" for an automatic approval. */
   decidedBy?: string;
   /** For a rejection: the reward is held until this settles. */
-  rejectionHold?: { windowEndsAt: string; settledAt?: string; settledAs?: string };
+  rejectionHold?: { windowEndsAt: string; settledAt?: string; settledAs?: string; disputeId?: string };
   createdAt: string;
   updatedAt: string;
 }

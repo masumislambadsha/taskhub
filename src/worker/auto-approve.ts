@@ -3,6 +3,7 @@ import type Redis from "ioredis";
 import { createNotification } from "@/lib/notifications";
 import User from "@/models/User";
 import { createLogger } from "@/lib/logger";
+import { notifyOverdueDisputes } from "@/lib/dispute-sla";
 import { sweepDueHolds } from "@/lib/ledger/flows/rejection-settlement";
 import { settleRejection, type SettleRejectionResult } from "@/lib/ledger/flows/submissions";
 import {
@@ -114,6 +115,8 @@ export async function processAutoApproveJob(job: Job): Promise<unknown> {
   }
   if (job.name === SWEEP_JOB) {
     const holds = await sweepDueHolds({ settle: (id) => settleAndNotify(id, "window") });
+    const overdueDisputes = await notifyOverdueDisputes();
+    if (overdueDisputes.length) log.info({ count: overdueDisputes.length }, "admins reminded about overdue disputes");
     const result = await sweepDueSubmissions({ approve: autoApproveAndNotify });
     log.info({ holdsSettled: holds.settled.length, holdsFailed: holds.failed.length }, "dispute-window sweep finished");
     log.info(

@@ -15,6 +15,7 @@ export const LEDGER_TX_TYPES = [
   "task_refund",
   "submission_payout",
   "submission_reject_refund",
+  "dispute_won",
   "withdrawal",
   "admin_adjustment",
   "forfeit",
