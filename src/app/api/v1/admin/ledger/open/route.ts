@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { requireAdmin } from "@/lib/roles";
+import { requireAdmin, mfaProblem, mfaResponse } from "@/lib/admin-guard";
 import { connectDB } from "@/lib/db";
 import { openAll } from "@/lib/ledger/open-all";
 import { withRequestLogging } from "@/lib/with-request-logging";
@@ -16,11 +16,16 @@ export const POST = withRequestLogging(
   "/api/v1/admin/ledger/open",
   async function POST(req: NextRequest) {
     const session = await auth();
-    const guard = requireAdmin(session, "write");
+    const guard = await requireAdmin(session, "write");
     if (!guard.ok) return guard.response;
 
     const { searchParams } = new URL(req.url);
     const apply = searchParams.get("apply") === "1";
+    // A dry run only reads; writing needs a fresh code.
+    if (apply) {
+      const problem = await mfaProblem(session, { stepUp: true });
+      if (problem) return mfaResponse(problem);
+    }
     const limitParam = searchParams.get("limit");
     const limit = limitParam === null ? undefined : Number(limitParam);
     if (limit !== undefined && (!Number.isInteger(limit) || limit < 1)) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { requireAdmin } from "@/lib/roles";
+import { requireAdmin } from "@/lib/admin-guard";
 import { connectDB } from "@/lib/db";
 import {
   approveWithdrawal,
@@ -16,7 +16,7 @@ export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", asyn
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  const guard = requireAdmin(session, "write");
+  const guard = await requireAdmin(session, "write", { stepUp: true });
   if (!guard.ok) return guard.response;
 
   return withIdempotency(req, guard.userId, async () => {

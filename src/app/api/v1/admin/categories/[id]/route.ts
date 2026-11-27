@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { requireAdmin } from "@/lib/roles";
+import { requireAdmin } from "@/lib/admin-guard";
 import { connectDB } from "@/lib/db";
 import Category from "@/models/Category";
 import { auditContextFrom, recordAudit } from "@/lib/audit";
@@ -11,7 +11,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  const guard = requireAdmin(session, "write");
+  const guard = await requireAdmin(session, "write");
   if (!guard.ok) return guard.response;
   await connectDB();
   const { id } = await params;
@@ -43,7 +43,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
-  const guard = requireAdmin(session, "write");
+  const guard = await requireAdmin(session, "write");
   if (!guard.ok) return guard.response;
   await connectDB();
   const { id } = await params;

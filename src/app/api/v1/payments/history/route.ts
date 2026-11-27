@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isAdminRole } from "@/lib/roles";
+import { mfaProblem, mfaResponse } from "@/lib/admin-guard";
 import { maskEmailFields } from "@/lib/privacy";
 import { connectDB } from "@/lib/db";
 import Payment from "@/models/Payment";
@@ -9,6 +10,11 @@ export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session)
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (isAdminRole(session.user.role)) {
+    const problem = await mfaProblem(session);
+    if (problem) return mfaResponse(problem);
+  }
 
   await connectDB();
   const { searchParams } = new URL(req.url);
