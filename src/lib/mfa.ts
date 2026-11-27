@@ -13,6 +13,12 @@ export const LOCK_MS = 15 * 60 * 1000;
 export const RECOVERY_CODE_COUNT = 10;
 const ISSUER = "TaskHub";
 
+/** bcrypt cost for recovery codes. 10 in production; the test setup lowers it so many hashes do not slow the suite. */
+function bcryptCost(): number {
+  const n = Number(process.env.MFA_BCRYPT_COST);
+  return Number.isInteger(n) && n >= 4 && n <= 14 ? n : 10;
+}
+
 /** Two-factor is required for admins unless MFA_ENFORCED is explicitly "false" (tests and local development). */
 export function mfaEnforced(): boolean {
   return process.env.MFA_ENFORCED !== "false";
@@ -96,7 +102,7 @@ export async function confirmEnrollment(
   if (step === null) return { ok: false, reason: "invalid" };
 
   const recoveryCodes = newRecoveryCodes();
-  const hashes = await Promise.all(recoveryCodes.map((c) => bcrypt.hash(c.replace("-", ""), 10)));
+  const hashes = await Promise.all(recoveryCodes.map((c) => bcrypt.hash(c.replace("-", ""), bcryptCost())));
   const res = await MfaCredential.updateOne(
     { userId, enabledAt: { $exists: false } },
     {
