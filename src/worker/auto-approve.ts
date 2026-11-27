@@ -3,6 +3,7 @@ import type Redis from "ioredis";
 import { drainOutbox, drainOutboxQuietly } from "@/lib/outbox";
 import { expireUnconfirmedWithdrawals } from "@/lib/ledger/flows/withdrawals";
 import { createLogger } from "@/lib/logger";
+import { checkSubmissionProof, sweepUnhashedProofs } from "@/lib/fraud/duplicate-proof";
 import { notifyOverdueDisputes } from "@/lib/dispute-sla";
 import { sweepDueHolds } from "@/lib/ledger/flows/rejection-settlement";
 import { settleRejection, type SettleRejectionResult } from "@/lib/ledger/flows/submissions";
@@ -16,6 +17,7 @@ import {
   DISPUTE_WINDOW_JOB,
   OUTBOX_DRAIN_JOB,
   OUTBOX_EVERY_MS,
+  PROOF_HASH_JOB,
   AUTO_APPROVE_QUEUE,
   SWEEP_EVERY_MS,
   SWEEP_JOB,
@@ -84,7 +86,17 @@ export async function processAutoApproveJob(job: Job): Promise<unknown> {
     const res = await settleAndNotify(id, "window");
     return { ok: res.ok };
   }
+  if (job.name === PROOF_HASH_JOB) {
+    const id = (job.data as { submissionId?: string }).submissionId;
+    if (!id) return { skipped: "no submissionId" };
+    const res = await checkSubmissionProof(id);
+    // A download that failed is retried by BullMQ (backoff), then by the sweep.
+    if (res.status === "failed") throw new Error(`proof check failed: ${res.reason}`);
+    return { status: res.status };
+  }
   if (job.name === SWEEP_JOB) {
+    const hashed = await sweepUnhashedProofs();
+    if (hashed.checked) log.info(hashed, "proof hash sweep finished");
     const holds = await sweepDueHolds({ settle: (id) => settleAndNotify(id, "window") });
     // The workers' notices are queued with each cancellation.
     const expired = await expireUnconfirmedWithdrawals();

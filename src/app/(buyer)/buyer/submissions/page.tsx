@@ -115,6 +115,14 @@ export default function BuyerSubmissionsPage() {
                   >
                     <td className="px-6 py-4 font-medium text-primary">
                       {s.workerName}
+                      {s.possibleDuplicateProof && (
+                        <span
+                          className="ml-2 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold align-middle"
+                          title="This screenshot looks the same as an earlier one. Check it before approving."
+                        >
+                          Possible duplicate proof
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-primary/60 max-w-xs truncate">
                       {s.taskTitle}

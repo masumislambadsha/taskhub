@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
+import FraudFlag from "@/models/FraudFlag";
 import { submitWork } from "@/lib/ledger/flows/submissions";
 import { submissionSchema } from "@/lib/validators/submission";
 import { drainOutboxQuietly } from "@/lib/outbox";
 import { redactEmailFields } from "@/lib/privacy";
 import { withRequestLogging } from "@/lib/with-request-logging";
 import { withIdempotency } from "@/lib/idempotency";
-import { scheduleAutoApprove } from "@/lib/queue/auto-approve-queue";
+import { scheduleAutoApprove, scheduleProofHash } from "@/lib/queue/auto-approve-queue";
 import { consume, rateLimitedResponse } from "@/lib/ratelimit";
 
 export async function GET(req: NextRequest) {
@@ -37,8 +38,26 @@ export async function GET(req: NextRequest) {
     Submission.countDocuments(query),
   ]);
 
+  // Buyers see a "Possible duplicate proof" badge. Workers never see fraud flags.
+  let flagged = new Set<string>();
+  if (session.user.role === "buyer" && submissions.length) {
+    const flags = await FraudFlag.find({
+      submissionId: { $in: submissions.map((s) => s._id) },
+      type: "duplicate_proof",
+      status: { $in: ["open", "confirmed"] },
+    })
+      .select("submissionId")
+      .lean();
+    flagged = new Set(flags.map((f) => String(f.submissionId)));
+  }
+
   return NextResponse.json({
-    submissions: redactEmailFields(submissions, ["workerEmail"], session.user, "workerId"),
+    submissions: redactEmailFields(
+      submissions.map((s) => (session.user.role === "buyer" ? { ...s, possibleDuplicateProof: flagged.has(String(s._id)) } : s)),
+      ["workerEmail"],
+      session.user,
+      "workerId",
+    ),
     total,
     page,
     pages: Math.ceil(total / limit),
@@ -88,6 +107,9 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
     if (submission.autoApproveAt) {
       await scheduleAutoApprove(String(submission._id), submission.autoApproveAt);
     }
+
+    // Fingerprint the screenshot in the worker; the sweep covers a lost job.
+    if (submission.proofImageUrl) await scheduleProofHash(String(submission._id));
 
     // The buyer's notice was queued with the submission; send it now.
     await drainOutboxQuietly();

@@ -45,7 +45,12 @@ export interface ITask {
   updatedAt: string;
 }
 
-export interface ISubmission {
+/** Set for buyers only: the screenshot matches an earlier one (a lead for the buyer, not a verdict). */
+export interface ISubmissionFlags {
+  possibleDuplicateProof?: boolean;
+}
+
+export interface ISubmission extends ISubmissionFlags {
   _id: string;
   taskId: string;
   taskTitle: string;

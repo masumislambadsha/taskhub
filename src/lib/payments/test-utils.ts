@@ -1,3 +1,4 @@
+import FraudFlag from "@/models/FraudFlag";
 import mongoose from "mongoose";
 import { inject } from "vitest";
 import LedgerAccount from "@/models/LedgerAccount";
@@ -56,6 +57,7 @@ export async function startTestDb(dbName: string) {
         Task.deleteMany({}),
         Submission.deleteMany({}),
         Withdrawal.deleteMany({}),
+        FraudFlag.deleteMany({}),
         // The journal and the audit log are append-only, so clear them through the driver.
         AuditLog.collection.deleteMany({}),
         LedgerTransaction.collection.deleteMany({}),
