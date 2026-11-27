@@ -11,6 +11,10 @@ export interface IMessageDoc extends Document {
   receiverPhoto?: string;
   content: string;
   isRead: boolean;
+  /** When the recipient's device received it (two grey ticks). */
+  deliveredAt?: Date;
+  /** When the recipient read it (two blue ticks). */
+  readAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +31,8 @@ const MessageSchema = new Schema<IMessageDoc>(
     receiverPhoto: { type: String },
     content: { type: String, required: true },
     isRead: { type: Boolean, default: false },
+    deliveredAt: { type: Date },
+    readAt: { type: Date },
   },
   { timestamps: true },
 );

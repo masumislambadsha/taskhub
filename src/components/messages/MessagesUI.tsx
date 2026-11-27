@@ -7,11 +7,11 @@ import {
 } from "react-icons/md";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { formatDistanceToNow, format } from "date-fns";
-import { IConversation, IMessage } from "@/types";
+import { IConversation, IMessage, PresenceState } from "@/types";
 import { useSocket } from "@/hooks/useSocket";
 
 interface MessagesUIProps {
@@ -42,6 +42,30 @@ function Avatar({
     </div>
   );
 }
+
+/** One tick sent, two grey ticks delivered, two blue ticks read. */
+function Ticks({ state }: { state: "sent" | "delivered" | "read" }) {
+  const label = { sent: "Sent", delivered: "Delivered", read: "Read" }[state];
+  return (
+    <span
+      className={`ml-1 ${state === "read" ? "text-sky-500" : "text-primary/40"}`}
+      title={label}
+      aria-label={label}
+    >
+      {state === "sent" ? "✓" : "✓✓"}
+    </span>
+  );
+}
+
+function presenceLabel(p?: PresenceState): string | null {
+  if (!p) return null;
+  if (p.online) return "Online";
+  return p.lastSeen ? `Last seen ${formatDistanceToNow(new Date(p.lastSeen), { addSuffix: true })}` : null;
+}
+
+const TYPING_SEND_EVERY_MS = 2000; // at most one typing:start per 2 seconds
+const TYPING_HIDE_AFTER_MS = 3000; // hide the indicator if no update arrives
+const READ_THROTTLE_MS = 1000; // at most one read update per second
 
 function convFromSearchParams(
   searchParams: Pick<URLSearchParams, "get">,
@@ -79,6 +103,10 @@ export default function MessagesUI({
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<IMessage[]>([]);
   const [typingUser, setTypingUser] = useState<string | null>(null);
+  // Receipts and presence arriving live, on top of what the history already has.
+  const [deliveredIds, setDeliveredIds] = useState<Set<string>>(() => new Set());
+  const [readUpTo, setReadUpTo] = useState<string | null>(null);
+  const [presence, setPresence] = useState<Record<string, PresenceState>>({});
   const [mobileView, setMobileView] = useState<"list" | "chat">(() =>
     convFromSearchParams(searchParams) ? "chat" : "list",
   );
@@ -95,6 +123,10 @@ export default function MessagesUI({
   }
 
   const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const typingHideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSent = useRef(0);
+  const lastReadSent = useRef({ at: 0, id: "" });
+  const readTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -106,6 +138,19 @@ export default function MessagesUI({
   });
 
   const activeConv = selectedConv;
+  const myId = session?.user?.id;
+
+  // Privacy: other people always see when you are online, and see when you were
+  // last online unless you turn that off here.
+  const { data: privacy } = useQuery<{ hideLastSeen: boolean }>({
+    queryKey: ["chat-privacy"],
+    queryFn: () => axios.get("/api/v1/user/privacy").then((r) => r.data),
+  });
+  const togglePrivacy = useMutation({
+    mutationFn: (hideLastSeen: boolean) =>
+      axios.patch("/api/v1/user/privacy", { hideLastSeen }).then((r) => r.data),
+    onSuccess: (data) => qc.setQueryData(["chat-privacy"], data),
+  });
 
   const { data: fetchedMessages = [], refetch: refetchMessages } = useQuery<IMessage[]>({
     queryKey: ["messages", activeConv?.conversationId],
@@ -155,41 +200,128 @@ export default function MessagesUI({
 
   const handleTypingStart = useCallback(
     (data: { userId: string; name: string }) => {
-      if (data.userId !== session?.user?.id) setTypingUser(data.name);
+      if (data.userId === session?.user?.id) return;
+      setTypingUser(data.name);
+      // The sender stops sending updates when they stop typing, so hide the
+      // indicator ourselves if no further update arrives.
+      if (typingHideTimer.current) clearTimeout(typingHideTimer.current);
+      typingHideTimer.current = setTimeout(() => setTypingUser(null), TYPING_HIDE_AFTER_MS);
     },
     [session?.user?.id],
   );
 
-  const handleTypingStop = useCallback(() => setTypingUser(null), []);
+  const handleTypingStop = useCallback(() => {
+    if (typingHideTimer.current) clearTimeout(typingHideTimer.current);
+    setTypingUser(null);
+  }, []);
+
+  const handleDelivered = useCallback((data: { conversationId: string; messageIds: string[] }) => {
+    setDeliveredIds((prev) => {
+      const next = new Set(prev);
+      data.messageIds.forEach((id) => next.add(id));
+      return next;
+    });
+  }, []);
+
+  const handleRead = useCallback(
+    (data: { conversationId: string; upToMessageId: string }) => {
+      if (data.conversationId === activeConv?.conversationId) {
+        setReadUpTo((prev) => (!prev || data.upToMessageId > prev ? data.upToMessageId : prev));
+      }
+    },
+    [activeConv?.conversationId],
+  );
+
+  const handlePresence = useCallback((p: PresenceState) => {
+    setPresence((prev) => ({ ...prev, [p.userId]: p }));
+  }, []);
 
   // After the connection comes back, fetch what was sent while it was down.
+  const otherId = activeConv?.otherUserId;
+  const [reconnects, setReconnects] = useState(0);
   const handleReconnect = useCallback(() => {
     refetchMessages();
     qc.invalidateQueries({ queryKey: ["conversations"] });
+    setReconnects((n) => n + 1); // presence is looked up again below
   }, [refetchMessages, qc]);
 
-  const { sendMessage, sendTypingStart, sendTypingStop, markRead, connection } = useSocket({
+  const { sendMessage, sendTypingStart, sendTypingStop, markRead, getPresence, connection } = useSocket({
     conversationId: activeConv?.conversationId,
     onMessage: handleMessage,
     onTypingStart: handleTypingStart,
     onTypingStop: handleTypingStop,
+    onDelivered: handleDelivered,
+    onRead: handleRead,
+    onPresence: handlePresence,
     onReconnect: handleReconnect,
   });
 
+  // Opening a conversation (or coming back after a reconnect): who is online right now.
   useEffect(() => {
-    if (activeConv?.conversationId) markRead(activeConv.conversationId);
-  }, [activeConv?.conversationId, markRead]);
+    if (!otherId || connection !== "connected") return;
+    let cancelled = false;
+    getPresence([otherId]).then((states) => {
+      if (!cancelled) setPresence((prev) => ({ ...prev, ...states }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [otherId, connection, reconnects, getPresence]);
+
+  // The newest message sent to us in the open conversation.
+  const latestIncomingId = [...allMessages].reverse().find((m) => m.senderId !== myId)?._id;
+
+  // Mark messages read only while the chat is open and the tab is visible, and
+  // at most once a second, even if many messages arrive.
+  const conversationId = activeConv?.conversationId;
+  useEffect(() => {
+    if (!conversationId || !latestIncomingId) return;
+    const send = () => {
+      readTimer.current = null;
+      if (document.visibilityState !== "visible") return;
+      if (lastReadSent.current.id === latestIncomingId) return;
+      lastReadSent.current = { at: Date.now(), id: latestIncomingId };
+      markRead(conversationId, latestIncomingId);
+      // The unread badge in the list updates once the server has the new position.
+      setTimeout(() => qc.invalidateQueries({ queryKey: ["conversations"] }), 500);
+    };
+    const schedule = () => {
+      if (readTimer.current) return;
+      const wait = Math.max(0, READ_THROTTLE_MS - (Date.now() - lastReadSent.current.at));
+      readTimer.current = setTimeout(send, wait);
+    };
+    schedule();
+    document.addEventListener("visibilitychange", schedule);
+    return () => {
+      document.removeEventListener("visibilitychange", schedule);
+      if (readTimer.current) clearTimeout(readTimer.current);
+      readTimer.current = null;
+    };
+  }, [conversationId, latestIncomingId, markRead, qc]);
 
   function openConv(conv: IConversation) {
     setSelectedConv(conv);
     setMessages([]);
+    setReadUpTo(null);
+    setDeliveredIds(new Set());
+    lastReadSent.current = { at: 0, id: "" };
     setMobileView("chat");
+  }
+
+  function tickState(msg: IMessage): "sent" | "delivered" | "read" {
+    if (msg.readAt || msg.isRead || (readUpTo && msg._id <= readUpTo)) return "read";
+    if (msg.deliveredAt || deliveredIds.has(msg._id)) return "delivered";
+    return "sent";
   }
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     setInput(e.target.value);
     if (!activeConv) return;
-    sendTypingStart(activeConv.conversationId);
+    // Typing starts are sent at most once every 2 seconds, not on every key.
+    if (Date.now() - lastTypingSent.current >= TYPING_SEND_EVERY_MS) {
+      lastTypingSent.current = Date.now();
+      sendTypingStart(activeConv.conversationId);
+    }
     if (typingTimer.current) clearTimeout(typingTimer.current);
     typingTimer.current = setTimeout(
       () => sendTypingStop(activeConv.conversationId),
@@ -208,6 +340,7 @@ export default function MessagesUI({
       senderPhoto: session.user.image ?? undefined,
     });
     setInput("");
+    lastTypingSent.current = 0;
     sendTypingStop(activeConv.conversationId);
   }
 
@@ -218,7 +351,6 @@ export default function MessagesUI({
     }
   }
 
-  const myId = session?.user?.id;
   const myPhoto = session?.user?.image ?? undefined;
 
 
@@ -233,6 +365,15 @@ export default function MessagesUI({
             ? "Worker conversations"
             : "Task-related conversations"}
         </p>
+        <label className="mt-2 flex items-center gap-2 text-[11px] text-primary/50 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={privacy?.hideLastSeen ?? false}
+            disabled={!privacy || togglePrivacy.isPending}
+            onChange={(e) => togglePrivacy.mutate(e.target.checked)}
+          />
+          Hide my last seen
+        </label>
       </div>
       <div className="flex-1 overflow-y-auto">
         {conversations.length === 0 ? (
@@ -313,6 +454,13 @@ export default function MessagesUI({
           <p className="text-xs text-secondary truncate max-w-[200px]">
             {activeConv.taskTitle}
           </p>
+          {presenceLabel(presence[activeConv.otherUserId]) && (
+            <p
+              className={`text-[11px] truncate ${presence[activeConv.otherUserId]?.online ? "text-emerald-600 font-medium" : "text-primary/40"}`}
+            >
+              {presenceLabel(presence[activeConv.otherUserId])}
+            </p>
+          )}
         </div>
       </div>
 
@@ -369,9 +517,7 @@ export default function MessagesUI({
                 </div>
                 <span className="text-[10px] text-primary/30 px-1">
                   {format(new Date(msg.createdAt), "h:mm a")}{" "}
-                  {isMe && (
-                    <span className="ml-1">{msg.isRead ? "✓✓" : "✓"}</span>
-                  )}
+                  {isMe && <Ticks state={tickState(msg)} />}
                 </span>
               </div>
             </div>

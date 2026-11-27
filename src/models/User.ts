@@ -18,6 +18,10 @@ export interface IUserDoc extends Document {
    * creation.
    */
   ledgerOpenedAt?: Date;
+  /** Last time the user was seen online (written by the realtime server). */
+  lastSeenAt?: Date;
+  /** When true, other people see whether the user is online but never when they were last seen. */
+  hideLastSeen?: boolean;
   status: "active" | "suspended";
   createdAt: Date;
   updatedAt: Date;
@@ -37,6 +41,8 @@ const UserSchema = new Schema<IUserDoc>(
     },
     coins: { type: Number, default: 0 },
     ledgerOpenedAt: { type: Date },
+    lastSeenAt: { type: Date },
+    hideLastSeen: { type: Boolean, default: false },
     status: { type: String, enum: ["active", "suspended"], default: "active" },
   },
   { timestamps: true },

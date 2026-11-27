@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useSession } from "next-auth/react";
-import { IMessage } from "@/types";
+import { IMessage, PresenceState } from "@/types";
 
 const SOCKET_URL =
   process.env.NEXT_PUBLIC_SOCKET_URL ||
@@ -46,7 +46,12 @@ interface UseSocketOptions {
   onMessage?: (msg: IMessage) => void;
   onTypingStart?: (data: { userId: string; name: string }) => void;
   onTypingStop?: (data: { userId: string }) => void;
-  onMessagesRead?: (data: { userId: string }) => void;
+  /** Our messages reached the other person's device (grey ticks). */
+  onDelivered?: (data: { conversationId: string; messageIds: string[]; deliveredAt: string }) => void;
+  /** The other person read up to this message (blue ticks). */
+  onRead?: (data: { conversationId: string; userId: string; upToMessageId: string; readAt: string }) => void;
+  /** Someone we share a conversation with came online or went offline. */
+  onPresence?: (data: PresenceState) => void;
   /** A notification was pushed to this user (the worker or the web app queued it). */
   onNotification?: () => void;
   /**
@@ -64,7 +69,9 @@ export function useSocket({
   onMessage,
   onTypingStart,
   onTypingStop,
-  onMessagesRead,
+  onDelivered,
+  onRead,
+  onPresence,
   onNotification,
   onReconnect,
 }: UseSocketOptions = {}) {
@@ -87,10 +94,18 @@ export function useSocket({
       socket.emit("join:conversation", conversationId);
     }
 
+    // Every message that reaches this device is acknowledged, so the sender sees
+    // two grey ticks. The server only accepts it from the message's recipient.
+    const ackDelivered = (msg: IMessage) => {
+      if (msg.receiverId === session.user.id) socket.emit("message:delivered", { messageId: msg._id });
+    };
+    socket.on("message:receive", ackDelivered);
     if (onMessage) socket.on("message:receive", onMessage);
     if (onTypingStart) socket.on("typing:start", onTypingStart);
     if (onTypingStop) socket.on("typing:stop", onTypingStop);
-    if (onMessagesRead) socket.on("messages:read", onMessagesRead);
+    if (onDelivered) socket.on("message:delivered", onDelivered);
+    if (onRead) socket.on("conversation:read", onRead);
+    if (onPresence) socket.on("presence:update", onPresence);
     if (onNotification) socket.on("notification:new", onNotification);
 
     // Track the connection so the page can say "Reconnecting…", and catch up
@@ -120,10 +135,13 @@ export function useSocket({
       socket.off("connect_error", handleDisconnect);
       if (onNotification) socket.off("notification:new", onNotification);
       if (conversationId) socket.emit("leave:conversation", conversationId);
+      socket.off("message:receive", ackDelivered);
       if (onMessage) socket.off("message:receive", onMessage);
       if (onTypingStart) socket.off("typing:start", onTypingStart);
       if (onTypingStop) socket.off("typing:stop", onTypingStop);
-      if (onMessagesRead) socket.off("messages:read", onMessagesRead);
+      if (onDelivered) socket.off("message:delivered", onDelivered);
+      if (onRead) socket.off("conversation:read", onRead);
+      if (onPresence) socket.off("presence:update", onPresence);
     };
   }, [
     session,
@@ -131,7 +149,9 @@ export function useSocket({
     onMessage,
     onTypingStart,
     onTypingStop,
-    onMessagesRead,
+    onDelivered,
+    onRead,
+    onPresence,
     onNotification,
   ]);
 
@@ -157,9 +177,23 @@ export function useSocket({
     socketRef.current?.emit("typing:stop", { conversationId: convId });
   }, []);
 
-  const markRead = useCallback((convId: string) => {
-    socketRef.current?.emit("messages:read", { conversationId: convId });
+  /** The chat is open and visible: everything up to this message is read. */
+  const markRead = useCallback((convId: string, upToMessageId?: string) => {
+    socketRef.current?.emit("conversation:read", { conversationId: convId, upToMessageId });
   }, []);
 
-  return { sendMessage, sendTypingStart, sendTypingStop, markRead, connection };
+  /** Online status of people we share a conversation with. */
+  const getPresence = useCallback(
+    (userIds: string[]) =>
+      new Promise<Record<string, PresenceState>>((resolve) => {
+        const socket = socketRef.current;
+        if (!socket || userIds.length === 0) return resolve({});
+        socket.timeout(4000).emit("presence:get", { userIds }, (err: Error | null, res?: { ok: boolean; states?: Record<string, PresenceState> }) => {
+          resolve(!err && res?.ok ? (res.states ?? {}) : {});
+        });
+      }),
+    [],
+  );
+
+  return { sendMessage, sendTypingStart, sendTypingStop, markRead, getPresence, connection };
 }
