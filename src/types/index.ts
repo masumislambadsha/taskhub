@@ -53,6 +53,11 @@ export interface ISubmission {
   proofLinks?: string[];
   proofImageUrl?: string;
   status: SubmissionStatus;
+  /** When the system approves it if the buyer has not decided. */
+  autoApproveAt?: string;
+  decidedAt?: string;
+  /** The buyer's user ID, or "system" for an automatic approval. */
+  decidedBy?: string;
   createdAt: string;
   updatedAt: string;
 }

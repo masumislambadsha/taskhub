@@ -12,6 +12,17 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
+    # The queue and worker tests run against a real Redis.
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v5
 
@@ -53,6 +64,7 @@ jobs:
         run: npm test
         env:
           MONGOMS_DOWNLOAD_DIR: ${{ runner.temp }}/mongodb-binaries
+          TEST_REDIS_URL: redis://localhost:6379
 
       # Plain production build: no secrets and no database are needed.
       - name: Build web app
