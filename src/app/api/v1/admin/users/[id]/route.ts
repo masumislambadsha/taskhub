@@ -5,6 +5,8 @@ import { connectDB } from "@/lib/db";
 import User from "@/models/User";
 import { removeUser } from "@/lib/ledger/flows/users";
 import { USER_ROLES, requireAdmin } from "@/lib/roles";
+import { auditContextFrom, recordAudit } from "@/lib/audit";
+import { inLedgerTransaction } from "@/lib/ledger/run";
 
 const USER_STATUSES = ["active", "suspended"] as const;
 
@@ -64,16 +66,51 @@ export async function PATCH(
   if (role !== undefined) update.role = role;
   if (status !== undefined) update.status = status;
 
-  const user = await User.findByIdAndUpdate(id, update, { new: true }).select(
-    "-passwordHash",
-  );
+  // The change and its audit entries commit together.
+  const audit = auditContextFrom(req, guard);
+  const user = await inLedgerTransaction(async (session) => {
+    const before = await User.findById(id).select("role status email").session(session).lean();
+    if (!before) return null;
+    const updated = await User.findByIdAndUpdate(id, update, {
+      returnDocument: "after",
+      session,
+    }).select("-passwordHash");
+
+    if (role !== undefined && role !== before.role) {
+      await recordAudit(
+        audit,
+        {
+          action: "user.role_change",
+          targetType: "user",
+          targetId: id,
+          before: { role: before.role },
+          after: { role },
+        },
+        session,
+      );
+    }
+    if (status !== undefined && status !== before.status) {
+      await recordAudit(
+        audit,
+        {
+          action: status === "suspended" ? "user.suspend" : "user.unsuspend",
+          targetType: "user",
+          targetId: id,
+          before: { status: before.status },
+          after: { status },
+        },
+        session,
+      );
+    }
+    return updated;
+  });
   if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   return NextResponse.json(user);
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await auth();
@@ -89,6 +126,10 @@ export async function DELETE(
   }
 
   await connectDB();
-  await removeUser({ userId: id, adminId: guard.userId });
+  await removeUser({
+    userId: id,
+    adminId: guard.userId,
+    audit: auditContextFrom(req, guard),
+  });
   return NextResponse.json({ ok: true });
 }

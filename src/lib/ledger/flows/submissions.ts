@@ -7,6 +7,7 @@ import { ensureEscrowOpen } from "../escrow";
 import { postTransaction } from "../post";
 import { inLedgerTransaction } from "../run";
 import { autoApproveAtFrom } from "@/lib/auto-approve";
+import { recordAudit, SYSTEM_AUDIT } from "@/lib/audit";
 
 export type SubmitWorkResult =
   | { ok: true; submission: ISubmissionDoc; task: ITaskDoc }
@@ -118,6 +119,7 @@ export async function approveSubmission(args: {
 }): Promise<ApproveSubmissionResult> {
   const { submissionId, buyerId } = args;
   const decidedBy = args.decidedBy ?? buyerId;
+  const bySystem = decidedBy === "system";
   try {
     return await inLedgerTransaction(async (session): Promise<ApproveSubmissionResult> => {
       const pending = await Submission.findOne({
@@ -150,6 +152,20 @@ export async function approveSubmission(args: {
         },
         session,
       );
+      // An automatic approval is the platform acting on its own, so it is logged.
+      if (bySystem) {
+        await recordAudit(
+          SYSTEM_AUDIT,
+          {
+            action: "submission.auto_approve",
+            targetType: "submission",
+            targetId: submissionId,
+            before: { status: "pending" },
+            after: { status: "approved", coins: submission.payableAmount, workerId: String(submission.workerId), buyerId },
+          },
+          session,
+        );
+      }
       return { ok: true, submission };
     });
   } catch (err) {
