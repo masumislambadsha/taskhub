@@ -590,6 +590,8 @@ Per-object accounts: `escrow:task:<taskId>` and `hold:submission:<submissionId>`
 
 ## 1.8 Transactional outbox
 
+**Status: done** (`src/lib/outbox.ts`, `src/models/Outbox.ts`, admin page `/admin/outbox`). Notifications are queued in the same transaction as the change that causes them: a new submission, an approval (by the buyer or the system, with the buyer's notice for an automatic one), a rejection and its final settlement, every withdrawal step (confirmed, approved, rejected, expired, paid), an appeal and its decision, and the 48-hour dispute reminder. The worker drains the queue every 30 seconds and the routes drain right after they commit, so notices still appear at once. Each row is claimed with one atomic update, retried with backoff (30 seconds doubling, up to an hour) and marked failed after 8 attempts; a row whose claimant crashed is taken over after 5 minutes. Delivery is at least once, so every receiver ignores a repeat: notifications carry the row's key (unique), emails pass it to Resend as an idempotency key, webhooks send it as an `Idempotency-Key` header. Failed rows wait on the admin page for a Retry, which is audit-logged. Two direct sends remain on purpose: the withdrawal confirmation email, because its link holds a secret token that must not be stored in the queue (the worker can ask for a fresh one), and the password-reset email, which is not tied to a money change. No emails or webhooks are queued by flows yet; the queue and its handlers support them for the public API (5.5).
+
 **Goal:** a crash between "the money moved" and "the email, notification or webhook was sent" can never lose or duplicate a side effect.
 
 **Design**

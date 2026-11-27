@@ -7,6 +7,8 @@ export interface INotificationDoc extends Document {
   actionRoute?: string;
   type: "info" | "success" | "warning";
   isRead: boolean;
+  /** The outbox row that created it, so a repeated delivery makes no second notification. */
+  outboxKey?: string;
   createdAt: Date;
 }
 
@@ -22,9 +24,12 @@ const NotificationSchema = new Schema<INotificationDoc>(
       default: "info",
     },
     isRead: { type: Boolean, default: false },
+    outboxKey: { type: String },
   },
   { timestamps: true },
 );
+
+NotificationSchema.index({ outboxKey: 1 }, { unique: true, sparse: true });
 
 const Notification: Model<INotificationDoc> =
   mongoose.models.Notification ||

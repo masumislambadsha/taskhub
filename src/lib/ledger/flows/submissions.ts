@@ -10,6 +10,7 @@ import { autoApproveAtFrom } from "@/lib/auto-approve";
 import { disputeWindowMs } from "@/lib/dispute-window";
 import User from "@/models/User";
 import { recordAudit, SYSTEM_AUDIT } from "@/lib/audit";
+import { queueNotification } from "@/lib/outbox";
 
 export type SubmitWorkResult =
   | { ok: true; submission: ISubmissionDoc; task: ITaskDoc }
@@ -97,6 +98,17 @@ export async function submitWork(args: {
       ],
       { session },
     );
+    await queueNotification(
+      {
+        toUserId: String(task.buyerId),
+        toEmail: task.buyerEmail,
+        message: `New submission on "${task.title}" from ${worker.name}`,
+        actionRoute: "/buyer/submissions",
+        type: "info",
+      },
+      `submission-new:${submission._id}`,
+      session,
+    );
     return { ok: true, submission, task };
   });
 }
@@ -168,6 +180,37 @@ export async function approveSubmission(args: {
           session,
         );
       }
+      // The notices are queued in this same transaction, so the payout and the
+      // message about it exist together.
+      await queueNotification(
+        {
+          toUserId: String(submission.workerId),
+          toEmail: submission.workerEmail,
+          message: bySystem
+            ? `Your submission for "${submission.taskTitle}" was approved automatically. +${submission.payableAmount} coins`
+            : `Your submission for "${submission.taskTitle}" was approved! +${submission.payableAmount} coins`,
+          actionRoute: "/worker/submissions",
+          type: "success",
+        },
+        `submission-approved:${submissionId}:worker`,
+        session,
+      );
+      if (bySystem) {
+        const buyer = await User.findById(buyerId).select("email").session(session).lean();
+        if (buyer?.email) {
+          await queueNotification(
+            {
+              toUserId: buyerId,
+              toEmail: buyer.email,
+              message: `A submission for "${submission.taskTitle}" was approved automatically because it was not reviewed in time.`,
+              actionRoute: "/buyer/submissions",
+              type: "info",
+            },
+            `submission-approved:${submissionId}:buyer`,
+            session,
+          );
+        }
+      }
       return { ok: true, submission };
     });
   } catch (err) {
@@ -229,6 +272,17 @@ export async function rejectSubmission(args: {
       { session, returnDocument: "after" },
     );
     if (!submission) return { ok: false, reason: "not_found" };
+    await queueNotification(
+      {
+        toUserId: String(submission.workerId),
+        toEmail: submission.workerEmail,
+        message: `Your submission for "${submission.taskTitle}" was rejected.${reason ? ` Reason: ${reason}` : ""} You can accept the rejection now, appeal it, or it becomes final after the review window.`,
+        actionRoute: "/worker/messages",
+        type: "warning",
+      },
+      `submission-rejected:${submissionId}`,
+      session,
+    );
     return { ok: true, submission };
   });
   if (!result.ok || windowMs > 0) return result;
@@ -314,6 +368,19 @@ export async function settleRejectionInSession(
     { session, returnDocument: "after" },
   );
   if (!submission) return { ok: false, reason: "not_found" };
+  if (via !== "accepted") {
+    await queueNotification(
+      {
+        toUserId: String(submission.workerId),
+        toEmail: submission.workerEmail,
+        message: `The rejection of your submission for "${submission.taskTitle}" is now final.`,
+        actionRoute: "/worker/submissions",
+        type: "info",
+      },
+      `rejection-final:${submissionId}`,
+      session,
+    );
+  }
   if (!task) return { ok: true, submission, outcome: "refunded" };
 
   const reward = held.payableAmount;

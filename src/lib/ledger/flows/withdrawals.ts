@@ -8,6 +8,7 @@ import { InsufficientCoinsError, UnknownAccountError } from "../errors";
 import { postTransaction } from "../post";
 import { inLedgerTransaction } from "../run";
 import { recordAudit, type AuditContext } from "@/lib/audit";
+import { queueNotification } from "@/lib/outbox";
 import { coinsToUsdWithdraw } from "@/lib/coins";
 import {
   MIN_WITHDRAWAL_COINS,
@@ -152,12 +153,26 @@ export async function confirmWithdrawal(args: {
   }
   if (!w.confirmExpiresAt || w.confirmExpiresAt.getTime() < now.getTime()) return { ok: false, reason: "expired" };
 
-  const updated = await Withdrawal.findOneAndUpdate(
-    { _id: w._id, status: "awaiting_confirmation", confirmTokenHash: w.confirmTokenHash },
-    { $set: { status: "pending", confirmedAt: now }, $unset: { confirmTokenHash: "", confirmExpiresAt: "" } },
-    { returnDocument: "after" },
-  );
-  return updated ? { ok: true, withdrawal: updated } : { ok: false, reason: "not_found" };
+  return inLedgerTransaction(async (session): Promise<ConfirmResult> => {
+    const updated = await Withdrawal.findOneAndUpdate(
+      { _id: w._id, status: "awaiting_confirmation", confirmTokenHash: w.confirmTokenHash },
+      { $set: { status: "pending", confirmedAt: now }, $unset: { confirmTokenHash: "", confirmExpiresAt: "" } },
+      { session, returnDocument: "after" },
+    );
+    if (!updated) return { ok: false, reason: "not_found" };
+    await queueNotification(
+      {
+        toUserId: String(updated.workerId),
+        toEmail: updated.workerEmail,
+        message: `Your withdrawal of ${updated.coinRequested} coins is confirmed and waiting for review.`,
+        actionRoute: "/worker/withdrawals",
+        type: "info",
+      },
+      `withdrawal-confirmed:${updated._id}`,
+      session,
+    );
+    return { ok: true, withdrawal: updated };
+  });
 }
 
 /** A fresh confirmation link for a request whose first one expired. */
@@ -201,6 +216,8 @@ async function endAndReturn(args: {
   audit?: AuditContext;
   auditAction?: string;
   reason?: string;
+  /** The worker is told, except when they cancelled it themselves. */
+  notice?: string;
 }): Promise<EndWithdrawalResult> {
   if (!mongoose.isValidObjectId(args.withdrawalId)) return { ok: false, reason: "not_found" };
   return inLedgerTransaction(async (session): Promise<EndWithdrawalResult> => {
@@ -227,6 +244,19 @@ async function endAndReturn(args: {
           meta: { withdrawalId: String(withdrawal._id), userId: String(withdrawal.workerId) },
           createdBy: args.audit?.actorId ?? "system",
         },
+        session,
+      );
+    }
+    if (args.notice) {
+      await queueNotification(
+        {
+          toUserId: String(withdrawal.workerId),
+          toEmail: withdrawal.workerEmail,
+          message: args.notice,
+          actionRoute: args.to === "rejected" ? "/worker/messages" : "/worker/withdrawals",
+          type: "warning",
+        },
+        `withdrawal-${args.to}:${withdrawal._id}`,
         session,
       );
     }
@@ -275,6 +305,7 @@ export async function rejectWithdrawal(args: {
     audit: args.audit,
     auditAction: "withdrawal.reject",
     reason,
+    notice: `Your withdrawal request was rejected and the coins were returned. Reason: ${reason}`,
   });
 }
 
@@ -297,6 +328,7 @@ export async function expireUnconfirmedWithdrawals(now: Date = new Date()): Prom
       from: ["awaiting_confirmation"],
       to: "cancelled",
       set: { cancelledAt: now, cancelReason: "not confirmed within 24 hours" },
+      notice: "Your withdrawal was cancelled because it was not confirmed within 24 hours. The coins were returned.",
     });
     if (res.ok) cancelled.push(String(_id));
   }
@@ -358,6 +390,17 @@ export async function approveWithdrawal(args: {
           session,
         );
       }
+      await queueNotification(
+        {
+          toUserId: String(withdrawal.workerId),
+          toEmail: withdrawal.workerEmail,
+          message: `Your withdrawal of ${withdrawal.coinRequested} coins ($${withdrawal.amount}) has been approved. It will be paid shortly.`,
+          actionRoute: "/worker/withdrawals",
+          type: "success",
+        },
+        `withdrawal-approved:${withdrawalId}`,
+        session,
+      );
       return { ok: true, withdrawal };
     });
   } catch (err) {
@@ -428,6 +471,17 @@ export async function markWithdrawalPaid(args: {
         session,
       );
     }
+    await queueNotification(
+      {
+        toUserId: String(withdrawal.workerId),
+        toEmail: withdrawal.workerEmail,
+        message: `Your withdrawal of ${withdrawal.coinRequested} coins ($${withdrawal.amount}) was paid. Reference: ${transactionId}.`,
+        actionRoute: "/worker/withdrawals",
+        type: "success",
+      },
+      `withdrawal-paid:${withdrawal._id}`,
+      session,
+    );
     return { ok: true, withdrawal };
   });
 }

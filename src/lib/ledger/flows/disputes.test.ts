@@ -29,6 +29,8 @@ import {
   withdrawDispute,
 } from "@/lib/ledger/flows/disputes";
 import { notifyOverdueDisputes } from "@/lib/dispute-sla";
+import { drainOutbox } from "@/lib/outbox";
+import Outbox from "@/models/Outbox";
 import { buyerHistory, workerHistory } from "@/lib/dispute-context";
 import { reconcile } from "@/lib/ledger/reconcile";
 import { escrowAccount } from "@/lib/ledger";
@@ -48,6 +50,7 @@ beforeEach(async () => {
   await db.reset();
   await Dispute.deleteMany({});
   await Notification.deleteMany({});
+  await Outbox.deleteMany({});
   process.env.DISPUTE_WINDOW_MS = String(3 * 24 * 3600 * 1000);
 });
 afterEach(() => {
@@ -294,9 +297,11 @@ describe("overdue reminders", () => {
     expect(await notifyOverdueDisputes()).toEqual([]); // too new
     const later = new Date(Date.now() + ADMIN_SLA_MS + 60_000);
     expect(await notifyOverdueDisputes(later)).toEqual([String(res.dispute._id)]);
-    expect((await Notification.find({}).lean()).map((n) => String(n.toUserId)).sort()).toEqual([String(a1._id), String(a2._id)].sort());
+    await drainOutbox();
+    expect((await Notification.find({ message: /waited more than 48 hours/ }).lean()).map((n) => String(n.toUserId)).sort()).toEqual([String(a1._id), String(a2._id)].sort());
     expect(await notifyOverdueDisputes(later)).toEqual([]);
-    expect(await Notification.countDocuments()).toBe(2);
+    await drainOutbox();
+    expect(await Notification.countDocuments({ message: /waited more than 48 hours/ })).toBe(2);
   });
 
   it("simultaneous sweeps send one reminder, and a decided dispute gets none", async () => {
@@ -311,7 +316,8 @@ describe("overdue reminders", () => {
     const later = new Date(Date.now() + ADMIN_SLA_MS + 60_000);
     const all = await Promise.all(Array.from({ length: 4 }, () => notifyOverdueDisputes(later)));
     expect(all.flat()).toEqual([String(d1.dispute._id)]);
-    expect(await Notification.countDocuments()).toBe(1);
+    await drainOutbox();
+    expect(await Notification.countDocuments({ message: /waited more than 48 hours/ })).toBe(1);
   });
 });
 

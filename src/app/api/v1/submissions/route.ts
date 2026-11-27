@@ -4,7 +4,7 @@ import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
 import { submitWork } from "@/lib/ledger/flows/submissions";
 import { submissionSchema } from "@/lib/validators/submission";
-import { createNotification } from "@/lib/notifications";
+import { drainOutboxQuietly } from "@/lib/outbox";
 import { redactEmailFields } from "@/lib/privacy";
 import { withRequestLogging } from "@/lib/with-request-logging";
 import { withIdempotency } from "@/lib/idempotency";
@@ -84,13 +84,8 @@ export const POST = withRequestLogging("/api/v1/submissions", async function POS
       await scheduleAutoApprove(String(submission._id), submission.autoApproveAt);
     }
 
-    await createNotification({
-      toUserId: task.buyerId.toString(),
-      toEmail: task.buyerEmail,
-      message: `New submission on "${task.title}" from ${session.user.name}`,
-      actionRoute: "/buyer/submissions",
-      type: "info",
-    });
+    // The buyer's notice was queued with the submission; send it now.
+    await drainOutboxQuietly();
 
     return NextResponse.json(submission, { status: 201 });
   });

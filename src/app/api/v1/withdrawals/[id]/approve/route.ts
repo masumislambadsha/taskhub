@@ -6,7 +6,7 @@ import {
   approveWithdrawal,
   rejectWithdrawal,
 } from "@/lib/ledger/flows/withdrawals";
-import { createNotification } from "@/lib/notifications";
+import { drainOutboxQuietly } from "@/lib/outbox";
 import { withRequestLogging } from "@/lib/with-request-logging";
 import { withIdempotency } from "@/lib/idempotency";
 import { auditContextFrom } from "@/lib/audit";
@@ -40,13 +40,6 @@ export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", asyn
         return NextResponse.json({ error: "Not found" }, { status: 404 });
       }
       withdrawal = result.withdrawal;
-      await createNotification({
-        toUserId: withdrawal.workerId.toString(),
-        toEmail: withdrawal.workerEmail,
-        message: `Your withdrawal of ${withdrawal.coinRequested} coins ($${withdrawal.amount}) has been approved. It will be paid shortly.`,
-        actionRoute: "/worker/withdrawals",
-        type: "success",
-      });
     } else {
       const result = await rejectWithdrawal({
         withdrawalId: id,
@@ -58,15 +51,10 @@ export const PATCH = withRequestLogging("/api/v1/withdrawals/[id]/approve", asyn
           ? NextResponse.json({ error: "A reason of at least 5 characters is required" }, { status: 400 })
           : NextResponse.json({ error: "Not found" }, { status: 404 });
       withdrawal = result.withdrawal;
-      await createNotification({
-        toUserId: withdrawal.workerId.toString(),
-        toEmail: withdrawal.workerEmail,
-        message: `Your withdrawal request of ${withdrawal.coinRequested} coins was rejected and the coins were returned.${reason?.trim() ? ` Reason: ${reason.trim()}` : ""}`,
-        actionRoute: "/worker/messages",
-        type: "warning",
-      });
     }
 
+    // The worker's notice was queued with the decision; send it now.
+    await drainOutboxQuietly();
     return NextResponse.json(withdrawal);
   });
 });

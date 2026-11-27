@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import Submission from "@/models/Submission";
 import { approveSubmission, rejectSubmission } from "@/lib/ledger/flows/submissions";
-import { createNotification } from "@/lib/notifications";
+import { drainOutboxQuietly } from "@/lib/outbox";
 import { withRequestLogging } from "@/lib/with-request-logging";
 import { withIdempotency } from "@/lib/idempotency";
 import { cancelAutoApprove, scheduleDisputeWindow } from "@/lib/queue/auto-approve-queue";
@@ -55,13 +55,6 @@ export const PATCH = withRequestLogging("/api/v1/submissions/[id]/status", async
       }
       submission = result.submission;
       await cancelAutoApprove(id);
-      await createNotification({
-        toUserId: submission.workerId.toString(),
-        toEmail: submission.workerEmail,
-        message: `Your submission for "${submission.taskTitle}" was approved! +${submission.payableAmount} coins`,
-        actionRoute: "/worker/submissions",
-        type: "success",
-      });
     } else {
       const result = await rejectSubmission({
         submissionId: id,
@@ -76,15 +69,10 @@ export const PATCH = withRequestLogging("/api/v1/submissions/[id]/status", async
       if (submission.rejectionHold && !submission.rejectionHold.settledAt) {
         await scheduleDisputeWindow(id, submission.rejectionHold.windowEndsAt);
       }
-      await createNotification({
-        toUserId: submission.workerId.toString(),
-        toEmail: submission.workerEmail,
-        message: `Your submission for "${submission.taskTitle}" was rejected.${reason?.trim() ? ` Reason: ${reason.trim()}` : ""} You can accept the rejection now, or it becomes final after the review window.`,
-        actionRoute: "/worker/messages",
-        type: "warning",
-      });
     }
 
+    // The worker's notice was queued with the decision; send it now.
+    await drainOutboxQuietly();
     return NextResponse.json(submission);
   });
 });

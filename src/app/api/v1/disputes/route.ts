@@ -4,11 +4,10 @@ import { connectDB } from "@/lib/db";
 import Dispute from "@/models/Dispute";
 import Submission from "@/models/Submission";
 import { openDispute } from "@/lib/ledger/flows/disputes";
-import { createNotification } from "@/lib/notifications";
+import { drainOutboxQuietly } from "@/lib/outbox";
 import { refuseDemoAdmin } from "@/lib/roles";
 import { withIdempotency } from "@/lib/idempotency";
 import { withRequestLogging } from "@/lib/with-request-logging";
-import User from "@/models/User";
 
 /** A worker's disputes, or a buyer's disputes about their rejections. */
 export async function GET() {
@@ -71,16 +70,8 @@ export const POST = withRequestLogging("/api/v1/disputes", async function POST(r
       return NextResponse.json({ error }, { status });
     }
 
-    const buyer = await User.findById(res.dispute.buyerId).select("email").lean();
-    if (buyer?.email) {
-      await createNotification({
-        toUserId: String(res.dispute.buyerId),
-        toEmail: buyer.email,
-        message: "A worker appealed one of your rejections. You have 48 hours to add your side.",
-        actionRoute: "/buyer/disputes",
-        type: "warning",
-      });
-    }
+    // The buyer's notice was queued with the appeal; send it now.
+    await drainOutboxQuietly();
     return NextResponse.json(res.dispute, { status: 201 });
   });
 });

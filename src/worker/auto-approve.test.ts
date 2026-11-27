@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import Redis from "ioredis";
 import { Queue } from "bullmq";
 import Notification from "@/models/Notification";
+import Outbox from "@/models/Outbox";
 import Submission from "@/models/Submission";
 import {
   coinsOf,
@@ -37,7 +38,7 @@ afterAll(async () => {
 });
 beforeEach(async () => {
   await db.reset();
-  await Notification.deleteMany({});
+  await Promise.all([Notification.deleteMany({}), Outbox.deleteMany({})]);
 });
 
 async function fundedTask(coins = 200, workers = 5, reward = 10) {
@@ -187,13 +188,29 @@ describe.skipIf(!URL)("auto-approve worker with Redis", { timeout: 40_000 }, () 
     expect((await reconcile()).ok).toBe(true);
   });
 
+  it("sends queued notifications through its scheduled outbox drain", async () => {
+    const { queueNotification } = await import("@/lib/outbox");
+    await queueNotification(
+      { toUserId: String(new mongoose.Types.ObjectId()), toEmail: "x@example.test", message: "queued by a flow" },
+      "worker-drain-test",
+    );
+    // Nothing is sent until a worker runs its drain job.
+    expect(await Notification.countDocuments({ outboxKey: "worker-drain-test" })).toBe(0);
+    runtime = await startAutoApproveWorker(connection);
+    await waitFor(async () => (await Notification.countDocuments({ outboxKey: "worker-drain-test" })) === 1);
+  });
+
   it("registers one repeating sweep however many workers start", async () => {
     runtime = await startAutoApproveWorker(connection);
     const second = await startAutoApproveWorker(connection);
     const schedulers = await runtime.queue.getJobSchedulers();
     await second.close();
-    expect(schedulers.filter((s) => s.key === "sweep")).toHaveLength(1);
-    expect(schedulers[0].every).toBe(15 * 60 * 1000);
+    const sweeps = schedulers.filter((s) => s.key === "sweep");
+    expect(sweeps).toHaveLength(1);
+    expect(sweeps[0].every).toBe(15 * 60 * 1000);
+    const drains = schedulers.filter((s) => s.key === "outbox-drain");
+    expect(drains).toHaveLength(1);
+    expect(drains[0].every).toBe(30 * 1000);
   });
 
   it("a buyer's decision and the timer at the same moment pay once", async () => {
